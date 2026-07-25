@@ -12,6 +12,7 @@ export default function Pools() {
   const { data: stats = {} } = useStats();
   const [corpForm, setCorpForm] = useState({ discountRate: '', marketRate: '', usdcAmount: '', fiatSent: '' });
   const [coldForm, setColdForm] = useState({ direction: 'HOT_TO_COLD', amount: '', note: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const pools = health.pools || {};
   const rate = stats.ghsRate || 12.5;
@@ -24,15 +25,32 @@ export default function Pools() {
 
   async function submitCorpPurchase(e) {
     e.preventDefault();
-    await api.warRoom.corporatePurchase({ ...corpForm, source: 'KOTANI' });
-    toast.success('Corporate purchase logged');
-    setCorpForm({ discountRate: '', marketRate: '', usdcAmount: '', fiatSent: '' });
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await api.warRoom.corporatePurchase({ ...corpForm, source: 'KOTANI' });
+      toast.success('Corporate purchase logged');
+      setCorpForm({ discountRate: '', marketRate: '', usdcAmount: '', fiatSent: '' });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || 'Failed to log corporate purchase');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function submitColdStorage(e) {
     e.preventDefault();
-    await api.warRoom.coldStorage(coldForm);
-    toast.success('Cold storage transfer logged');
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await api.warRoom.coldStorage(coldForm);
+      toast.success('Cold storage transfer logged');
+      setColdForm({ direction: 'HOT_TO_COLD', amount: '', note: '' });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || 'Failed to log cold storage transfer');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -120,8 +138,8 @@ export default function Pools() {
                 </p>
               </div>
             )}
-            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm">
-              Log Purchase
+            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-sm" disabled={submitting}>
+              {submitting ? 'Logging…' : 'Log Purchase'}
             </Button>
           </form>
         </div>
@@ -162,8 +180,8 @@ export default function Pools() {
                 onChange={(e) => setColdForm({ ...coldForm, note: e.target.value })}
               />
             </div>
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-500 text-white text-sm">
-              Log Transfer
+            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-500 text-white text-sm" disabled={submitting}>
+              {submitting ? 'Logging…' : 'Log Transfer'}
             </Button>
           </form>
         </div>

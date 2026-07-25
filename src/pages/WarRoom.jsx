@@ -81,6 +81,44 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
   );
 }
 
+// ── Reason Input Modal (replaces prompt() anti-pattern) ──────────────────────
+function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCancel, isPending }) {
+  const [reason, setReason] = useState('');
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
+      <div className="relative az-card w-full max-w-md mx-4 p-6 space-y-4 animate-fade-in">
+        <h2 className="text-base font-bold text-[#e8e8f0]">{title}</h2>
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder={placeholder}
+          className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] focus:border-[#4f8ef740] placeholder:text-[#4a4a6a] min-h-[80px]"
+          autoFocus
+        />
+        <div className="flex gap-3">
+          <Button
+            variant="ghost"
+            className="flex-1 border border-[#2a2a3e] text-[#7b7b9a] hover:text-[#e8e8f0] hover:bg-[#1e1e2e]"
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1 font-semibold text-sm"
+            disabled={!reason.trim() || isPending}
+            onClick={() => { onConfirm(reason.trim()); setReason(''); }}
+          >
+            {isPending ? 'Processing…' : confirmLabel}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Dispute Card ─────────────────────────────────────────────────────────────
 function DisputeCard({ dispute }) {
   const [expanded, setExpanded]   = useState(false);
@@ -92,6 +130,9 @@ function DisputeCard({ dispute }) {
 
   // Phase ADMIN-CONTROL-2: extreme ruling state
   const [extremeRulingPending, setExtremeRulingPending] = useState(null);
+
+  // Reason modal state (replaces prompt())
+  const [reasonModal, setReasonModal] = useState(null); // { type: 'release' | 'cancel' }
 
   const qc = useQueryClient();
 
@@ -147,12 +188,31 @@ function DisputeCard({ dispute }) {
     });
   };
 
+  const handleReasonConfirm = (reasonText) => {
+    if (reasonModal?.type === 'release') {
+      forceRelease.mutate({ id: dispute.id, reason: reasonText });
+    } else if (reasonModal?.type === 'cancel') {
+      forceCancel.mutate({ id: dispute.id, reason: reasonText });
+    }
+    setReasonModal(null);
+  };
+
   return (
     <>
       <ExtremeRulingModal
         pending={extremeRulingPending}
         onConfirm={handleConfirmExtreme}
         onCancel={() => setExtremeRulingPending(null)}
+      />
+
+      <ReasonModal
+        open={!!reasonModal}
+        title={reasonModal?.type === 'release' ? 'Force Release Escrow' : 'Force Cancel Trade'}
+        placeholder={reasonModal?.type === 'release' ? 'Enter reason for force release…' : 'Enter reason for cancellation…'}
+        confirmLabel={reasonModal?.type === 'release' ? 'Release Funds' : 'Cancel Trade'}
+        onConfirm={handleReasonConfirm}
+        onCancel={() => setReasonModal(null)}
+        isPending={forceRelease.isPending || forceCancel.isPending}
       />
 
       <div className="az-card overflow-hidden transition-all duration-200">
@@ -230,10 +290,10 @@ function DisputeCard({ dispute }) {
                     <button
                       key={r.value}
                       onClick={() => setRuling(r.value)}
-                      className={`flex-1 text-xs py-2 rounded-xl border transition-all ${
+                      className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
                         ruling === r.value
-                          ? `${r.active} ${r.color} font-semibold`
-                          : 'border-[#1e1e2e] text-[#4a4a6a] hover:border-[#2a2a3e] hover:text-[#7b7b9a]'
+                          ? r.active
+                          : 'border-[#2a2a3e] text-[#7b7b9a] hover:bg-[#13131e]'
                       }`}
                     >
                       {r.label}
@@ -242,56 +302,31 @@ function DisputeCard({ dispute }) {
                 </div>
 
                 {ruling === 'SPLIT' && (
-                  <div className="space-y-1">
-                    <label className="text-xs text-[#7b7b9a] block">
-                      Buyer % — vendor receives the remainder
-                    </label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
+                  <div>
+                    <label className="text-xs text-[#4a4a6a] block mb-1">Buyer share: {buyerPct}%</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
                       value={buyerPct}
-                      onChange={(e) => setBuyerPct(e.target.value)}
-                      className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] az-mono focus:border-[#00d97e40]"
+                      onChange={(e) => setBuyerPct(parseInt(e.target.value))}
+                      className="w-full accent-[#4f8ef7]"
                     />
-                    {/* Visual split preview */}
-                    <div className="flex rounded-lg overflow-hidden h-2 mt-2">
-                      <div
-                        className="bg-[#00d97e] transition-all"
-                        style={{ width: `${Math.min(100, Math.max(0, parseInt(buyerPct) || 0))}%` }}
-                      />
-                      <div className="flex-1 bg-[#4f8ef7]" />
-                    </div>
-                    <div className="flex justify-between text-xs text-[#4a4a6a] mt-1">
-                      <span className="text-[#00d97e]">Buyer {buyerPct || 0}%</span>
-                      <span className="text-[#4f8ef7]">Vendor {100 - (parseInt(buyerPct) || 0)}%</span>
-                    </div>
-                    {/* Extreme ruling warning */}
-                    {(parseInt(buyerPct) < 5 || parseInt(buyerPct) > 95) && (
-                      <div className="flex items-center gap-2 mt-2 bg-[#f59e0b15] border border-[#f59e0b40] rounded-xl px-3 py-2">
-                        <AlertTriangle className="w-3.5 h-3.5 text-[#f59e0b] flex-shrink-0" />
-                        <span className="text-xs text-[#f59e0b]">
-                          Extreme ruling — will require override confirmation
-                        </span>
-                      </div>
-                    )}
                   </div>
                 )}
 
                 <Textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Reason for ruling (recorded in audit log)..."
-                  className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] text-xs resize-none focus:border-[#00d97e40] placeholder:text-[#4a4a6a]"
-                  rows={2}
+                  placeholder="Reason for ruling (required)…"
+                  className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] focus:border-[#4f8ef740] placeholder:text-[#4a4a6a]"
                 />
 
                 <Button
                   onClick={handleResolve}
-                  disabled={!reason || resolve.isPending}
-                  className="w-full bg-[#00d97e] hover:bg-[#00bf6f] text-[#0a0a0f] font-semibold text-sm"
+                  disabled={!reason.trim() || resolve.isPending}
+                  className="w-full bg-[#4f8ef7] hover:bg-[#3d7ef0] text-white font-semibold text-sm"
                 >
-                  <CheckCircle className="w-3.5 h-3.5 mr-2" />
                   {resolve.isPending ? 'Resolving…' : 'Resolve Dispute'}
                 </Button>
               </div>
@@ -321,10 +356,7 @@ function DisputeCard({ dispute }) {
             {tab === 'quick' && (
               <div className="grid grid-cols-2 gap-3">
                 <Button
-                  onClick={() => {
-                    const r = prompt('Reason for force release?');
-                    if (r) forceRelease.mutate({ id: dispute.id, reason: r });
-                  }}
+                  onClick={() => setReasonModal({ type: 'release' })}
                   variant="outline"
                   className="border-[#00d97e40] text-[#00d97e] hover:bg-[#00d97e10] text-sm"
                   disabled={forceRelease.isPending}
@@ -333,10 +365,7 @@ function DisputeCard({ dispute }) {
                   Force Release
                 </Button>
                 <Button
-                  onClick={() => {
-                    const r = prompt('Reason for cancellation?');
-                    if (r) forceCancel.mutate({ id: dispute.id, reason: r });
-                  }}
+                  onClick={() => setReasonModal({ type: 'cancel' })}
                   variant="outline"
                   className="border-[#f43f5e40] text-[#f43f5e] hover:bg-[#f43f5e10] text-sm"
                   disabled={forceCancel.isPending}

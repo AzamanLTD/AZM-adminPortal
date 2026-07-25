@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import ActionDialog from '@/components/ActionDialog';
 
 const KYC_COLORS = { VERIFIED: 'bg-emerald-500/20 text-emerald-400', PENDING: 'bg-amber-500/20 text-amber-400', REJECTED: 'bg-red-500/20 text-red-400', NONE: 'bg-slate-500/20 text-slate-400' };
 const RISK_COLORS = { STANDARD: 'bg-slate-500/20 text-slate-400', TRUSTED: 'bg-emerald-500/20 text-emerald-400', HIGH_RISK: 'bg-red-500/20 text-red-400' };
@@ -19,8 +20,22 @@ function KYCPanel({ userId }) {
   const approve = useMutation({ mutationFn: (id) => api.kyc.approve(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC approved'); }, onError: (e) => toast.error(e.message || 'Failed to approve KYC') });
   const reject = useMutation({ mutationFn: ({ id, reason }) => api.kyc.reject(id, reason), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC rejected'); }, onError: (e) => toast.error(e.message || 'Failed to reject KYC') });
 
+  const [rejectDialog, setRejectDialog] = useState(null);
+
   return (
     <div className="space-y-3">
+      <ActionDialog
+        open={!!rejectDialog}
+        title="Reject KYC Application"
+        label="Reason for rejection"
+        placeholder="Enter reason…"
+        confirmLabel="Reject"
+        variant="destructive"
+        onConfirm={(reason) => { if (rejectDialog) reject.mutate({ id: rejectDialog, reason }); setRejectDialog(null); }}
+        onCancel={() => setRejectDialog(null)}
+        isPending={reject.isPending}
+        inputType="textarea"
+      />
       {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
       {pending.map((k) => (
         <div key={k.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
@@ -32,7 +47,7 @@ function KYCPanel({ userId }) {
             <Button size="sm" onClick={() => approve.mutate(k.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
               <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { const r = prompt('Reason for rejection?'); if (r) reject.mutate({ id: k.id, reason: r }); }} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(k.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
               <ShieldX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>
@@ -46,8 +61,6 @@ function KYCPanel({ userId }) {
 export default function Users() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  // Honor ?tab= so notification deep-links (e.g. /users?tab=kyc, ?tab=vendors)
-  // land on the right tab. Falls back to 'users' for any unknown value.
   const [searchParams] = useSearchParams();
   const VALID_TABS = ['users', 'kyc', 'vendors', 'trade-accounts'];
   const initialTab = VALID_TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'users';
@@ -77,8 +90,60 @@ export default function Users() {
     onError: (e) => toast.error(e.message),
   });
 
+  // Dialog state for user actions
+  const [actionDialog, setActionDialog] = useState(null);
+  // { type: 'credit' | 'role' | 'ban' | 'reject', userId }
+
+  const handleActionConfirm = (value) => {
+    if (!actionDialog) return;
+    const { type, userId } = actionDialog;
+    if (type === 'credit') {
+      const amt = parseFloat(value);
+      if (!isNaN(amt)) creditUser.mutate({ id: userId, amount: amt });
+    } else if (type === 'role') {
+      changeRole.mutate({ id: userId, role: value.toUpperCase() });
+    } else if (type === 'ban') {
+      banUser.mutate({ id: userId, duration: value });
+    }
+    setActionDialog(null);
+  };
+
   return (
     <div className="space-y-6">
+      <ActionDialog
+        open={!!actionDialog}
+        title={
+          actionDialog?.type === 'credit' ? 'Credit User Balance' :
+          actionDialog?.type === 'role' ? 'Change User Role' :
+          actionDialog?.type === 'ban' ? 'Ban User' : ''
+        }
+        label={
+          actionDialog?.type === 'credit' ? 'USDC Amount' :
+          actionDialog?.type === 'role' ? 'Role (USER / VENDOR / ADMIN)' :
+          actionDialog?.type === 'ban' ? 'Ban Duration' : ''
+        }
+        placeholder={
+          actionDialog?.type === 'credit' ? 'e.g. 50.00' :
+          actionDialog?.type === 'role' ? 'USER, VENDOR, or ADMIN' :
+          '24h, 1w, or permanent'
+        }
+        confirmLabel={
+          actionDialog?.type === 'credit' ? 'Credit' :
+          actionDialog?.type === 'role' ? 'Update Role' :
+          actionDialog?.type === 'ban' ? 'Ban User' : 'Confirm'
+        }
+        variant={actionDialog?.type === 'ban' ? 'destructive' : 'default'}
+        inputType={actionDialog?.type === 'ban' ? 'select' : 'text'}
+        options={actionDialog?.type === 'ban' ? [
+          { value: '24h', label: '24 hours' },
+          { value: '1w', label: '1 week' },
+          { value: 'permanent', label: 'Permanent' },
+        ] : []}
+        onConfirm={handleActionConfirm}
+        onCancel={() => setActionDialog(null)}
+        isPending={creditUser.isPending || changeRole.isPending || banUser.isPending}
+      />
+
       <div>
         <h1 className="text-xl font-bold text-white">Users and KYC</h1>
         <p className="text-sm text-slate-400 mt-1">{total} total users</p>
@@ -133,13 +198,13 @@ export default function Users() {
                   <option value="HIGH_RISK">High Risk</option>
                 </select>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => { const amt = prompt('Credit USDC amount:'); if (amt && !isNaN(amt)) creditUser.mutate({ id: u.id, amount: parseFloat(amt) }); }} className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'credit', userId: u.id })} className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
                     $+
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => { const r = prompt('Change role to (USER/VENDOR/ADMIN)?'); if (r) changeRole.mutate({ id: u.id, role: r.toUpperCase() }); }} className="h-7 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-700">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'role', userId: u.id })} className="h-7 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-700">
                     Role
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => { const d = prompt('Ban duration: 24h, 1w, permanent?'); if (d) banUser.mutate({ id: u.id, duration: d }); }} className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'ban', userId: u.id })} className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10">
                     <UserX className="w-3 h-3" />
                   </Button>
                 </div>
@@ -170,25 +235,39 @@ function VendorPanel() {
   const qc = useQueryClient();
   const review = useMutation({
     mutationFn: ({ id, action, reason }) => api.vendors.review(id, action, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor'] }); toast.success('Application reviewed'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor'] }); toast.success('Vendor application reviewed'); },
     onError: (e) => toast.error(e.message || 'Failed to review application'),
   });
 
+  const [rejectDialog, setRejectDialog] = useState(null);
+
   return (
     <div className="space-y-3">
+      <ActionDialog
+        open={!!rejectDialog}
+        title="Reject Vendor Application"
+        label="Reason for rejection"
+        placeholder="Enter reason…"
+        confirmLabel="Reject"
+        variant="destructive"
+        onConfirm={(reason) => { if (rejectDialog) review.mutate({ id: rejectDialog, action: 'REJECT', reason }); setRejectDialog(null); }}
+        onCancel={() => setRejectDialog(null)}
+        isPending={review.isPending}
+        inputType="textarea"
+      />
       {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
       {apps.map((a) => (
-        <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={a.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-white">{a.userName}</p>
-            <p className="text-xs text-slate-400">{a.email} · Applied {new Date(a.createdAt).toLocaleDateString()}</p>
+            <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
+            <p className="text-xs text-slate-400 mt-0.5">Applied {new Date(a.appliedAt || a.createdAt).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => review.mutate({ id: a.id, action: 'APPROVE', reason: '' })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+            <Button size="sm" onClick={() => review.mutate({ id: a.id, action: 'APPROVE', reason: 'Approved' })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
               <UserCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { const r = prompt('Reason for rejection?'); if (r) review.mutate({ id: a.id, action: 'REJECT', reason: r }); }} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
-              Reject
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+              <UserX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>
         </div>
@@ -198,58 +277,55 @@ function VendorPanel() {
   );
 }
 
-
 function TradeAccountsPanel() {
-  const { data, isLoading } = useQuery({ queryKey: ['admin', 'trade-accounts'], queryFn: () => api.tradeAccounts.pending() });
-  const accounts = data?.accounts || [];
+  const { data, isLoading } = useQuery({ queryKey: ['admin', 'trade-accounts'], queryFn: () => api.users.tradeAccounts() });
+  const accounts = data?.accounts || data || [];
   const qc = useQueryClient();
-  const approve = useMutation({
-    mutationFn: (id) => api.tradeAccounts.approve(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account approved — vendor notified'); },
-    onError: (e) => toast.error(e.message || 'Failed to approve trade account'),
-  });
   const reject = useMutation({
-    mutationFn: ({ id, reason }) => api.tradeAccounts.reject(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account rejected — vendor notified'); },
-    onError: (e) => toast.error(e.message || 'Failed to reject trade account'),
+    mutationFn: ({ id, reason }) => api.users.reviewTradeAccount(id, 'REJECT', reason),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account rejected'); },
+    onError: (e) => toast.error(e.message || 'Failed to reject'),
   });
+  const approve = useMutation({
+    mutationFn: ({ id }) => api.users.reviewTradeAccount(id, 'APPROVE'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account approved'); },
+    onError: (e) => toast.error(e.message || 'Failed to approve'),
+  });
+
+  const [rejectDialog, setRejectDialog] = useState(null);
 
   return (
     <div className="space-y-3">
+      <ActionDialog
+        open={!!rejectDialog}
+        title="Reject Trade Account"
+        label="Reason for rejection"
+        placeholder="Enter reason…"
+        confirmLabel="Reject"
+        variant="destructive"
+        onConfirm={(reason) => { if (rejectDialog) reject.mutate({ id: rejectDialog, reason }); setRejectDialog(null); }}
+        onCancel={() => setRejectDialog(null)}
+        isPending={reject.isPending}
+        inputType="textarea"
+      />
       {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
       {accounts.map((a) => (
-        <div key={a.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white">{a.user?.username || 'Unknown'}</p>
-              <p className="text-xs text-slate-400">{a.methodType} · Submitted {new Date(a.createdAt).toLocaleDateString()}</p>
-            </div>
-            <Badge className="bg-amber-500/20 text-amber-400 border-0 text-xs">PENDING</Badge>
+        <div key={a.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
+            <p className="text-xs text-slate-400 mt-0.5">Status: {a.status} · Tier: {a.tier || 'N/A'}</p>
           </div>
-          <div className="bg-slate-800 rounded-lg p-3 text-xs space-y-1">
-            {a.accountDetails && Object.entries(a.accountDetails).map(([key, val]) => (
-              <div key={key} className="flex justify-between">
-                <span className="text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
-                <span className="text-white">{String(val)}</span>
-              </div>
-            ))}
-          </div>
-          {a.verificationScreenshot && (
-            <a href={a.verificationScreenshot} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:underline">
-              View verification screenshot →
-            </a>
-          )}
-          <div className="flex gap-2 pt-1">
-            <Button size="sm" onClick={() => approve.mutate(a.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
-              Approve
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => approve.mutate({ id: a.id })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+              <UserCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { const r = prompt('Reason for rejection?'); if (r) reject.mutate({ id: a.id, reason: r }); }} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
-              Reject
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+              <UserX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>
         </div>
       ))}
-      {!isLoading && accounts.length === 0 && <p className="text-slate-500 text-sm text-center py-6">No pending trade accounts to review</p>}
+      {!isLoading && accounts.length === 0 && <p className="text-slate-500 text-sm text-center py-6">No pending trade accounts</p>}
     </div>
   );
 }
