@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   QrCode, Download, Link2, RefreshCw, Check, Printer,
   Monitor, Shirt, ImageIcon, AlertCircle, Clock, ExternalLink,
-  ChevronDown, Loader2, Sparkles, Globe,
+  ChevronDown, Loader2, Sparkles, Globe, BarChart3, Activity, Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +58,17 @@ async function patchDestination({ url, label }) {
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Update failed');
   return data;
+}
+
+async function fetchAnalytics() {
+  const token = localStorage.getItem('admin_token') || '';
+  const res = await fetch(`${API_BASE}/api/qr/analytics`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+  if (!res.ok) throw new Error('Failed to load QR analytics');
+  return res.json();
 }
 
 // ── QR canvas renderer ────────────────────────────────────────────────────────
@@ -104,6 +115,12 @@ export default function QrForge() {
   const { data: dest, isLoading: destLoading } = useQuery({
     queryKey: ['qr-destination'],
     queryFn: fetchDestination,
+    staleTime: 30_000,
+  });
+
+  const { data: analytics, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['qr-analytics'],
+    queryFn: fetchAnalytics,
     staleTime: 30_000,
   });
 
@@ -453,6 +470,196 @@ export default function QrForge() {
             <p className="text-xs text-az-text-secondary leading-relaxed">
               <strong className="text-blue-300">No reprinting ever needed.</strong> When you change the destination above, every already-printed QR code updates instantly via the permanent relay URL.
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* QR Analytics Section */}
+      <div className="space-y-6 pt-4 border-t border-az-border">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <Activity className="w-5 h-5 text-yellow-400" />
+              QR Scan Analytics
+            </h2>
+            <p className="text-xs text-az-text-secondary mt-0.5">
+              Real-time tracking and metrics for visitors scanning your QR codes.
+            </p>
+          </div>
+          {analyticsLoading && <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />}
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Stat Card 1: Total Scans */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+              <span>Total Scans</span>
+              <BarChart3 className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {analyticsLoading ? '...' : (analytics?.totalScans ?? 0)}
+            </div>
+            <p className="text-xs text-az-text-muted">All-time redirects</p>
+          </div>
+
+          {/* Stat Card 2: Recent Scans */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+              <span>Recent Scans (30d)</span>
+              <Activity className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {analyticsLoading ? '...' : (analytics?.recentScans ?? 0)}
+            </div>
+            <p className="text-xs text-az-text-muted">Last 30 days active</p>
+          </div>
+
+          {/* Stat Card 3: Unique Visitors */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+              <span>Unique Visitors</span>
+              <Users className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {analyticsLoading ? '...' : (analytics?.uniqueVisitors ?? 0)}
+            </div>
+            <p className="text-xs text-az-text-muted">Unique IPs (30d)</p>
+          </div>
+
+          {/* Stat Card 4: Avg/Day */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+              <span>Avg/Day</span>
+              <Clock className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="text-2xl font-bold text-white">
+              {analyticsLoading ? '...' : analytics ? (analytics.recentScans / 30).toFixed(1) : '0.0'}
+            </div>
+            <p className="text-xs text-az-text-muted">Scans per day average</p>
+          </div>
+        </div>
+
+        {/* Charts & Tables Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Daily activity chart */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-yellow-400" />
+                Daily Scan Activity (Last 30 Days)
+              </h3>
+              <span className="text-xs text-az-text-muted">
+                {analytics?.daily?.length || 0} active days
+              </span>
+            </div>
+
+            {analyticsLoading ? (
+              <div className="h-48 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-yellow-400 animate-spin" />
+              </div>
+            ) : !analytics?.daily || analytics.daily.length === 0 ? (
+              <div className="h-48 border border-dashed border-az-border rounded-lg flex flex-col items-center justify-center text-az-text-muted">
+                <Activity className="w-8 h-8 text-az-text-muted/40 mb-2 animate-pulse" />
+                <span className="text-xs">No scan activity recorded yet.</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {/* Chart container */}
+                <div className="h-48 flex items-end gap-1.5 pt-4 px-2">
+                  {analytics.daily.map((d, index) => {
+                    const maxCount = Math.max(...analytics.daily.map(x => x.count), 1);
+                    const heightPercent = (d.count / maxCount) * 100;
+                    const dateObj = new Date(d.date + 'T00:00:00');
+                    const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+                    return (
+                      <div
+                        key={index}
+                        className="flex-1 group relative flex flex-col items-center h-full justify-end"
+                      >
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-30">
+                          <div className="bg-az-black text-white text-[10px] font-semibold py-1 px-2 rounded border border-az-border shadow-xl whitespace-nowrap">
+                            <span className="text-yellow-400">{d.count} scans</span> • {formattedDate}
+                          </div>
+                          <div className="w-1.5 h-1.5 bg-az-black border-r border-b border-az-border transform rotate-45 -mt-1" />
+                        </div>
+
+                        {/* Bar */}
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className="w-full bg-gradient-to-t from-yellow-500/80 to-yellow-400 hover:from-yellow-400 hover:to-yellow-300 rounded-t-sm transition-all duration-200 cursor-pointer"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* X-Axis labels: show first and last dates */}
+                <div className="flex justify-between text-[10px] text-az-text-muted px-2 font-mono">
+                  <span>{new Date(analytics.daily[0].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
+                  <span>Today</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Recent Scans Table */}
+          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Activity className="w-4 h-4 text-emerald-400" />
+                Recent QR Scans (Last 10)
+              </h3>
+            </div>
+
+            {analyticsLoading ? (
+              <div className="h-48 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+              </div>
+            ) : !analytics?.lastScans || analytics.lastScans.length === 0 ? (
+              <div className="h-48 border border-dashed border-az-border rounded-lg flex flex-col items-center justify-center text-az-text-muted">
+                <span className="text-xs">No scan history available.</span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-az-border text-az-text-secondary font-medium">
+                      <th className="py-2.5 px-3">Date/Time</th>
+                      <th className="py-2.5 px-3">IP Address</th>
+                      <th className="py-2.5 px-3">User Agent</th>
+                      <th className="py-2.5 px-3">Referrer</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-az-border/40 text-az-text-secondary">
+                    {analytics.lastScans.map((scan) => {
+                      const dateStr = new Date(scan.createdAt).toLocaleString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                      });
+                      return (
+                        <tr key={scan.id} className="hover:bg-az-card/40 transition-colors">
+                          <td className="py-2.5 px-3 text-white whitespace-nowrap font-mono">{dateStr}</td>
+                          <td className="py-2.5 px-3 font-mono text-az-text-primary">{scan.ipAddress || 'Unknown'}</td>
+                          <td className="py-2.5 px-3 truncate max-w-[200px]" title={scan.userAgent}>
+                            {scan.userAgent ? (scan.userAgent.length > 40 ? scan.userAgent.slice(0, 40) + '...' : scan.userAgent) : 'Unknown'}
+                          </td>
+                          <td className="py-2.5 px-3 truncate max-w-[150px]" title={scan.referrer}>
+                            <span className={scan.referrer ? 'text-blue-400 font-mono' : 'text-az-text-muted italic'}>
+                              {scan.referrer || 'Direct'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       </div>
