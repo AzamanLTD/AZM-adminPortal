@@ -28,6 +28,15 @@ function SettingRow({ label, description, value, onChange, min = 0, max = 100, u
         />
         <span className="text-sm text-az-text-secondary">{unit}</span>
       </div>
+      <ConfirmDialog
+        open={!!removeKey}
+        title="Remove Payout Method"
+        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={confirmRemoveMethod}
+        onCancel={() => setRemoveKey(null)}
+      />
     </div>
   );
 }
@@ -110,6 +119,15 @@ function P2PCalculator({ settings, rate }) {
           <p className="text-xs text-az-text-muted">GHS {(totalPlatform * rate).toFixed(2)}</p>
         </div>
       </div>
+      <ConfirmDialog
+        open={!!removeKey}
+        title="Remove Payout Method"
+        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={confirmRemoveMethod}
+        onCancel={() => setRemoveKey(null)}
+      />
     </div>
   );
 }
@@ -171,6 +189,15 @@ function WithdrawalCalculator({ settings, rate }) {
       {type === 'crypto' && cryptoPlatform === 0 && (
         <p className="text-xs text-amber-400">Platform crypto fee is 0% — you only earn gas. Set a platform fee below if desired.</p>
       )}
+      <ConfirmDialog
+        open={!!removeKey}
+        title="Remove Payout Method"
+        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={confirmRemoveMethod}
+        onCancel={() => setRemoveKey(null)}
+      />
     </div>
   );
 }
@@ -345,6 +372,15 @@ export default function FeeEngine() {
 
       {/* Payment Methods Management */}
       <PaymentMethodsManager settings={serverSettings} onSave={(data) => updateSettings(data, { onSuccess: () => toast.success('Payment methods updated'), onError: (e) => toast.error(e.message) })} />
+      <ConfirmDialog
+        open={!!removeKey}
+        title="Remove Payout Method"
+        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={confirmRemoveMethod}
+        onCancel={() => setRemoveKey(null)}
+      />
     </div>
   );
 }
@@ -354,6 +390,8 @@ function PaymentMethodsManager({ settings, onSave }) {
   const [methods, setMethods] = useState([]);
   const [fees, setFees] = useState({});
   const [editingMethod, setEditingMethod] = useState(null);
+  const [removeKey, setRemoveKey] = useState(null);
+
   const [newMethod, setNewMethod] = useState(null);
 
   useEffect(() => {
@@ -386,13 +424,18 @@ function PaymentMethodsManager({ settings, onSave }) {
   }
 
   function handleRemoveMethod(key) {
-    if (!confirm(`Remove ${key}? Vendors with this method will need to update their accounts.`)) return;
+    setRemoveKey(key);
+  }
+
+  function confirmRemoveMethod() {
+    const key = removeKey;
     const updated = methods.filter(m => m.key !== key);
     const updatedFees = { ...fees };
     delete updatedFees[key];
     setMethods(updated);
     setFees(updatedFees);
     saveAll(updated, updatedFees);
+    setRemoveKey(null);
   }
 
   function handleAddMethod() {
@@ -494,6 +537,15 @@ function PaymentMethodsManager({ settings, onSave }) {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={!!removeKey}
+        title="Remove Payout Method"
+        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={confirmRemoveMethod}
+        onCancel={() => setRemoveKey(null)}
+      />
     </div>
   );
 }

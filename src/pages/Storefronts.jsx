@@ -6,10 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import StatCard from '@/components/admin/StatCard';
 import { Store, Eye, EyeOff, ChevronLeft, ChevronRight, Lock, Unlock, History, Image as ImageIcon, X, RotateCcw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function Storefronts() {
   const [page, setPage] = useState(1);
   const [revertTarget, setRevertTarget] = useState(null); // { businessProfileId, businessName }
+  const [disableTarget, setDisableTarget] = useState(null); // { id, name }
   const [mediaTarget, setMediaTarget] = useState(null);  // businessProfileId
   const queryClient = useQueryClient();
 
@@ -152,11 +154,7 @@ export default function Storefronts() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => {
-                        if (confirm(`Disable storefront for ${biz?.businessName}?`)) {
-                          disableMutation.mutate(biz.id);
-                        }
-                      }}
+                      onClick={() => setDisableTarget({ id: biz.id, name: biz?.businessName })}
                       disabled={disableMutation.isPending}
                     >
                       <Lock className="w-4 h-4" />
@@ -251,6 +249,18 @@ export default function Storefronts() {
           isPending={revertMutation.isPending}
         />
       )}
+      <ConfirmDialog
+        open={!!disableTarget}
+        title="Disable Storefront"
+        message={disableTarget ? `Disable storefront for ${disableTarget.name}?` : ''}
+        confirmLabel="Disable"
+        variant="destructive"
+        onConfirm={() => {
+          disableMutation.mutate(disableTarget.id);
+          setDisableTarget(null);
+        }}
+        onCancel={() => setDisableTarget(null)}
+      />
     </div>
   );
 }
@@ -259,6 +269,7 @@ export default function Storefronts() {
 function RevertModal({ target, onClose, onRevert, isPending }) {
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmRevert, setConfirmRevert] = useState(null); // { version, versionId, businessName }
 
   // Fetch the storefront render endpoint to get layout data
   // Then we can show the admin what they're reverting to
@@ -317,11 +328,7 @@ function RevertModal({ target, onClose, onRevert, isPending }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    if (confirm(`Force-revert ${target.businessName} to ${v.version}?`)) {
-                      onRevert(v.id);
-                    }
-                  }}
+                  onClick={() => setConfirmRevert({ version: v.version, versionId: v.id, businessName: target.businessName })}
                   disabled={isPending}
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -332,6 +339,18 @@ function RevertModal({ target, onClose, onRevert, isPending }) {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!confirmRevert}
+        title="Force Revert Version"
+        message={confirmRevert ? `Force-revert ${confirmRevert.businessName} to ${confirmRevert.version}?` : ''}
+        confirmLabel="Revert"
+        variant="destructive"
+        onConfirm={() => {
+          onRevert(confirmRevert.versionId);
+          setConfirmRevert(null);
+        }}
+        onCancel={() => setConfirmRevert(null)}
+      />
     </div>
   );
 }
