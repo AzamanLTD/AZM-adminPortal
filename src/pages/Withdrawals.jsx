@@ -1,89 +1,577 @@
-import { useState } from 'react';
-import { useWithdrawals } from '@/lib/useAdminData';
+/**
+ * Withdrawals — Enhanced approval queue with risk scoring & batch operations
+ *
+ * Features:
+ * - Risk score per withdrawal (KYC, ban status, strike count, amount, trade history)
+ * - Batch select + approve-all for low-risk withdrawals
+ * - Detail drawer with full user context (KYC, strikes, trade history)
+ * - Summary stats bar (total pending, total value, by type)
+ * - Filter by type (ALL/FIAT/CRYPTO) and risk level
+ * - Sort by risk (highest first) by default
+ *
+ * Reference: Stripe payout review, Coinbase withdrawal review, Wise compliance queue
+ */
+import { useState, useMemo } from 'react';
+import { useWithdrawals, useStats } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import {
+  CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
+  ShieldCheck, ShieldAlert, ChevronRight, X, Clock,
+  TrendingUp, User, Zap, Filter, CheckSquare, Square
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { useStats } from '@/lib/useAdminData';
 import ActionDialog from '@/components/ActionDialog';
 
-const TYPE_COLORS = { FIAT: 'bg-blue-500/20 text-blue-400', CRYPTO: 'bg-purple-500/20 text-purple-400' };
+const TYPE_COLORS = {
+  FIAT: 'bg-blue-500/20 text-blue-400',
+  CRYPTO: 'bg-purple-500/20 text-purple-400',
+};
 
+/* ── Risk scoring engine ───────────────────────────────────────────────── */
+function computeRiskScore(w) {
+  let score = 0;
+  const factors = [];
+
+  // KYC status
+  const kyc = w.user?.kycStatus || 'UNVERIFIED';
+  if (kyc !== 'VERIFIED') {
+    score += 30;
+    factors.push({ label: 'KYC not verified', weight: 30, level: 'high' });
+  }
+
+  // Ban status
+  if (w.user?.banStatus === 'BANNED') {
+    score += 50;
+    factors.push({ label: 'User is banned', weight: 50, level: 'critical' });
+  }
+
+  // Strike count
+  const strikes = w.user?.strikeCount || 0;
+  if (strikes >= 3) {
+    score += 25;
+    factors.push({ label: `${strikes} strikes on record`, weight: 25, level: 'high' });
+  } else if (strikes >= 1) {
+    score += 10;
+    factors.push({ label: `${strikes} strike${strikes > 1 ? 's' : ''}`, weight: 10, level: 'medium' });
+  }
+
+  // Amount-based risk (>$1000 is higher risk)
+  const amount = Number(w.amount) || 0;
+  if (amount >= 5000) {
+    score += 20;
+    factors.push({ label: 'Large withdrawal ($5K+)', weight: 20, level: 'high' });
+  } else if (amount >= 1000) {
+    score += 10;
+    factors.push({ label: 'Medium withdrawal ($1K+)', weight: 10, level: 'medium' });
+  }
+
+  // Trade history (fewer trades = less established = higher risk)
+  const trades = w.user?.tradesCompleted || 0;
+  if (trades < 5) {
+    score += 15;
+    factors.push({ label: 'Low trade history (<5 completed)', weight: 15, level: 'medium' });
+  }
+
+  // Time waiting (longer = more pressure to process)
+  const waitHours = w.requestedAt
+    ? (Date.now() - new Date(w.requestedAt).getTime()) / 36e5
+    : 0;
+  if (waitHours > 24) {
+    score -= 5; // reduce risk slightly — they've been waiting, likely legitimate
+    factors.push({ label: `Waiting ${Math.floor(waitHours)}h (SLA pressure)`, weight: -5, level: 'info' });
+  }
+
+  score = Math.max(0, Math.min(100, score));
+
+  const level = score >= 40 ? 'HIGH' : score >= 20 ? 'MEDIUM' : 'LOW';
+
+  return { score, level, factors };
+}
+
+const RISK_STYLES = {
+  HIGH: { badge: 'bg-red-500/20 text-red-400 border-red-500/30', icon: ShieldAlert, label: 'High Risk' },
+  MEDIUM: { badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30', icon: AlertTriangle, label: 'Medium Risk' },
+  LOW: { badge: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', icon: ShieldCheck, label: 'Low Risk' },
+};
+
+/* ── Detail drawer ──────────────────────────────────────────────────────── */
+function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, onReject, approvePending, rejectPending }) {
+  if (!withdrawal) return null;
+  const u = withdrawal.user || {};
+  const RiskIcon = risk.level === 'HIGH' ? ShieldAlert : risk.level === 'MEDIUM' ? AlertTriangle : ShieldCheck;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-md h-full bg-az-surface border-l border-az-border overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 bg-az-surface border-b border-az-border px-5 py-4 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${RISK_STYLES[risk.level].badge}`}>
+              <RiskIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white">Withdrawal Review</h2>
+              <p className="text-xs text-az-text-muted">Risk score: {risk.score}/100 · {RISK_STYLES[risk.level].label}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-az-card text-az-text-muted">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 space-y-5">
+          {/* Amount */}
+          <div className="bg-az-card border border-az-border rounded-xl p-4">
+            <p className="text-xs text-az-text-muted uppercase tracking-wide mb-1">Amount</p>
+            <p className="text-2xl font-bold text-emerald-400">
+              ${Number(withdrawal.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {withdrawal.currency}
+            </p>
+            {withdrawal.type === 'FIAT' && (
+              <p className="text-sm text-az-text-secondary mt-1">≈ ₵{(Number(withdrawal.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+            )}
+          </div>
+
+          {/* User info */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">User</h3>
+            <div className="bg-az-card border border-az-border rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Username</span>
+                <span className="text-sm font-medium text-white">{u.username || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Email</span>
+                <span className="text-sm font-medium text-white truncate ml-2">{u.email || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">KYC Status</span>
+                <Badge className={`border-0 text-xs ${u.kycStatus === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                  {u.kycStatus || 'UNVERIFIED'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Ban Status</span>
+                <Badge className={`border-0 text-xs ${u.banStatus === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {u.banStatus || 'ACTIVE'}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Strikes</span>
+                <span className={`text-sm font-medium ${u.strikeCount >= 3 ? 'text-red-400' : u.strikeCount >= 1 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                  {u.strikeCount || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Completed Trades</span>
+                <span className="text-sm font-medium text-white">{u.tradesCompleted || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Risk factors */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Risk Factors</h3>
+            <div className="space-y-2">
+              {risk.factors.length === 0 && (
+                <div className="text-sm text-emerald-400 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4" /> No risk factors detected
+                </div>
+              )}
+              {risk.factors.map((f, i) => (
+                <div key={i} className={`flex items-center justify-between p-3 rounded-lg border ${
+                  f.level === 'critical' ? 'bg-red-500/5 border-red-500/20' :
+                  f.level === 'high' ? 'bg-red-500/5 border-red-500/15' :
+                  f.level === 'medium' ? 'bg-amber-500/5 border-amber-500/15' :
+                  'bg-blue-500/5 border-blue-500/15'
+                }`}>
+                  <span className={`text-sm ${
+                    f.level === 'critical' || f.level === 'high' ? 'text-red-400' :
+                    f.level === 'medium' ? 'text-amber-400' : 'text-blue-400'
+                  }`}>{f.label}</span>
+                  <span className="text-xs font-mono text-az-text-muted">{f.weight > 0 ? '+' : ''}{f.weight}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Payment details */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Payment Details</h3>
+            <div className="bg-az-card border border-az-border rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Type</span>
+                <Badge className={`border-0 text-xs ${TYPE_COLORS[withdrawal.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>
+                  {withdrawal.type}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Method</span>
+                <span className="text-sm font-medium text-white">{withdrawal.method || withdrawal.wallet || '—'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-az-text-muted">Requested</span>
+                <span className="text-sm text-az-text-secondary">
+                  {withdrawal.requestedAt ? new Date(withdrawal.requestedAt).toLocaleString() : '—'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <Button
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+              disabled={approvePending}
+              onClick={() => onApprove(withdrawal.id)}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {approvePending ? 'Processing…' : 'Approve'}
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10"
+              disabled={rejectPending}
+              onClick={() => onReject(withdrawal)}
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main page ─────────────────────────────────────────────────────────── */
 export default function Withdrawals() {
-  const { data: withdrawals = [], isLoading, refetch } = useWithdrawals();
+  const { data: rawWithdrawals = [], isLoading, refetch } = useWithdrawals();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
   const qc = useQueryClient();
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [detailTarget, setDetailTarget] = useState(null);
+  const [selected, setSelected] = useState(new Set());
+  const [filterType, setFilterType] = useState('ALL');
+  const [filterRisk, setFilterRisk] = useState('ALL');
+  const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
   const approve = useMutation({
     mutationFn: (id) => api.withdrawals.approve(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] }); toast.success('Withdrawal approved'); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+      toast.success('Withdrawal approved');
+      setDetailTarget(null);
+    },
     onError: (e) => toast.error(e.message || 'Failed to approve withdrawal'),
   });
+
   const reject = useMutation({
     mutationFn: ({ id, reason }) => api.withdrawals.reject(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] }); toast.success('Withdrawal rejected'); setRejectTarget(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+      toast.success('Withdrawal rejected');
+      setRejectTarget(null);
+      setDetailTarget(null);
+    },
     onError: (e) => toast.error(e.message || 'Failed to reject withdrawal'),
   });
 
+  // Compute risk scores for all withdrawals
+  const withdrawals = useMemo(() => {
+    return rawWithdrawals.map(w => ({
+      ...w,
+      risk: computeRiskScore(w),
+    }));
+  }, [rawWithdrawals]);
+
+  // Filter + sort (highest risk first)
+  const filtered = useMemo(() => {
+    let result = withdrawals;
+    if (filterType !== 'ALL') result = result.filter(w => w.type === filterType);
+    if (filterRisk !== 'ALL') result = result.filter(w => w.risk.level === filterRisk);
+    return result.sort((a, b) => b.risk.score - a.risk.score);
+  }, [withdrawals, filterType, filterRisk]);
+
+  // Summary stats
+  const summary = useMemo(() => {
+    const total = filtered.length;
+    const totalValue = filtered.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
+    const highRisk = filtered.filter(w => w.risk.level === 'HIGH').length;
+    const fiatCount = filtered.filter(w => w.type === 'FIAT').length;
+    const cryptoCount = filtered.filter(w => w.type === 'CRYPTO').length;
+    return { total, totalValue, highRisk, fiatCount, cryptoCount };
+  }, [filtered]);
+
+  // Batch selection
+  const toggleSelect = (id) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllLowRisk = () => {
+    const lowRiskIds = filtered.filter(w => w.risk.level === 'LOW').map(w => w.id);
+    setSelected(new Set(lowRiskIds));
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  // Batch approve (sequential to avoid overwhelming the API)
+  const batchApprove = useMutation({
+    mutationFn: async (ids) => {
+      const results = [];
+      for (const id of ids) {
+        try {
+          await api.withdrawals.approve(id);
+          results.push({ id, ok: true });
+        } catch (e) {
+          results.push({ id, ok: false, error: e.message });
+        }
+      }
+      return results;
+    },
+    onSuccess: (results) => {
+      const succeeded = results.filter(r => r.ok).length;
+      const failed = results.filter(r => !r.ok).length;
+      qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+      if (failed === 0) {
+        toast.success(`Batch approved ${succeeded} withdrawals`);
+      } else {
+        toast.warning(`Approved ${succeeded}, ${failed} failed`);
+      }
+      clearSelection();
+      setShowBatchConfirm(false);
+    },
+    onError: (e) => toast.error(e.message || 'Batch approval failed'),
+  });
+
+  const selectedArray = Array.from(selected);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-white">Pending Withdrawals</h1>
-          <p className="text-sm text-az-text-secondary mt-1">{withdrawals.length} awaiting approval</p>
+          <p className="text-sm text-az-text-secondary mt-1">
+            {summary.total} pending · ${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} total value
+            {summary.highRisk > 0 && <span className="text-red-400 ml-2">· {summary.highRisk} high-risk</span>}
+          </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
-          <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+            <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
-        {withdrawals.map((w) => (
-          <div key={w.id} className="bg-az-surface border border-az-border rounded-xl p-4 flex items-center gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-white">{w.userName}</span>
-                <Badge className={`${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-az-text-secondary'} border-0 text-xs`}>{w.type}</Badge>
-                <span className="text-sm font-bold text-emerald-400">${w.amount} {w.currency}</span>
-                {w.type === 'FIAT' && <span className="text-xs text-az-text-secondary">GHS {(w.amount * rate).toFixed(0)}</span>}
-              </div>
-              <div className="flex gap-3 mt-1 text-xs text-az-text-muted">
-                <span>{w.method || w.wallet}</span>
-                <span>Requested: {new Date(w.requestedAt).toLocaleString()}</span>
-              </div>
-            </div>
-            <div className="flex gap-2 flex-shrink-0">
-              <Button
-                size="sm"
-                onClick={() => approve.mutate(w.id)}
-                disabled={approve.isPending}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white h-8"
-              >
-                <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setRejectTarget(w)}
-                className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8"
-              >
-                <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
-              </Button>
-            </div>
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Wallet className="w-3.5 h-3.5 text-blue-400" />
+            <span className="text-xs text-az-text-muted uppercase">Total Pending</span>
           </div>
-        ))}
-        {!isLoading && withdrawals.length === 0 && (
+          <p className="text-xl font-bold text-white">{summary.total}</p>
+        </div>
+        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-xs text-az-text-muted uppercase">Total Value</span>
+          </div>
+          <p className="text-xl font-bold text-emerald-400">${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        </div>
+        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+            <span className="text-xs text-az-text-muted uppercase">High Risk</span>
+          </div>
+          <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.highRisk}</p>
+        </div>
+        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <User className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-xs text-az-text-muted uppercase">FIAT / Crypto</span>
+          </div>
+          <p className="text-xl font-bold text-white">{summary.fiatCount} <span className="text-az-text-muted text-sm">/</span> {summary.cryptoCount}</p>
+        </div>
+      </div>
+
+      {/* Filters + batch bar */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          {/* Type filter */}
+          <div className="flex items-center gap-1 bg-az-surface border border-az-border rounded-lg p-0.5">
+            {['ALL', 'FIAT', 'CRYPTO'].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  filterType === type ? 'bg-az-card text-white' : 'text-az-text-muted hover:text-az-text-secondary'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          {/* Risk filter */}
+          <div className="flex items-center gap-1 bg-az-surface border border-az-border rounded-lg p-0.5">
+            {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(risk => (
+              <button
+                key={risk}
+                onClick={() => setFilterRisk(risk)}
+                className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  filterRisk === risk
+                    ? risk === 'HIGH' ? 'bg-red-500/20 text-red-400'
+                      : risk === 'MEDIUM' ? 'bg-amber-500/20 text-amber-400'
+                      : risk === 'LOW' ? 'bg-emerald-500/20 text-emerald-400'
+                      : 'bg-az-card text-white'
+                    : 'text-az-text-muted hover:text-az-text-secondary'
+                }`}
+              >
+                {risk}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Batch actions */}
+        {selectedArray.length > 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-az-text-secondary">{selectedArray.length} selected</span>
+            <button onClick={clearSelection} className="text-xs text-az-text-muted hover:text-az-text-secondary">Clear</button>
+            <Button
+              size="sm"
+              onClick={() => setShowBatchConfirm(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white h-8"
+            >
+              <CheckSquare className="w-3.5 h-3.5 mr-1.5" />
+              Batch Approve ({selectedArray.length})
+            </Button>
+          </div>
+        ) : (
+          <button
+            onClick={selectAllLowRisk}
+            className="text-xs text-az-text-muted hover:text-emerald-400 transition-colors"
+          >
+            Select all low-risk
+          </button>
+        )}
+      </div>
+
+      {/* Withdrawal list */}
+      <div className="space-y-2">
+        {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
+        {filtered.map((w) => {
+          const riskStyle = RISK_STYLES[w.risk.level];
+          const RiskIcon = riskStyle.icon;
+          const isSelected = selected.has(w.id);
+
+          return (
+            <div
+              key={w.id}
+              className={`bg-az-surface border rounded-xl p-4 flex items-center gap-3 transition-colors ${
+                isSelected ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-az-border'
+              }`}
+            >
+              {/* Checkbox */}
+              <button
+                onClick={() => toggleSelect(w.id)}
+                className="shrink-0 p-1"
+                title={isSelected ? 'Deselect' : 'Select for batch'}
+              >
+                {isSelected
+                  ? <CheckSquare className="w-4 h-4 text-emerald-400" />
+                  : <Square className="w-4 h-4 text-az-text-muted hover:text-az-text-secondary" />
+                }
+              </button>
+
+              {/* Risk badge */}
+              <div className={`shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border ${riskStyle.badge}`}>
+                <RiskIcon className="w-4 h-4" />
+              </div>
+
+              {/* Main info */}
+              <div
+                className="flex-1 min-w-0 cursor-pointer"
+                onClick={() => setDetailTarget(w)}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-white">{w.userName || w.user?.username || 'Unknown'}</span>
+                  <Badge className={`border-0 text-xs ${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>{w.type}</Badge>
+                  <span className="text-sm font-bold text-emerald-400">
+                    ${Number(w.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {w.currency}
+                  </span>
+                  {w.type === 'FIAT' && (
+                    <span className="text-xs text-az-text-muted">
+                      ₵{(Number(w.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </span>
+                  )}
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${riskStyle.badge} font-medium`}>
+                    {w.risk.score}
+                  </span>
+                </div>
+                <div className="flex gap-3 mt-1 text-xs text-az-text-muted">
+                  <span>{w.method || w.wallet || '—'}</span>
+                  <span>{w.requestedAt ? new Date(w.requestedAt).toLocaleString() : ''}</span>
+                  {w.user?.kycStatus !== 'VERIFIED' && (
+                    <span className="text-amber-400">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
+                  )}
+                  {w.user?.strikeCount > 0 && (
+                    <span className="text-red-400">{w.user.strikeCount} strike{w.user.strikeCount > 1 ? 's' : ''}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => setDetailTarget(w)}
+                  className="p-2 rounded-lg hover:bg-az-card text-az-text-muted hover:text-white transition-colors"
+                  title="View details"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+                <Button
+                  size="sm"
+                  onClick={() => approve.mutate(w.id)}
+                  disabled={approve.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white h-8"
+                >
+                  <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setRejectTarget(w)}
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8"
+                >
+                  <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
+                </Button>
+              </div>
+            </div>
+          );
+        })}
+        {!isLoading && filtered.length === 0 && (
           <div className="text-center py-12 text-az-text-muted text-sm bg-az-surface border border-az-border rounded-xl">
-            No pending withdrawals — all clear
+            {withdrawals.length === 0 ? 'No pending withdrawals — all clear' : 'No withdrawals match the current filters'}
           </div>
         )}
       </div>
 
+      {/* Reject dialog */}
       <ActionDialog
         open={!!rejectTarget}
         title="Reject Withdrawal"
@@ -96,6 +584,56 @@ export default function Withdrawals() {
         onConfirm={(reason) => reject.mutate({ id: rejectTarget.id, reason })}
         onCancel={() => setRejectTarget(null)}
       />
+
+      {/* Batch confirm dialog */}
+      {showBatchConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowBatchConfirm(false)} />
+          <div className="relative bg-az-surface border border-az-border rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                <CheckSquare className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-white">Batch Approve {selectedArray.length} Withdrawals</h2>
+                <p className="text-sm text-az-text-muted mt-1">
+                  This will approve all selected withdrawals sequentially. Each will be processed by the payout worker.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                className="flex-1 border border-az-border text-az-text-secondary hover:text-white hover:bg-az-card"
+                onClick={() => setShowBatchConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+                disabled={batchApprove.isPending}
+                onClick={() => batchApprove.mutate(selectedArray)}
+              >
+                {batchApprove.isPending ? `Processing… (${selectedArray.length})` : `Approve All (${selectedArray.length})`}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detail drawer */}
+      {detailTarget && (
+        <WithdrawalDetailDrawer
+          withdrawal={detailTarget}
+          risk={detailTarget.risk}
+          rate={rate}
+          onClose={() => setDetailTarget(null)}
+          onApprove={(id) => approve.mutate(id)}
+          onReject={(w) => setRejectTarget(w)}
+          approvePending={approve.isPending}
+          rejectPending={reject.isPending}
+        />
+      )}
     </div>
   );
 }
