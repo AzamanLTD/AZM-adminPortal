@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import ErrorState from '@/components/ErrorState';
-import { Settings, Smartphone, Zap, Bot, DollarSign } from 'lucide-react';
+import { Settings, Smartphone, Zap, Bot, DollarSign, Shield, QrCode, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function Config() {
   const qc = useQueryClient();
@@ -19,6 +19,30 @@ export default function Config() {
   const [vgForm, setVgForm] = useState({});
   const [poForm, setPoForm] = useState({});
   const [gsForm, setGsForm] = useState({});
+
+  // 2FA state
+  const { data: twoFAStatus, refetch: refetch2FA } = useQuery({ queryKey: ['2fa', 'status'], queryFn: () => api.twoFactor.status().catch(() => ({ enabled: false, hasSecret: false })) });
+  const [twoFASetup, setTwoFASetup] = useState(null);
+  const [twoFAToken, setTwoFAToken] = useState('');
+  const [twoFADisableToken, setTwoFADisableToken] = useState('');
+
+  const setup2FA = useMutation({
+    mutationFn: () => api.twoFactor.setup(),
+    onSuccess: (data) => { setTwoFASetup(data); toast.success('Scan the QR code with your authenticator app'); },
+    onError: () => toast.error('Failed to setup 2FA'),
+  });
+
+  const verify2FA = useMutation({
+    mutationFn: (token) => api.twoFactor.verify(token),
+    onSuccess: () => { setTwoFASetup(null); setTwoFAToken(''); refetch2FA(); qc.invalidateQueries({ queryKey: ['2fa', 'status'] }); toast.success('2FA enabled successfully'); },
+    onError: (e) => toast.error(e.message || 'Invalid token'),
+  });
+
+  const disable2FA = useMutation({
+    mutationFn: (token) => api.twoFactor.disable(token),
+    onSuccess: () => { setTwoFADisableToken(''); refetch2FA(); qc.invalidateQueries({ queryKey: ['2fa', 'status'] }); toast.success('2FA disabled'); },
+    onError: (e) => toast.error(e.message || 'Invalid token'),
+  });
 
   const updateVg = useMutation({ mutationFn: (d) => api.versionGate.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['version-gate'] }); toast.success('Version gate updated'); } });
   const updatePo = useMutation({ mutationFn: (d) => api.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); } });
@@ -143,6 +167,87 @@ export default function Config() {
         <Button onClick={() => updateGs.mutate({ susuProfitPct: gsData.susuProfitPct })} className="bg-amber-600 hover:bg-amber-500 text-white">
           Save Susu Fee
         </Button>
+      </div>
+
+
+      {/* 2FA Security */}
+      <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-sm font-semibold text-az-text-secondary">Two-Factor Authentication (TOTP)</h2>
+          </div>
+          {twoFAStatus?.enabled && (
+            <span className="flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              <CheckCircle2 className="w-2.5 h-2.5" /> Enabled
+            </span>
+          )}
+        </div>
+
+        {!twoFAStatus?.enabled && !twoFASetup && (
+          <div className="space-y-3">
+            <p className="text-xs text-az-text-secondary">Add an extra layer of security to your admin account using a TOTP authenticator app (Google Authenticator, Authy, etc.).</p>
+            <Button onClick={() => setup2FA.mutate()} disabled={setup2FA.isPending} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              {setup2FA.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Shield className="w-4 h-4 mr-2" />}
+              Setup 2FA
+            </Button>
+          </div>
+        )}
+
+        {twoFASetup && (
+          <div className="space-y-3">
+            <p className="text-xs text-az-text-secondary">Scan this QR code with your authenticator app, then enter the 6-digit code below.</p>
+            <div className="flex justify-center bg-white rounded-lg p-3 w-fit mx-auto">
+              <img src={twoFASetup.qrCode} alt="2FA QR Code" className="w-48 h-48" />
+            </div>
+            <div className="text-xs text-az-text-muted text-center">
+              Or enter manually: <span className="az-mono text-az-text-secondary select-all">{twoFASetup.secret}</span>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="123456"
+                maxLength={6}
+                value={twoFAToken}
+                onChange={(e) => setTwoFAToken(e.target.value.replace(/\D/g, ''))}
+                className="bg-az-card border-az-border text-white text-center text-lg tracking-widest"
+              />
+              <Button
+                onClick={() => verify2FA.mutate(twoFAToken)}
+                disabled={twoFAToken.length !== 6 || verify2FA.isPending}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white"
+              >
+                {verify2FA.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {twoFAStatus?.enabled && (
+          <div className="space-y-3">
+            <div className="flex items-start gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-emerald-400">2FA is active. You'll need a code from your authenticator app when logging in.</p>
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter current token to disable"
+                maxLength={6}
+                value={twoFADisableToken}
+                onChange={(e) => setTwoFADisableToken(e.target.value.replace(/\D/g, ''))}
+                className="bg-az-card border-az-border text-white"
+              />
+              <Button
+                onClick={() => disable2FA.mutate(twoFADisableToken)}
+                disabled={twoFADisableToken.length !== 6 || disable2FA.isPending}
+                className="bg-red-600 hover:bg-red-500 text-white"
+              >
+                {disable2FA.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disable 2FA'}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* KYC Provider note */}

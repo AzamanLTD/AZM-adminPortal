@@ -270,7 +270,7 @@ export const aiOps = {
 export default {
   auth, admin, settings, feeProfiles, trades, users, kyc, withdrawals,
   payouts, vendors, tradeAccounts, warRoom, susuIncidents, susuAdmin,
-  proofOfResidency, versionGate, auditLog, aiOps,
+  proofOfResidency, versionGate, auditLog, aiOps, twoFactor,
   businessKyb, escrow, businesses,
 };
 // ── Admin Storefronts ──────────────────────────────────────────────────────────
