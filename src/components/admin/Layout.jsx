@@ -51,6 +51,7 @@ function relativeTime(ts) {
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
   const location = useLocation();
 
   // Live notification feed — drives the bell badge + the slide-over panel.
@@ -88,14 +89,14 @@ export default function AdminLayout() {
         <div className="flex items-center gap-3 px-4 h-16 border-b border-[#1e1e2e]">
           <div className="w-8 h-8 rounded-xl bg-[#00d97e22] border border-[#00d97e40] flex items-center justify-center flex-shrink-0 az-glow-emerald">
             <Shield className="w-4 h-4 text-[#00d97e]" />
-          </div>
+    </div>
           {!collapsed && (
             <div>
               <p className="text-sm font-bold text-[#e8e8f0] leading-none tracking-tight">AZAMAN</p>
               <p className="text-xs text-[#00d97e] mt-0.5 font-medium">Control Center</p>
-            </div>
+    </div>
           )}
-        </div>
+    </div>
 
         {/* Nav */}
         <nav className="flex-1 py-3 overflow-y-auto space-y-0.5">
@@ -134,7 +135,7 @@ export default function AdminLayout() {
                 {collapsed && (
                   <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#13131e] border border-[#2a2a3e] rounded-lg text-xs whitespace-nowrap text-[#e8e8f0] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
                     {label}
-                  </div>
+    </div>
                 )}
               </Link>
             );
@@ -152,7 +153,7 @@ export default function AdminLayout() {
               : <><ChevronLeft className="w-4 h-4" /><span className="text-xs">Collapse</span></>
             }
           </button>
-        </div>
+    </div>
       </aside>
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
@@ -171,12 +172,21 @@ export default function AdminLayout() {
             <div className="relative">
               <div className="w-2 h-2 rounded-full bg-[#00d97e]" />
               <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#00d97e] az-pulse" />
-            </div>
+    </div>
             <span className="text-xs text-[#4a4a6a] font-medium">System Online</span>
-          </div>
+    </div>
 
           {/* Right: rate + notifications + user */}
           <div className="flex items-center gap-2">
+
+            {/* Command palette trigger */}
+            <button
+              onClick={() => setCmdOpen(true)}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#13131e] border border-[#1e1e2e] text-xs text-[#4a4a6a] hover:text-[#7b7b9a] hover:border-[#2a2a3e] transition-colors"
+              title="Command palette (⌘K)"
+            >
+              <span>⌘K</span>
+            </button>
 
             {/* Live GHS/USD rate — Phase ADMIN-CONTROL-2 FIX B */}
             <div
@@ -190,9 +200,9 @@ export default function AdminLayout() {
               {rateAge && (
                 <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-[#13131e] border border-[#2a2a3e] rounded-lg text-xs whitespace-nowrap text-[#7b7b9a] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
                   Updated {rateAge}
-                </div>
+    </div>
               )}
-            </div>
+    </div>
 
             {/* Bell — opens the notification center; badge = unread open items */}
             <button
@@ -213,7 +223,7 @@ export default function AdminLayout() {
             <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-[#13131e] transition-colors border border-transparent hover:border-[#1e1e2e]">
               <div className="w-6 h-6 rounded-lg bg-[#00d97e22] border border-[#00d97e40] flex items-center justify-center">
                 <span className="text-xs text-[#00d97e] font-bold">A</span>
-              </div>
+    </div>
               {!collapsed && <span className="text-sm text-[#7b7b9a] font-medium">Admin</span>}
             </button>
 
@@ -225,7 +235,7 @@ export default function AdminLayout() {
             >
               <LogOut className="w-4 h-4 text-[#4a4a6a] hover:text-[#f43f5e] transition-colors" />
             </button>
-          </div>
+    </div>
         </header>
 
         {/* Page content */}
@@ -240,6 +250,9 @@ export default function AdminLayout() {
         onOpenChange={setNotifOpen}
         notifications={notifications}
       />
+
+      {/* Command palette (⌘K / Ctrl+K) */}
+      <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
     </div>
   );
 }
