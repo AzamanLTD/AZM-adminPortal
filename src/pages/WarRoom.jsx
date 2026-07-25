@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
@@ -6,7 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Swords, MessageSquare, CheckCircle, XCircle, RefreshCw, AlertTriangle, ShieldAlert } from 'lucide-react';
+import {
+  Swords, MessageSquare, CheckCircle, XCircle, RefreshCw,
+  AlertTriangle, ShieldAlert, Clock, Flame, Users, History,
+  FileSearch,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 const RULINGS = [
@@ -14,6 +18,108 @@ const RULINGS = [
   { value: 'VENDOR_WINS', label: 'Vendor Wins', color: 'text-[#4f8ef7]', active: 'border-[#4f8ef7] bg-[#4f8ef710]' },
   { value: 'SPLIT',       label: 'Split Funds', color: 'text-[#f59e0b]', active: 'border-[#f59e0b] bg-[#f59e0b10]' },
 ];
+
+/* ── SLA Timer ───────────────────────────────────────────────────────────── */
+function getSLA(createdAt) {
+  if (!createdAt) return { hours: 0, level: 'normal', label: '—' };
+  const diff = Date.now() - new Date(createdAt).getTime();
+  const hours = diff / 36e5;
+  let level, label;
+  if (hours < 1) {
+    level = 'normal'; label = `${Math.floor(diff / 60000)}m`;
+  } else if (hours < 4) {
+    level = 'warning'; label = `${hours.toFixed(1)}h`;
+  } else {
+    level = 'critical'; label = `${Math.floor(hours)}h`;
+  }
+  return { hours, level, label };
+}
+
+const SLA_STYLES = {
+  normal: { badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-400' },
+  warning: { badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', dot: 'bg-amber-400' },
+  critical: { badge: 'bg-red-500/10 text-red-400 border-red-500/30', dot: 'bg-red-400' },
+};
+
+function SLATimer({ createdAt }) {
+  const [, setTick] = useState(0);
+  // Re-render every 30s to keep the timer fresh
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const sla = getSLA(createdAt);
+  const style = SLA_STYLES[sla.level];
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium ${style.badge}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} ${sla.level === 'critical' ? 'animate-pulse' : ''}`} />
+      <Clock className="w-3 h-3" />
+      {sla.label}
+    </span>
+  );
+}
+
+/* ── Dispute pattern detection ────────────────────────────────────────────── */
+function detectPatterns(allDisputes, currentDispute) {
+  const patterns = [];
+
+  // Get the user/vendor IDs for the current dispute
+  const buyerId = currentDispute.user?.id || currentDispute.buyer?.id;
+  const vendorId = currentDispute.vendor?.id;
+  const buyerName = currentDispute.user?.username || currentDispute.buyer?.name || 'Buyer';
+  const vendorName = currentDispute.vendor?.username || currentDispute.vendor?.name || 'Vendor';
+
+  // Count how many other active disputes involve the same buyer or vendor
+  const sameBuyer = allDisputes.filter(d => d.id !== currentDispute.id && (d.user?.id || d.buyer?.id) === buyerId);
+  const sameVendor = allDisputes.filter(d => d.id !== currentDispute.id && d.vendor?.id === vendorId);
+
+  if (sameBuyer.length >= 2) {
+    patterns.push({
+      type: 'buyer_repeat',
+      level: 'high',
+      label: `${buyerName} has ${sameBuyer.length} other active disputes`,
+      icon: Users,
+    });
+  } else if (sameBuyer.length === 1) {
+    patterns.push({
+      type: 'buyer_repeat',
+      level: 'medium',
+      label: `${buyerName} has 1 other active dispute`,
+      icon: Users,
+    });
+  }
+
+  if (sameVendor.length >= 2) {
+    patterns.push({
+      type: 'vendor_repeat',
+      level: 'high',
+      label: `${vendorName} has ${sameVendor.length} other active disputes`,
+      icon: Users,
+    });
+  } else if (sameVendor.length === 1) {
+    patterns.push({
+      type: 'vendor_repeat',
+      level: 'medium',
+      label: `${vendorName} has 1 other active dispute`,
+      icon: Users,
+    });
+  }
+
+  // High-value dispute flag
+  const amount = Number(currentDispute.amount) || 0;
+  if (amount >= 5000) {
+    patterns.push({
+      type: 'high_value',
+      level: 'warning',
+      label: 'High-value dispute ($5K+)',
+      icon: Flame,
+    });
+  }
+
+  return patterns;
+}
 
 // ── Extreme Ruling Confirmation Modal ────────────────────────────────────────
 function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
@@ -23,14 +129,11 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
       />
-      {/* Modal */}
       <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 animate-fade-in">
-        {/* Header */}
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#f59e0b22] flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-[#f59e0b]" />
@@ -40,8 +143,6 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
             <p className="text-xs text-[#7b7b9a] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
-
-        {/* Body */}
         <div className="bg-[#0f0f17] border border-[#2a2a3e] rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-[#7b7b9a]">Buyer receives</span>
@@ -52,14 +153,11 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
             <span className="font-bold text-[#e8e8f0] az-mono">{vendorPercent}%</span>
           </div>
         </div>
-
         <p className="text-sm text-[#7b7b9a] leading-relaxed">
           You are assigning <span className="text-[#e8e8f0] font-semibold">{buyerPercent}%</span> to the buyer and{' '}
           <span className="text-[#e8e8f0] font-semibold">{vendorPercent}%</span> to the vendor.
           This is an unusual split. Are you absolutely certain?
         </p>
-
-        {/* Actions */}
         <div className="flex gap-3 pt-1">
           <Button
             variant="ghost"
@@ -81,7 +179,7 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
   );
 }
 
-// ── Reason Input Modal (replaces prompt() anti-pattern) ──────────────────────
+// ── Reason Input Modal ──────────────────────────────────────────────────────
 function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCancel, isPending }) {
   const [reason, setReason] = useState('');
   if (!open) return null;
@@ -119,8 +217,58 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
   );
 }
 
+/* ── Pattern Alert ─────────────────────────────────────────────────────────── */
+function PatternAlert({ pattern }) {
+  const Icon = pattern.icon;
+  const styles = {
+    high: 'bg-red-500/10 border-red-500/20 text-red-400',
+    medium: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    warning: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
+  };
+  return (
+    <div className={`flex items-center gap-2 p-2 rounded-lg border text-xs ${styles[pattern.level] || styles.medium}`}>
+      <Icon className="w-3.5 h-3.5 shrink-0" />
+      <span>{pattern.label}</span>
+    </div>
+  );
+}
+
+/* ── Evidence Section ──────────────────────────────────────────────────────── */
+function EvidenceSection({ dispute }) {
+  const messages = dispute.messages || [];
+  // The first message often contains the dispute reason/context
+  const evidenceMessages = messages.filter(m =>
+    m.sender === 'system' || m.sender === 'admin' || (m.text && m.text.length > 50)
+  );
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#7b7b9a]">
+        <FileSearch className="w-3.5 h-3.5" />
+        EVIDENCE & CONTEXT
+      </div>
+      <div className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
+        {evidenceMessages.length === 0 ? (
+          <p className="text-xs text-[#4a4a6a] italic">No evidence messages in this dispute</p>
+        ) : (
+          evidenceMessages.slice(0, 5).map((m, i) => (
+            <div key={i} className="text-xs">
+              <span className={`font-semibold capitalize ${
+                m.sender === 'system' ? 'text-[#4a4a6a]' :
+                m.sender === 'admin' ? 'text-[#f59e0b]' :
+                m.sender === 'buyer' ? 'text-[#4f8ef7]' : 'text-[#00d97e]'
+              }`}>{m.sender}:</span>{' '}
+              <span className="text-[#7b7b9a]">{m.text}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Dispute Card ─────────────────────────────────────────────────────────────
-function DisputeCard({ dispute }) {
+function DisputeCard({ dispute, allDisputes }) {
   const [expanded, setExpanded]   = useState(false);
   const [ruling, setRuling]       = useState('BUYER_WINS');
   const [reason, setReason]       = useState('');
@@ -128,13 +276,16 @@ function DisputeCard({ dispute }) {
   const [injectMsg, setInjectMsg] = useState('');
   const [tab, setTab]             = useState('resolve');
 
-  // Phase ADMIN-CONTROL-2: extreme ruling state
   const [extremeRulingPending, setExtremeRulingPending] = useState(null);
-
-  // Reason modal state (replaces prompt())
-  const [reasonModal, setReasonModal] = useState(null); // { type: 'release' | 'cancel' }
+  const [reasonModal, setReasonModal] = useState(null);
 
   const qc = useQueryClient();
+
+  // Detect patterns for this dispute
+  const patterns = useMemo(
+    () => detectPatterns(allDisputes, dispute),
+    [allDisputes, dispute]
+  );
 
   const forceRelease = useMutation({
     mutationFn: ({ id, reason }) => api.trades.forceRelease(id, reason),
@@ -157,7 +308,6 @@ function DisputeCard({ dispute }) {
       qc.invalidateQueries({ queryKey: ['admin', 'disputes'] });
     },
     onError: (err) => {
-      // Phase ADMIN-CONTROL-2 FIX A: handle 422 EXTREME_RULING_REQUIRES_OVERRIDE
       const data = err?.response?.data || err?.data || {};
       if (data.code === 'EXTREME_RULING_REQUIRES_OVERRIDE') {
         setExtremeRulingPending({ tradeId: dispute.id, ruling, reason, buyerPercent: parseInt(buyerPct) });
@@ -197,6 +347,9 @@ function DisputeCard({ dispute }) {
     setReasonModal(null);
   };
 
+  const buyerName = dispute.user?.username || dispute.buyer?.name || 'Unknown';
+  const vendorName = dispute.vendor?.username || dispute.vendor?.name || 'Unknown';
+
   return (
     <>
       <ExtremeRulingModal
@@ -233,10 +386,12 @@ function DisputeCard({ dispute }) {
               <span className="text-xs text-[#4a4a6a] bg-[#1e1e2e] px-2 py-0.5 rounded-full">
                 {dispute.paymentMethod}
               </span>
+              {/* SLA Timer */}
+              <SLATimer createdAt={dispute.createdAt} />
             </div>
             <div className="flex gap-4 mt-2 text-xs text-[#4a4a6a]">
-              <span>Buyer: <span className="text-[#7b7b9a]">{dispute.buyer?.name}</span></span>
-              <span>Vendor: <span className="text-[#7b7b9a]">{dispute.vendor?.name}</span></span>
+              <span>Buyer: <span className="text-[#7b7b9a]">{buyerName}</span></span>
+              <span>Vendor: <span className="text-[#7b7b9a]">{vendorName}</span></span>
             </div>
           </div>
           <span className="text-xs text-[#4a4a6a] flex-shrink-0 mt-1">
@@ -246,8 +401,22 @@ function DisputeCard({ dispute }) {
 
         {expanded && (
           <div className="border-t border-[#1e1e2e] p-4 space-y-4">
+            {/* Pattern alerts */}
+            {patterns.length > 0 && (
+              <div className="space-y-1.5">
+                {patterns.map((p, i) => <PatternAlert key={i} pattern={p} />)}
+              </div>
+            )}
+
+            {/* Evidence section */}
+            <EvidenceSection dispute={dispute} />
+
             {/* Chat messages */}
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#7b7b9a]">
+                <MessageSquare className="w-3.5 h-3.5" />
+                CHAT HISTORY
+              </div>
               {(dispute.messages || []).map((m, i) => (
                 <div key={i} className={`flex ${m.sender === 'buyer' ? 'justify-start' : 'justify-end'}`}>
                   <div className={`rounded-xl px-3 py-2 max-w-xs text-xs ${
@@ -382,6 +551,81 @@ function DisputeCard({ dispute }) {
   );
 }
 
+// ── Summary Stats Bar ────────────────────────────────────────────────────────
+function SummaryBar({ disputes }) {
+  const stats = useMemo(() => {
+    let escalated = 0;
+    let totalHours = 0;
+    let totalValue = 0;
+
+    for (const d of disputes) {
+      const sla = getSLA(d.createdAt);
+      if (sla.level === 'critical') escalated++;
+      totalHours += sla.hours;
+      totalValue += Number(d.amount) || 0;
+    }
+
+    return {
+      total: disputes.length,
+      escalated,
+      avgAge: disputes.length > 0 ? (totalHours / disputes.length).toFixed(1) : 0,
+      totalValue,
+    };
+  }, [disputes]);
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="az-card p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Swords className="w-3.5 h-3.5 text-[#f43f5e]" />
+          <span className="text-xs text-[#4a4a6a] uppercase">Total Disputes</span>
+        </div>
+        <p className="text-xl font-bold text-[#e8e8f0]">{stats.total}</p>
+      </div>
+      <div className={`az-card p-3 ${stats.escalated > 0 ? 'border-[#f43f5e40]' : ''}`}>
+        <div className="flex items-center gap-2 mb-1">
+          <Flame className="w-3.5 h-3.5 text-[#f43f5e]" />
+          <span className="text-xs text-[#4a4a6a] uppercase">SLA Breached</span>
+        </div>
+        <p className={`text-xl font-bold ${stats.escalated > 0 ? 'text-[#f43f5e]' : 'text-[#00d97e]'}`}>{stats.escalated}</p>
+      </div>
+      <div className="az-card p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <Clock className="w-3.5 h-3.5 text-[#f59e0b]" />
+          <span className="text-xs text-[#4a4a6a] uppercase">Avg Age</span>
+        </div>
+        <p className="text-xl font-bold text-[#f59e0b]">{stats.avgAge}h</p>
+      </div>
+      <div className="az-card p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <History className="w-3.5 h-3.5 text-[#4f8ef7]" />
+          <span className="text-xs text-[#4a4a6a] uppercase">At Risk</span>
+        </div>
+        <p className="text-xl font-bold text-[#4f8ef7]">${stats.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Escalation Banner ───────────────────────────────────────────────────────
+function EscalationBanner({ escalatedCount }) {
+  if (escalatedCount === 0) return null;
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 bg-[#f43f5e10] border border-[#f43f5e30] rounded-xl animate-fade-in">
+      <div className="w-8 h-8 rounded-lg bg-[#f43f5e22] flex items-center justify-center shrink-0">
+        <AlertTriangle className="w-4 h-4 text-[#f43f5e]" />
+      </div>
+      <div className="flex-1">
+        <p className="text-sm font-bold text-[#f43f5e]">SLA Escalation</p>
+        <p className="text-xs text-[#7b7b9a]">
+          {escalatedCount} {escalatedCount === 1 ? 'dispute has' : 'disputes have'} been open for more than 4 hours.
+          Immediate attention required.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ── Main War Room Page ────────────────────────────────────────────────────────
 export default function WarRoom() {
   const { data: disputes = [], isLoading, refetch } = useDisputes();
@@ -397,6 +641,12 @@ export default function WarRoom() {
     DISPUTED:        'bg-[#f43f5e22] text-[#f43f5e] border-[#f43f5e40]',
     COMPLETED:       'bg-[#4f8ef722] text-[#4f8ef7] border-[#4f8ef740]',
   };
+
+  // Count escalated disputes (open > 4h)
+  const escalatedCount = useMemo(
+    () => disputes.filter(d => getSLA(d.createdAt).level === 'critical').length,
+    [disputes]
+  );
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -425,6 +675,12 @@ export default function WarRoom() {
         </Button>
       </div>
 
+      {/* Summary stats */}
+      {!isLoading && disputes.length > 0 && <SummaryBar disputes={disputes} />}
+
+      {/* Escalation banner */}
+      <EscalationBanner escalatedCount={escalatedCount} />
+
       {/* Active Disputes */}
       <div className="space-y-3">
         <h2 className="text-xs font-semibold text-[#4a4a6a] uppercase tracking-widest">
@@ -437,7 +693,7 @@ export default function WarRoom() {
             ))}
           </div>
         )}
-        {disputes.map((d) => <DisputeCard key={d.id} dispute={d} />)}
+        {disputes.map((d) => <DisputeCard key={d.id} dispute={d} allDisputes={disputes} />)}
         {!isLoading && disputes.length === 0 && (
           <div className="text-center py-12 az-card">
             <div className="w-10 h-10 bg-[#00d97e22] rounded-xl flex items-center justify-center mx-auto mb-3">
@@ -472,8 +728,8 @@ export default function WarRoom() {
               <Badge className={`text-xs border w-fit ${statusColors[t.status] || 'bg-[#1e1e2e] text-[#7b7b9a] border-[#2a2a3e]'}`}>
                 {t.status}
               </Badge>
-              <span className="text-[#7b7b9a] truncate">{t.buyer?.name || '–'}</span>
-              <span className="text-[#7b7b9a] truncate">{t.vendor?.name || '–'}</span>
+              <span className="text-[#7b7b9a] truncate">{t.buyer?.name || t.user?.username || '–'}</span>
+              <span className="text-[#7b7b9a] truncate">{t.vendor?.name || t.vendor?.username || '–'}</span>
             </div>
           ))}
           {(!Array.isArray(liveTrades) || liveTrades.length === 0) && (
