@@ -6,6 +6,7 @@ import {
   Bell, Settings, LogOut, Database, Zap, Bot,
   PiggyBank, Siren, Home, Activity, Building2, Lock, FileCheck, QrCode,
   Store,
+  Menu, X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStats } from '@/lib/useAdminData';
@@ -50,6 +51,7 @@ function relativeTime(ts) {
 
 export default function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
   const location = useLocation();
@@ -79,10 +81,22 @@ export default function AdminLayout() {
     <div className="flex h-screen overflow-hidden" style={{ background: 'var(--az-black)', color: 'var(--az-text-primary)' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
       <aside className={cn(
         'flex flex-col border-r transition-all duration-300 flex-shrink-0',
         'border-[#1e1e2e]',
-        collapsed ? 'w-16' : 'w-60'
+        collapsed ? 'w-16' : 'w-60',
+        // Mobile: slide-in drawer
+        'fixed md:fixed inset-y-0 left-0 z-50 md:z-auto',
+        mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+        'md:relative'
       )} style={{ background: 'var(--az-surface)' }}>
 
         {/* Logo */}
@@ -107,6 +121,7 @@ export default function AdminLayout() {
               <Link
                 key={to}
                 to={to}
+                onClick={() => setMobileOpen(false)}
                 title={collapsed ? label : undefined}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 mx-2 rounded-xl transition-all duration-150 relative group text-sm',
@@ -167,8 +182,16 @@ export default function AdminLayout() {
           className="h-16 border-b border-[#1e1e2e] flex items-center justify-between px-6 flex-shrink-0"
           style={{ background: 'var(--az-surface)' }}
         >
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden p-2 rounded-xl hover:bg-[#13131e] text-[#7b7b9a] transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
           {/* Left: system status */}
-          <div className="flex items-center gap-2.5">
+          <div className="hidden md:flex items-center gap-2.5">
             <div className="relative">
               <div className="w-2 h-2 rounded-full bg-[#00d97e]" />
               <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#00d97e] az-pulse" />
@@ -239,7 +262,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ background: 'var(--az-black)' }}>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: 'var(--az-black)' }}>
           <Outlet />
         </main>
       </div>
