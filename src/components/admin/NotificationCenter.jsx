@@ -39,9 +39,9 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="bg-slate-950 border-slate-800 text-slate-100 w-full sm:max-w-md p-0 flex flex-col"
+        className="bg-az-black border-az-border text-az-text-primary w-full sm:max-w-md p-0 flex flex-col"
       >
-        <SheetHeader className="p-4 border-b border-slate-800">
+        <SheetHeader className="p-4 border-b border-az-border">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-white flex items-center gap-2">
               Notifications
@@ -55,7 +55,7 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
               onClick={markAllRead}
               disabled={unreadCount === 0}
               aria-label="Mark all notifications as read"
-              className="text-xs text-slate-400 hover:text-emerald-400 disabled:opacity-40 disabled:hover:text-slate-400 inline-flex items-center gap-1.5"
+              className="text-xs text-az-text-secondary hover:text-emerald-400 disabled:opacity-40 disabled:hover:text-az-text-secondary inline-flex items-center gap-1.5"
             >
               <CheckCheck className="w-3.5 h-3.5" /> Mark all read
             </button>
@@ -72,7 +72,7 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     tab === t.key
                       ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                      : 'border-slate-700 text-slate-400 hover:border-slate-600'
+                      : 'border-az-border text-az-text-secondary hover:border-az-border-bright'
                   }`}
                 >
                   {t.label} <span className="opacity-60">{count}</span>
@@ -85,13 +85,13 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
         <ScrollArea className="flex-1">
           <div className="p-3 space-y-2">
             {isLoading && list.length === 0 && (
-              <p className="text-slate-500 text-sm text-center py-8">Loading…</p>
+              <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>
             )}
             {list.map((n) => (
               <NotificationItem key={n.id} n={n} onNavigate={go} onRead={markRead} />
             ))}
             {!isLoading && list.length === 0 && (
-              <div className="text-center py-12 text-slate-500">
+              <div className="text-center py-12 text-az-text-muted">
                 <Inbox className="w-8 h-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">
                   {tab === 'open' ? 'No open items — all clear' : tab === 'resolved' ? 'No resolved items' : 'Nothing here'}

@@ -13,8 +13,8 @@ const SOURCE_COLORS = {
 const CustomTooltip = ({ active, payload, label, rate }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs">
-      <p className="text-slate-400 mb-1">{label}</p>
+    <div className="bg-az-card border border-az-border rounded-lg p-3 text-xs">
+      <p className="text-az-text-secondary mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="font-medium">
           ${p.value?.toLocaleString()} / ₵{((p.value || 0) * (rate || 12.5)).toLocaleString()}
@@ -36,7 +36,7 @@ export default function Profits() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Revenue Dashboard</h1>
-        <p className="text-sm text-slate-400 mt-1">Last 30 days — all amounts in USD and GHS</p>
+        <p className="text-sm text-az-text-secondary mt-1">Last 30 days — all amounts in USD and GHS</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -46,8 +46,8 @@ export default function Profits() {
       </div>
 
       {/* PnL Chart */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-slate-300 mb-4">Daily PnL — 30 Days</h2>
+      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-az-text-secondary mb-4">Daily PnL — 30 Days</h2>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={dailyPnL}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
@@ -60,21 +60,21 @@ export default function Profits() {
       </div>
 
       {/* Revenue by source */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-slate-300 mb-5">Revenue by Source</h2>
+      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-az-text-secondary mb-5">Revenue by Source</h2>
         <div className="space-y-4">
           {bySource.map(({ source, usd, ghs }) => {
             const pct = Math.round((usd / maxSource) * 100);
             return (
               <div key={source}>
                 <div className="flex justify-between items-center mb-1.5">
-                  <span className="text-xs font-medium text-slate-300">{source.replace(/_/g, ' ')}</span>
+                  <span className="text-xs font-medium text-az-text-secondary">{source.replace(/_/g, ' ')}</span>
                   <div className="text-right">
                     <span className="text-xs font-bold text-white">${usd.toLocaleString()}</span>
-                    <span className="text-xs text-slate-500 ml-2">₵{ghs.toLocaleString()}</span>
+                    <span className="text-xs text-az-text-muted ml-2">₵{ghs.toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-2">
+                <div className="w-full bg-az-card rounded-full h-2">
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{ width: `${pct}%`, backgroundColor: SOURCE_COLORS[source] || '#6366f1' }}
@@ -87,8 +87,8 @@ export default function Profits() {
       </div>
 
       {/* GHS Bar chart */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-slate-300 mb-4">Daily Revenue in GHS</h2>
+      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+        <h2 className="text-sm font-semibold text-az-text-secondary mb-4">Daily Revenue in GHS</h2>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={dailyPnL}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />

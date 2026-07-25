@@ -28,7 +28,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Command Center</h1>
-        <p className="text-sm text-slate-400 mt-1">Real-time platform overview</p>
+        <p className="text-sm text-az-text-secondary mt-1">Real-time platform overview</p>
       </div>
 
       {/* Primary KPIs */}
@@ -73,7 +73,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* System Pools */}
         <div className="lg:col-span-2 space-y-3">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Pool Health</h2>
+          <h2 className="text-sm font-semibold text-az-text-secondary uppercase tracking-wide">Pool Health</h2>
           <PoolBar label="Master Crypto (USDC)" balance={pools.masterCrypto?.balance || 0} currency="USDC" max={100000} />
           <PoolBar label="Hot Wallet (USDC)" balance={pools.hotWallet?.balance || 0} currency="USDC" max={20000} />
           <PoolBar
@@ -89,9 +89,9 @@ export default function Dashboard() {
         {/* Right column */}
         <div className="space-y-4">
           {/* Oracle */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Oracle Rates</h2>
+              <h2 className="text-sm font-semibold text-az-text-secondary uppercase tracking-wide">Oracle Rates</h2>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${oracle.source === 'LIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
                 {oracle.source || 'MOCK'}
               </span>
@@ -103,20 +103,20 @@ export default function Dashboard() {
                 { label: 'Corporate Rate', value: oracle.corporateRate || '–' },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-center">
-                  <span className="text-xs text-slate-500">{label}</span>
+                  <span className="text-xs text-az-text-muted">{label}</span>
                   <span className="text-sm font-bold text-emerald-400">{value}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-az-text-muted">
               Last sync: {oracle.lastSync ? new Date(oracle.lastSync).toLocaleTimeString() : '–'}
             </p>
           </div>
 
           {/* Engine */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Engine Status</h2>
+              <h2 className="text-sm font-semibold text-az-text-secondary uppercase tracking-wide">Engine Status</h2>
               <div className="flex items-center gap-1.5">
                 <div className={`w-2 h-2 rounded-full ${engine.online ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
                 <span className={`text-xs ${engine.online ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -131,10 +131,10 @@ export default function Dashboard() {
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="text-xs text-slate-500">{label}</span>
+                  <Icon className="w-3.5 h-3.5 text-az-text-muted" />
+                  <span className="text-xs text-az-text-muted">{label}</span>
                 </div>
-                <span className="text-xs font-medium text-slate-300">{value}</span>
+                <span className="text-xs font-medium text-az-text-secondary">{value}</span>
               </div>
             ))}
           </div>
@@ -143,7 +143,7 @@ export default function Dashboard() {
 
       {/* Escrow & Business System */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">Escrow & Business</h2>
+        <h2 className="text-sm font-semibold text-az-text-secondary uppercase tracking-wide">Escrow & Business</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Active Escrows" value={stats.activeEscrows || 0} icon={Lock} color="blue" />
           <StatCard label="Disputed Escrows" value={stats.disputedEscrows || 0} icon={ShieldAlert} color="red" onClick={() => navigate('/escrow-disputes')} />

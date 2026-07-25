@@ -10,8 +10,8 @@ import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRig
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
 
-const KYC_COLORS = { VERIFIED: 'bg-emerald-500/20 text-emerald-400', PENDING: 'bg-amber-500/20 text-amber-400', REJECTED: 'bg-red-500/20 text-red-400', NONE: 'bg-slate-500/20 text-slate-400' };
-const RISK_COLORS = { STANDARD: 'bg-slate-500/20 text-slate-400', TRUSTED: 'bg-emerald-500/20 text-emerald-400', HIGH_RISK: 'bg-red-500/20 text-red-400' };
+const KYC_COLORS = { VERIFIED: 'bg-emerald-500/20 text-emerald-400', PENDING: 'bg-amber-500/20 text-amber-400', REJECTED: 'bg-red-500/20 text-red-400', NONE: 'bg-az-text-muted/20 text-az-text-secondary' };
+const RISK_COLORS = { STANDARD: 'bg-az-text-muted/20 text-az-text-secondary', TRUSTED: 'bg-emerald-500/20 text-emerald-400', HIGH_RISK: 'bg-red-500/20 text-red-400' };
 
 function KYCPanel({ userId }) {
   const { data, isLoading } = useQuery({ queryKey: ['kyc', 'pending'], queryFn: () => api.kyc.pending() });
@@ -36,12 +36,12 @@ function KYCPanel({ userId }) {
         isPending={reject.isPending}
         inputType="textarea"
       />
-      {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
+      {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {pending.map((k) => (
-        <div key={k.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={k.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-white">{k.userName || k.userId}</p>
-            <p className="text-xs text-slate-400 mt-0.5">{k.email} · Submitted {new Date(k.submittedAt).toLocaleDateString()}</p>
+            <p className="text-xs text-az-text-secondary mt-0.5">{k.email} · Submitted {new Date(k.submittedAt).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => approve.mutate(k.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
@@ -53,7 +53,7 @@ function KYCPanel({ userId }) {
           </div>
         </div>
       ))}
-      {!isLoading && pending.length === 0 && <p className="text-slate-500 text-sm text-center py-6">No pending KYC applications</p>}
+      {!isLoading && pending.length === 0 && <p className="text-az-text-muted text-sm text-center py-6">No pending KYC applications</p>}
     </div>
   );
 }
@@ -146,12 +146,12 @@ export default function Users() {
 
       <div>
         <h1 className="text-xl font-bold text-white">Users and KYC</h1>
-        <p className="text-sm text-slate-400 mt-1">{total} total users</p>
+        <p className="text-sm text-az-text-secondary mt-1">{total} total users</p>
       </div>
 
-      <div className="flex gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-az-surface border border-az-border rounded-xl p-1 w-fit">
         {['users', 'kyc', 'vendors', 'trade-accounts'].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-lg text-sm capitalize transition-colors ${activeTab === t ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200'}`}>
+          <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-lg text-sm capitalize transition-colors ${activeTab === t ? 'bg-az-border text-white' : 'text-az-text-secondary hover:text-az-text-primary'}`}>
             {t === 'kyc' ? 'Pending KYC' : t === 'trade-accounts' ? 'Trade Accounts' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
@@ -166,32 +166,32 @@ export default function Users() {
       {activeTab === 'users' && (
         <div className="space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-az-text-muted" />
             <Input
               placeholder="Search by name or email…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-slate-900 border-slate-800 text-white"
+              className="pl-9 bg-az-surface border-az-border text-white"
             />
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="grid grid-cols-6 gap-3 px-4 py-2.5 border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wide">
+          <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+            <div className="grid grid-cols-6 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
               <span className="col-span-2">User</span><span>Role</span><span>KYC</span><span>Risk Tier</span><span>Actions</span>
             </div>
-            {isLoading && <p className="text-slate-500 text-sm text-center py-8">Loading…</p>}
+            {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
             {users.map((u) => (
-              <div key={u.id} className="grid grid-cols-6 gap-3 px-4 py-3 border-b border-slate-800/50 last:border-0 items-center hover:bg-slate-800/20 transition-colors">
+              <div key={u.id} className="grid grid-cols-6 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-center hover:bg-az-card/20 transition-colors">
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-white">{u.fullName}</p>
-                  <p className="text-xs text-slate-500">{u.email}</p>
+                  <p className="text-xs text-az-text-muted">{u.email}</p>
                 </div>
-                <span className="text-xs text-slate-300">{u.role}</span>
+                <span className="text-xs text-az-text-secondary">{u.role}</span>
                 <Badge className={`${KYC_COLORS[u.kycStatus] || KYC_COLORS.NONE} border-0 text-xs w-fit`}>{u.kycStatus || 'NONE'}</Badge>
                 <select
                   value={u.riskTier || 'STANDARD'}
                   onChange={(e) => setRisk.mutate({ id: u.id, tier: e.target.value })}
-                  className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white"
+                  className="bg-az-card border border-az-border rounded-lg px-2 py-1 text-xs text-white"
                 >
                   <option value="STANDARD">Standard</option>
                   <option value="TRUSTED">Trusted</option>
@@ -201,7 +201,7 @@ export default function Users() {
                   <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'credit', userId: u.id })} className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
                     $+
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'role', userId: u.id })} className="h-7 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-700">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'role', userId: u.id })} className="h-7 px-2 text-xs text-az-text-secondary hover:text-white hover:bg-az-border">
                     Role
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'ban', userId: u.id })} className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10">
@@ -213,12 +213,12 @@ export default function Users() {
           </div>
 
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-500">Showing {users.length} of {total}</span>
+            <span className="text-az-text-muted">Showing {users.length} of {total}</span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="border-slate-700 text-slate-300 h-8">
+              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="border-az-border text-az-text-secondary h-8">
                 <ChevronLeft className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} className="border-slate-700 text-slate-300 h-8">
+              <Button variant="outline" size="sm" onClick={() => setPage(p => p + 1)} className="border-az-border text-az-text-secondary h-8">
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
             </div>
@@ -255,12 +255,12 @@ function VendorPanel() {
         isPending={review.isPending}
         inputType="textarea"
       />
-      {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
+      {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {apps.map((a) => (
-        <div key={a.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={a.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
-            <p className="text-xs text-slate-400 mt-0.5">Applied {new Date(a.appliedAt || a.createdAt).toLocaleDateString()}</p>
+            <p className="text-xs text-az-text-secondary mt-0.5">Applied {new Date(a.appliedAt || a.createdAt).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => review.mutate({ id: a.id, action: 'APPROVE', reason: 'Approved' })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
@@ -272,7 +272,7 @@ function VendorPanel() {
           </div>
         </div>
       ))}
-      {!isLoading && apps.length === 0 && <p className="text-slate-500 text-sm text-center py-6">No pending vendor applications</p>}
+      {!isLoading && apps.length === 0 && <p className="text-az-text-muted text-sm text-center py-6">No pending vendor applications</p>}
     </div>
   );
 }
@@ -308,12 +308,12 @@ function TradeAccountsPanel() {
         isPending={reject.isPending}
         inputType="textarea"
       />
-      {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
+      {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {accounts.map((a) => (
-        <div key={a.id} className="bg-slate-800 rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={a.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
-            <p className="text-xs text-slate-400 mt-0.5">Status: {a.status} · Tier: {a.tier || 'N/A'}</p>
+            <p className="text-xs text-az-text-secondary mt-0.5">Status: {a.status} · Tier: {a.tier || 'N/A'}</p>
           </div>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => approve.mutate({ id: a.id })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
@@ -325,7 +325,7 @@ function TradeAccountsPanel() {
           </div>
         </div>
       ))}
-      {!isLoading && accounts.length === 0 && <p className="text-slate-500 text-sm text-center py-6">No pending trade accounts</p>}
+      {!isLoading && accounts.length === 0 && <p className="text-az-text-muted text-sm text-center py-6">No pending trade accounts</p>}
     </div>
   );
 }

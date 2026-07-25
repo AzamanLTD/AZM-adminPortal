@@ -14,6 +14,10 @@ module.exports = {
         'az-purple': '#a78bfa',
         'az-amber': '#f59e0b',
         'az-red': '#f43f5e',
+        'az-text-primary': '#e8e8f0',
+        'az-text-secondary': '#7b7b9a',
+        'az-text-muted': '#4a4a6a',
+        'az-border-bright': '#2a2a3e',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

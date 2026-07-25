@@ -28,8 +28,8 @@ export default class ErrorBoundary extends React.Component {
             <AlertTriangle className="w-6 h-6 text-red-400" />
           </div>
           <div className="text-center">
-            <h2 className="text-base font-semibold text-slate-200">Something went wrong</h2>
-            <p className="text-sm text-slate-500 mt-1 max-w-md">
+            <h2 className="text-base font-semibold text-az-text-primary">Something went wrong</h2>
+            <p className="text-sm text-az-text-muted mt-1 max-w-md">
               {this.state.error?.message || 'An unexpected error occurred while rendering this page.'}
             </p>
           </div>
@@ -37,7 +37,7 @@ export default class ErrorBoundary extends React.Component {
             variant="outline"
             size="sm"
             onClick={this.handleReset}
-            className="border-slate-700 text-slate-300 hover:bg-slate-800"
+            className="border-az-border text-az-text-secondary hover:bg-az-card"
           >
             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Try Again
           </Button>

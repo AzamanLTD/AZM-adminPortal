@@ -15,7 +15,7 @@ const KYB_COLORS = {
   VERIFIED:   'bg-emerald-500/20 text-emerald-400',
   PENDING:    'bg-amber-500/20 text-amber-400',
   REJECTED:   'bg-red-500/20 text-red-400',
-  UNVERIFIED: 'bg-slate-500/20 text-slate-400',
+  UNVERIFIED: 'bg-az-text-muted/20 text-az-text-secondary',
 };
 
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
@@ -116,7 +116,7 @@ export default function Businesses() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-white">Businesses</h1>
-        <p className="text-sm text-slate-400 mt-1">{total} total businesses</p>
+        <p className="text-sm text-az-text-secondary mt-1">{total} total businesses</p>
       </div>
 
       {/* Stats */}
@@ -130,12 +130,12 @@ export default function Businesses() {
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-az-text-muted" />
           <Input placeholder="Search by name or BIZ id…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-                 className="pl-9 bg-slate-900 border-slate-800 text-white" />
+                 className="pl-9 bg-az-surface border-az-border text-white" />
         </div>
         <select value={kybFilter} onChange={(e) => { setKybFilter(e.target.value); setPage(1); }}
-                className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white">
+                className="bg-az-surface border border-az-border rounded-lg px-3 py-2 text-sm text-white">
           <option value="">All KYB</option>
           <option value="VERIFIED">Verified</option>
           <option value="PENDING">Pending</option>
@@ -145,8 +145,8 @@ export default function Businesses() {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wide">
+      <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
           <span className="col-span-3">Business</span>
           <span className="col-span-2">Owner</span>
           <span>KYB</span>
@@ -155,31 +155,31 @@ export default function Businesses() {
           <span>Status</span>
           <span className="col-span-2 text-right">Actions</span>
         </div>
-        {isLoading && <p className="text-slate-500 text-sm text-center py-8">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
         {!isLoading && list.length === 0 && (
-          <div className="text-center py-12 text-slate-500">
+          <div className="text-center py-12 text-az-text-muted">
             <Building2 className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No businesses found</p>
           </div>
         )}
         {list.map((b) => (
-          <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-slate-800/50 last:border-0 items-center hover:bg-slate-800/20 transition-colors">
+          <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-center hover:bg-az-card/20 transition-colors">
             <div className="col-span-3 min-w-0">
               <p className="text-sm font-medium text-white truncate">{b.businessName}</p>
-              <p className="text-xs text-slate-500 az-mono truncate">{b.bizId}</p>
+              <p className="text-xs text-az-text-muted az-mono truncate">{b.bizId}</p>
             </div>
             <div className="col-span-2 min-w-0">
-              <p className="text-xs text-slate-300 truncate">{b.owner?.username || '—'}</p>
-              <p className="text-xs text-slate-500 truncate">{b.owner?.email || ''}</p>
+              <p className="text-xs text-az-text-secondary truncate">{b.owner?.username || '—'}</p>
+              <p className="text-xs text-az-text-muted truncate">{b.owner?.email || ''}</p>
             </div>
             <Badge className={`${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED} border-0 text-xs w-fit`}>{b.kybStatus}</Badge>
-            <span className="text-xs text-slate-300 text-right az-mono">{num(b.totalEscrows)}</span>
-            <span className="col-span-2 text-xs text-slate-300 text-right az-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+            <span className="text-xs text-az-text-secondary text-right az-mono">{num(b.totalEscrows)}</span>
+            <span className="col-span-2 text-xs text-az-text-secondary text-right az-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
             <Badge className={`${b.isSuspended ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'} border-0 text-xs w-fit`}>
               {b.isSuspended ? 'Suspended' : 'Active'}
             </Badge>
             <div className="col-span-2 flex gap-1 justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-slate-400 hover:text-white hover:bg-slate-700" title="View details">
+              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-az-text-secondary hover:text-white hover:bg-az-border" title="View details">
                 <Eye className="w-3.5 h-3.5" />
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/business-kyb')} className="h-7 px-2 text-xs text-blue-400 hover:text-blue-300 hover:bg-blue-500/10" title="View KYB">
@@ -202,12 +202,12 @@ export default function Businesses() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-500">Page {page} of {totalPages} · {total} total</span>
+        <span className="text-az-text-muted">Page {page} of {totalPages} · {total} total</span>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="border-slate-700 text-slate-300 h-8">
+          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="border-az-border text-az-text-secondary h-8">
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="border-slate-700 text-slate-300 h-8">
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="border-az-border text-az-text-secondary h-8">
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
         </div>

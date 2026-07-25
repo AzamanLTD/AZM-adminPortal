@@ -22,7 +22,7 @@ const ACTION_COLORS = {
   WITHDRAWAL_APPROVE: 'bg-emerald-500/20 text-emerald-400',
   WITHDRAWAL_REJECT: 'bg-red-500/20 text-red-400',
   CORPORATE_PURCHASE: 'bg-blue-500/20 text-blue-400',
-  COLD_STORAGE_TRANSFER: 'bg-slate-500/20 text-slate-400',
+  COLD_STORAGE_TRANSFER: 'bg-az-text-muted/20 text-az-text-secondary',
   PROFIT_LIQUIDATION: 'bg-purple-500/20 text-purple-400',
 };
 
@@ -47,66 +47,66 @@ export default function AuditLog() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Audit Log</h1>
-          <p className="text-sm text-slate-400 mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
+          <p className="text-sm text-az-text-secondary mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
           <FileText className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-az-text-muted" />
         <Input
           placeholder="Search by action, admin, or note…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="pl-9 bg-slate-900 border-slate-800 text-white"
+          className="pl-9 bg-az-surface border-az-border text-white"
         />
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-5 gap-3 px-4 py-2.5 border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wide">
+      <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+        <div className="grid grid-cols-5 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
           <span>Time</span><span>Action</span><span>Admin</span><span>Details</span><span>Note</span>
         </div>
-        {isLoading && <p className="text-slate-500 text-sm text-center py-8">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
         {isError && (
           <div className="flex flex-col items-center py-8 gap-2">
             <AlertTriangle className="w-5 h-5 text-red-400" />
             <p className="text-sm text-red-400">Failed to load audit log</p>
-            <p className="text-xs text-slate-500">{error?.message || 'Server error'}</p>
+            <p className="text-xs text-az-text-muted">{error?.message || 'Server error'}</p>
           </div>
         )}
         {!isLoading && !isError && entries.map((e) => (
-          <div key={e.id} className="grid grid-cols-5 gap-3 px-4 py-3 border-b border-slate-800/50 last:border-0 items-start hover:bg-slate-800/20 transition-colors">
-            <span className="text-xs text-slate-500">{new Date(e.createdAt).toLocaleString()}</span>
-            <Badge className={`${ACTION_COLORS[e.action] || 'bg-slate-500/20 text-slate-400'} border-0 text-xs w-fit`}>
+          <div key={e.id} className="grid grid-cols-5 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-start hover:bg-az-card/20 transition-colors">
+            <span className="text-xs text-az-text-muted">{new Date(e.createdAt).toLocaleString()}</span>
+            <Badge className={`${ACTION_COLORS[e.action] || 'bg-az-text-muted/20 text-az-text-secondary'} border-0 text-xs w-fit`}>
               {e.action.replace(/_/g, ' ')}
             </Badge>
-            <span className="text-xs text-slate-400 truncate">{e.admin}</span>
-            <div className="text-xs text-slate-400">
+            <span className="text-xs text-az-text-secondary truncate">{e.admin}</span>
+            <div className="text-xs text-az-text-secondary">
               {e.field && <span>{e.field}: </span>}
               {e.oldValue && <span className="text-red-400">{e.oldValue}</span>}
-              {e.oldValue && e.newValue && <span className="text-slate-600"> → </span>}
+              {e.oldValue && e.newValue && <span className="text-az-text-muted"> → </span>}
               {e.newValue && <span className="text-emerald-400">{e.newValue}</span>}
-              {e.targetId && <span className="text-slate-500 ml-1">({e.targetId})</span>}
+              {e.targetId && <span className="text-az-text-muted ml-1">({e.targetId})</span>}
             </div>
-            <span className="text-xs text-slate-500 italic">{e.note || '–'}</span>
+            <span className="text-xs text-az-text-muted italic">{e.note || '–'}</span>
           </div>
         ))}
         {!isLoading && !isError && entries.length === 0 && (
-          <p className="text-slate-500 text-sm text-center py-8">
+          <p className="text-az-text-muted text-sm text-center py-8">
             {search ? `No entries matching "${search}"` : 'No audit entries yet'}
           </p>
         )}
       </div>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-500">Showing {entries.length} of {total}</span>
+        <span className="text-az-text-muted">Showing {entries.length} of {total}</span>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="border-slate-700 text-slate-300 h-8">
+          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="border-az-border text-az-text-secondary h-8">
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" disabled={entries.length === 0} onClick={() => setPage(p => p + 1)} className="border-slate-700 text-slate-300 h-8">
+          <Button variant="outline" size="sm" disabled={entries.length === 0} onClick={() => setPage(p => p + 1)} className="border-az-border text-az-text-secondary h-8">
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
         </div>

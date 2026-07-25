@@ -27,23 +27,23 @@ export default function AiOps() {
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-xl font-bold text-white">AI Operations</h1>
-        <p className="text-sm text-slate-400 mt-1">AI-powered insights and loyalty tools.</p>
+        <p className="text-sm text-az-text-secondary mt-1">AI-powered insights and loyalty tools.</p>
       </div>
 
       {/* CFO Insights */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+      <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-purple-400" />
-          <h2 className="text-sm font-semibold text-slate-300">CFO Insights</h2>
+          <h2 className="text-sm font-semibold text-az-text-secondary">CFO Insights</h2>
         </div>
-        {loadingInsights && <p className="text-slate-500 text-sm">Generating insights…</p>}
+        {loadingInsights && <p className="text-az-text-muted text-sm">Generating insights…</p>}
         {insights && (
           <>
-            <p className="text-sm text-slate-300 leading-relaxed">{insights.summary}</p>
+            <p className="text-sm text-az-text-secondary leading-relaxed">{insights.summary}</p>
             {insights.recommendations?.length > 0 && (
               <ul className="space-y-2 mt-3">
                 {insights.recommendations.map((r, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-slate-400">
+                  <li key={i} className="flex items-start gap-2 text-xs text-az-text-secondary">
                     <TrendingUp className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
                     {r}
                   </li>
@@ -55,22 +55,22 @@ export default function AiOps() {
       </div>
 
       {/* Discount Candidates */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+      <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Gift className="w-4 h-4 text-amber-400" />
-          <h2 className="text-sm font-semibold text-slate-300">Loyalty Discount Candidates</h2>
+          <h2 className="text-sm font-semibold text-az-text-secondary">Loyalty Discount Candidates</h2>
         </div>
-        {loadingCandidates && <p className="text-slate-500 text-sm">Loading…</p>}
+        {loadingCandidates && <p className="text-az-text-muted text-sm">Loading…</p>}
         {candidates.map((c) => (
-          <div key={c.userId} className="flex items-center gap-4 bg-slate-800 rounded-xl p-3">
+          <div key={c.userId} className="flex items-center gap-4 bg-az-card rounded-xl p-3">
             <div className="flex-1">
               <p className="text-sm font-medium text-white">{c.userName}</p>
-              <p className="text-xs text-slate-400">{c.tradeCount} trades · ${c.totalVolume} volume · {c.reason}</p>
+              <p className="text-xs text-az-text-secondary">{c.tradeCount} trades · ${c.totalVolume} volume · {c.reason}</p>
             </div>
             <Input
               type="number"
               placeholder="$"
-              className="w-20 bg-slate-700 border-slate-600 text-white text-sm h-8"
+              className="w-20 bg-az-border border-az-border-bright text-white text-sm h-8"
               value={discountAmounts[c.userId] || ''}
               onChange={(e) => setDiscountAmounts((d) => ({ ...d, [c.userId]: e.target.value }))}
             />
@@ -85,7 +85,7 @@ export default function AiOps() {
           </div>
         ))}
         {!loadingCandidates && candidates.length === 0 && (
-          <p className="text-slate-500 text-sm text-center py-4">No discount candidates identified yet.</p>
+          <p className="text-az-text-muted text-sm text-center py-4">No discount candidates identified yet.</p>
         )}
       </div>
     </div>

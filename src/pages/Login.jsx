@@ -25,7 +25,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-az-black flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -33,7 +33,7 @@ export default function Login() {
             <Shield className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-xl font-bold text-white">Azaman Admin</h1>
-          <p className="text-sm text-slate-400 mt-1">Control Center Access</p>
+          <p className="text-sm text-az-text-secondary mt-1">Control Center Access</p>
         </div>
 
         {/* Form */}
@@ -46,19 +46,19 @@ export default function Login() {
           )}
 
           <div>
-            <label className="text-xs text-slate-400 block mb-1.5">Email</label>
+            <label className="text-xs text-az-text-secondary block mb-1.5">Email</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@azaman.app"
               required
-              className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-600"
+              className="bg-az-surface border-az-border text-white placeholder:text-az-text-muted"
             />
           </div>
 
           <div>
-            <label className="text-xs text-slate-400 block mb-1.5">Password</label>
+            <label className="text-xs text-az-text-secondary block mb-1.5">Password</label>
             <div className="relative">
               <Input
                 type={showPassword ? 'text' : 'password'}
@@ -66,12 +66,12 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-600 pr-10"
+                className="bg-az-surface border-az-border text-white placeholder:text-az-text-muted pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-az-text-muted hover:text-az-text-secondary"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -94,7 +94,7 @@ export default function Login() {
           </Button>
         </form>
 
-        <p className="text-xs text-slate-600 text-center mt-6">
+        <p className="text-xs text-az-text-muted text-center mt-6">
           Only admin accounts can access this portal.
         </p>
       </div>

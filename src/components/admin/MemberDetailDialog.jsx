@@ -12,20 +12,20 @@ const KYC_COLORS = {
   VERIFIED: 'bg-emerald-500/20 text-emerald-400',
   PENDING: 'bg-amber-500/20 text-amber-400',
   REJECTED: 'bg-red-500/20 text-red-400',
-  UNVERIFIED: 'bg-slate-600/30 text-slate-400',
+  UNVERIFIED: 'bg-az-border-bright/30 text-az-text-secondary',
 };
 const POR_COLORS = {
   VERIFIED: 'bg-emerald-500/20 text-emerald-400',
   PENDING_REVIEW: 'bg-amber-500/20 text-amber-400',
   REJECTED: 'bg-red-500/20 text-red-400',
   EXPIRED: 'bg-orange-500/20 text-orange-400',
-  NOT_SUBMITTED: 'bg-slate-600/30 text-slate-400',
+  NOT_SUBMITTED: 'bg-az-border-bright/30 text-az-text-secondary',
 };
 
 function Stat({ label, value, color = 'text-white' }) {
   return (
-    <div className="bg-slate-800/50 rounded-lg px-3 py-2">
-      <p className="text-[11px] text-slate-500 uppercase tracking-wide">{label}</p>
+    <div className="bg-az-card/50 rounded-lg px-3 py-2">
+      <p className="text-[11px] text-az-text-muted uppercase tracking-wide">{label}</p>
       <p className={`text-sm font-semibold ${color}`}>{value}</p>
     </div>
   );
@@ -35,9 +35,9 @@ function Section({ icon: Icon, title, count, children }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <Icon className="w-3.5 h-3.5 text-slate-400" />
-        <h4 className="text-xs font-semibold text-slate-300 uppercase tracking-wide">{title}</h4>
-        {count != null && <span className="text-xs text-slate-500">({count})</span>}
+        <Icon className="w-3.5 h-3.5 text-az-text-secondary" />
+        <h4 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">{title}</h4>
+        {count != null && <span className="text-xs text-az-text-muted">({count})</span>}
       </div>
       {children}
     </div>
@@ -51,7 +51,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-az-surface border-az-border text-az-text-primary max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Fingerprint className="w-4 h-4 text-emerald-400" />
@@ -59,7 +59,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
           </DialogTitle>
         </DialogHeader>
 
-        {isLoading && <p className="text-slate-500 text-sm py-6 text-center">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm py-6 text-center">Loading…</p>}
 
         {u && (
           <div className="space-y-5">
@@ -72,7 +72,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-base font-bold text-white">{u.displayName || u.username}</p>
-                <p className="text-xs text-slate-500">@{u.username} · {u.email}</p>
+                <p className="text-xs text-az-text-muted">@{u.username} · {u.email}</p>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <Badge className={`${KYC_COLORS[u.kycStatus] || KYC_COLORS.UNVERIFIED} border-0 text-xs`}>
                     KYC {u.kycStatus}
@@ -88,7 +88,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             </div>
 
             {/* Decrypted identity card */}
-            <div className="bg-slate-950 border border-amber-500/20 rounded-xl p-4 space-y-3">
+            <div className="bg-az-black border border-amber-500/20 rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-3.5 h-3.5 text-amber-400" />
                 <span className="text-xs font-semibold text-amber-400 uppercase tracking-wide">
@@ -98,8 +98,8 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
               <div className="grid grid-cols-2 gap-2">
                 <Stat label="Legal Name" value={u.legalName || '—'} />
                 <Stat label="ID Type" value={u.idType || '—'} />
-                <div className="col-span-2 bg-slate-800/50 rounded-lg px-3 py-2">
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">ID Number</p>
+                <div className="col-span-2 bg-az-card/50 rounded-lg px-3 py-2">
+                  <p className="text-[11px] text-az-text-muted uppercase tracking-wide">ID Number</p>
                   <p className="text-sm font-mono font-semibold text-amber-300">
                     {u.idNumber || (u.idNumberOnFile ? '⚠ on file (decryption unavailable)' : '—')}
                   </p>
@@ -109,19 +109,19 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                 <div className="flex gap-2">
                   {u.idImageFront && (
                     <a href={u.idImageFront} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-az-border text-az-text-secondary hover:bg-az-card">
                       ID Front
                     </a>
                   )}
                   {u.idImageBack && (
                     <a href={u.idImageBack} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-az-border text-az-text-secondary hover:bg-az-card">
                       ID Back
                     </a>
                   )}
                   {u.proofOfResidencyUrl && (
                     <a href={u.proofOfResidencyUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-az-border text-az-text-secondary hover:bg-az-card">
                       Residency Doc
                     </a>
                   )}
@@ -142,17 +142,17 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             <Section icon={FileText} title="Susu Memberships" count={h?.memberships?.length}>
               <div className="space-y-1.5">
                 {(h?.memberships || []).map((m) => (
-                  <div key={m.susuMemberId} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2 text-xs">
-                    <span className="text-slate-300 truncate">{m.susuName}</span>
+                  <div key={m.susuMemberId} className="flex items-center justify-between bg-az-card/40 rounded-lg px-3 py-2 text-xs">
+                    <span className="text-az-text-secondary truncate">{m.susuName}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge className="bg-slate-700 text-slate-300 border-0 text-[10px]">slot {m.payoutSlot ?? '—'}</Badge>
-                      <Badge className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-red-500/20 text-red-400' : m.memberStatus === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-300'}`}>
+                      <Badge className="bg-az-border text-az-text-secondary border-0 text-[10px]">slot {m.payoutSlot ?? '—'}</Badge>
+                      <Badge className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-red-500/20 text-red-400' : m.memberStatus === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-az-border text-az-text-secondary'}`}>
                         {m.memberStatus}
                       </Badge>
                     </div>
                   </div>
                 ))}
-                {(!h?.memberships || h.memberships.length === 0) && <p className="text-xs text-slate-600">No memberships</p>}
+                {(!h?.memberships || h.memberships.length === 0) && <p className="text-xs text-az-text-muted">No memberships</p>}
               </div>
             </Section>
 
@@ -160,13 +160,13 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             <Section icon={AlertTriangle} title="Seizures" count={h?.seizures?.length}>
               <div className="space-y-1.5">
                 {(h?.seizures || []).map((s) => (
-                  <div key={s.id} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2 text-xs">
+                  <div key={s.id} className="flex items-center justify-between bg-az-card/40 rounded-lg px-3 py-2 text-xs">
                     <span className="text-red-400 font-medium">−${Number(s.seizedFromAvailable).toFixed(2)}</span>
-                    <span className="text-slate-500">shortfall ${Number(s.shortfall).toFixed(2)}</span>
-                    <span className="text-slate-500">{new Date(s.at).toLocaleDateString()}</span>
+                    <span className="text-az-text-muted">shortfall ${Number(s.shortfall).toFixed(2)}</span>
+                    <span className="text-az-text-muted">{new Date(s.at).toLocaleDateString()}</span>
                   </div>
                 ))}
-                {(!h?.seizures || h.seizures.length === 0) && <p className="text-xs text-slate-600">No seizures</p>}
+                {(!h?.seizures || h.seizures.length === 0) && <p className="text-xs text-az-text-muted">No seizures</p>}
               </div>
             </Section>
 
@@ -174,13 +174,13 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             <Section icon={TrendingDown} title="Voucher Slashes Triggered (by this member's defaults)" count={h?.slashesReceived?.length}>
               <div className="space-y-1.5">
                 {(h?.slashesReceived || []).map((s) => (
-                  <div key={s.id} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2 text-xs">
-                    <span className="text-slate-400">voucher #{s.voucherId ?? '—'}</span>
+                  <div key={s.id} className="flex items-center justify-between bg-az-card/40 rounded-lg px-3 py-2 text-xs">
+                    <span className="text-az-text-secondary">voucher #{s.voucherId ?? '—'}</span>
                     <span className="text-red-400 font-medium">−{Number(s.azmDeducted).toFixed(0)} AZM</span>
-                    <span className="text-slate-500">{new Date(s.at).toLocaleDateString()}</span>
+                    <span className="text-az-text-muted">{new Date(s.at).toLocaleDateString()}</span>
                   </div>
                 ))}
-                {(!h?.slashesReceived || h.slashesReceived.length === 0) && <p className="text-xs text-slate-600">None</p>}
+                {(!h?.slashesReceived || h.slashesReceived.length === 0) && <p className="text-xs text-az-text-muted">None</p>}
               </div>
             </Section>
 
@@ -188,13 +188,13 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             <Section icon={Hand} title="Penalties Taken as Voucher (their invitees defaulted)" count={h?.slashesIssued?.length}>
               <div className="space-y-1.5">
                 {(h?.slashesIssued || []).map((s) => (
-                  <div key={s.id} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2 text-xs">
-                    <span className="text-slate-400">invitee #{s.vouchedUserId}</span>
+                  <div key={s.id} className="flex items-center justify-between bg-az-card/40 rounded-lg px-3 py-2 text-xs">
+                    <span className="text-az-text-secondary">invitee #{s.vouchedUserId}</span>
                     <span className="text-red-400 font-medium">−{Number(s.azmDeducted).toFixed(0)} AZM</span>
-                    <span className="text-slate-500">trust {s.trustRatingBefore}→{s.trustRatingAfter}</span>
+                    <span className="text-az-text-muted">trust {s.trustRatingBefore}→{s.trustRatingAfter}</span>
                   </div>
                 ))}
-                {(!h?.slashesIssued || h.slashesIssued.length === 0) && <p className="text-xs text-slate-600">None</p>}
+                {(!h?.slashesIssued || h.slashesIssued.length === 0) && <p className="text-xs text-az-text-muted">None</p>}
               </div>
             </Section>
           </div>

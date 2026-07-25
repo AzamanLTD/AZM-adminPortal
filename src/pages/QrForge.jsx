@@ -187,7 +187,7 @@ export default function QrForge() {
             <QrCode className="w-5 h-5 text-yellow-400" />
             QR Forge
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-az-text-secondary mt-0.5">
             Generate high-resolution, print-ready QR codes. Reprogram the destination any time — no reprinting needed.
           </p>
         </div>
@@ -203,35 +203,35 @@ export default function QrForge() {
         <div className="space-y-5">
 
           {/* Permanent URL */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+          <div className="bg-az-surface border border-az-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Link2 className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-semibold text-slate-200">Permanent QR URL</span>
-              <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">baked into every printed code</span>
+              <span className="text-sm font-semibold text-az-text-primary">Permanent QR URL</span>
+              <span className="text-xs text-az-text-muted bg-az-card px-2 py-0.5 rounded-full">baked into every printed code</span>
             </div>
-            <div className="flex items-center gap-2 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-2 bg-az-black border border-az-border rounded-lg px-3 py-2.5">
               <code className="text-xs text-yellow-300 flex-1 truncate font-mono">{PERMANENT_QR_URL}</code>
               <button
                 onClick={() => { navigator.clipboard.writeText(PERMANENT_QR_URL); toast.success('Copied!'); }}
-                className="text-slate-500 hover:text-white transition-colors text-xs px-2 py-0.5 rounded"
+                className="text-az-text-muted hover:text-white transition-colors text-xs px-2 py-0.5 rounded"
               >
                 Copy
               </button>
             </div>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-az-text-muted mt-2">
               This URL never changes. It instantly redirects visitors to the destination below.
             </p>
           </div>
 
           {/* Destination editor */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-400" />
-              <span className="text-sm font-semibold text-slate-200">Current Destination</span>
-              {destLoading && <Loader2 className="w-3.5 h-3.5 text-slate-500 animate-spin" />}
+              <span className="text-sm font-semibold text-az-text-primary">Current Destination</span>
+              {destLoading && <Loader2 className="w-3.5 h-3.5 text-az-text-muted animate-spin" />}
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-slate-800/60 border border-slate-700 rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-az-card/60 border border-az-border rounded-lg">
               <a
                 href={currentDest}
                 target="_blank"
@@ -241,25 +241,25 @@ export default function QrForge() {
                 {currentLabel}
                 <ExternalLink className="w-3 h-3 shrink-0" />
               </a>
-              <span className="text-xs text-slate-500 truncate max-w-[200px] hidden sm:block">{currentDest}</span>
+              <span className="text-xs text-az-text-muted truncate max-w-[200px] hidden sm:block">{currentDest}</span>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block">New Destination URL</label>
+                <label className="text-xs text-az-text-secondary mb-1.5 block">New Destination URL</label>
                 <Input
                   value={editUrl}
                   onChange={(e) => setEditUrl(e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  className="bg-az-card border-az-border text-white font-mono text-sm"
                   placeholder="https://..."
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1.5 block">Label (for your records)</label>
+                <label className="text-xs text-az-text-secondary mb-1.5 block">Label (for your records)</label>
                 <Input
                   value={editLabel}
                   onChange={(e) => setEditLabel(e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white text-sm"
+                  className="bg-az-card border-az-border text-white text-sm"
                   placeholder="e.g. Moolre Vote Page"
                 />
               </div>
@@ -267,7 +267,7 @@ export default function QrForge() {
                 <Button
                   onClick={() => update.mutate({ url: editUrl, label: editLabel })}
                   disabled={update.isPending || !editUrl || editUrl === currentDest}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-semibold gap-1.5"
+                  className="bg-yellow-500 hover:bg-yellow-400 text-az-black font-semibold gap-1.5"
                 >
                   {update.isPending
                     ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -281,22 +281,22 @@ export default function QrForge() {
                   <div className="relative">
                     <button
                       onClick={() => setShowHistory((v) => !v)}
-                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-white transition-colors px-3 py-2 rounded-lg border border-slate-700 hover:border-slate-600"
+                      className="flex items-center gap-1 text-xs text-az-text-secondary hover:text-white transition-colors px-3 py-2 rounded-lg border border-az-border hover:border-az-border-bright"
                     >
                       <Clock className="w-3 h-3" />
                       History
                       <ChevronDown className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} />
                     </button>
                     {showHistory && (
-                      <div className="absolute top-full mt-1 left-0 w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                      <div className="absolute top-full mt-1 left-0 w-80 bg-az-card border border-az-border rounded-xl shadow-2xl z-50 overflow-hidden">
                         {history.map((h, i) => (
                           <button
                             key={i}
                             onClick={() => { setEditUrl(h.url); setEditLabel(h.label || ''); setShowHistory(false); }}
-                            className="w-full text-left px-4 py-3 hover:bg-slate-700 transition-colors border-b border-slate-700/50 last:border-0"
+                            className="w-full text-left px-4 py-3 hover:bg-az-border transition-colors border-b border-az-border/50 last:border-0"
                           >
                             <p className="text-sm text-white font-medium truncate">{h.label || 'Unlabelled'}</p>
-                            <p className="text-xs text-slate-400 truncate mt-0.5">{h.url}</p>
+                            <p className="text-xs text-az-text-secondary truncate mt-0.5">{h.url}</p>
                           </button>
                         ))}
                       </div>
@@ -308,11 +308,11 @@ export default function QrForge() {
           </div>
 
           {/* Download panel */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Download className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-slate-200">Download Sizes</span>
+                <span className="text-sm font-semibold text-az-text-primary">Download Sizes</span>
               </div>
               <div className="flex gap-1.5 flex-wrap">
                 {SCHEMES.map((s) => (
@@ -323,24 +323,24 @@ export default function QrForge() {
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                       schemeKey === s.key
                         ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
-                        : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                        : 'border-az-border bg-az-card text-az-text-secondary hover:border-az-border-bright'
                     }`}
                   >
                     {/* Mini swatch */}
                     <span
-                      className="w-3.5 h-3.5 rounded-sm border border-slate-600 shrink-0 flex items-center justify-center"
+                      className="w-3.5 h-3.5 rounded-sm border border-az-border-bright shrink-0 flex items-center justify-center"
                       style={{ backgroundColor: s.previewBg || 'transparent', backgroundImage: s.previewBg ? 'none' : 'repeating-conic-gradient(#475569 0% 25%, #1e293b 0% 50%)', backgroundSize: '6px 6px' }}
                     >
                       <span className="w-1.5 h-1.5 rounded-[1px]" style={{ backgroundColor: s.previewDot }} />
                     </span>
                     <span>{s.label}</span>
-                    <span className="text-slate-500">{s.sub}</span>
+                    <span className="text-az-text-muted">{s.sub}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-az-text-muted">
               {scheme.light === '#00000000'
                 ? `${scheme.label} QR on transparent background — ideal for garments, merch, and dark/coloured surfaces.`
                 : scheme.dark === '#ffffff'
@@ -356,18 +356,18 @@ export default function QrForge() {
                     key={key}
                     onClick={() => handleDownload(key)}
                     disabled={!!downloading}
-                    className="flex items-center gap-3 p-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 rounded-xl transition-all group disabled:opacity-60 text-left"
+                    className="flex items-center gap-3 p-3.5 bg-az-card hover:bg-az-border border border-az-border hover:border-az-border-bright rounded-xl transition-all group disabled:opacity-60 text-left"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-slate-700 group-hover:bg-slate-600 flex items-center justify-center shrink-0 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-az-border group-hover:bg-az-border-bright flex items-center justify-center shrink-0 transition-colors">
                       {isDownloading
                         ? <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
                         : <Icon className="w-4 h-4 text-yellow-400" />}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{label}</p>
-                      <p className="text-xs text-slate-500">{sub}</p>
+                      <p className="text-xs text-az-text-muted">{sub}</p>
                     </div>
-                    <Download className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-400 ml-auto transition-colors" />
+                    <Download className="w-3.5 h-3.5 text-az-text-muted group-hover:text-az-text-secondary ml-auto transition-colors" />
                   </button>
                 );
               })}
@@ -375,8 +375,8 @@ export default function QrForge() {
 
             <div className="flex items-start gap-2 p-3 bg-yellow-500/5 border border-yellow-500/15 rounded-lg">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-slate-400">
-                All exports use <strong className="text-slate-200">Error Correction Level H</strong> — the QR scans even if 30% is covered by a logo or worn. For large print jobs use <strong className="text-slate-200">Ultra HD (5000px)</strong>.
+              <p className="text-xs text-az-text-secondary">
+                All exports use <strong className="text-az-text-primary">Error Correction Level H</strong> — the QR scans even if 30% is covered by a logo or worn. For large print jobs use <strong className="text-az-text-primary">Ultra HD (5000px)</strong>.
               </p>
             </div>
           </div>
@@ -386,8 +386,8 @@ export default function QrForge() {
         <div className="space-y-4">
 
           {/* QR canvas */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <p className="text-xs font-medium text-slate-400 mb-3 text-center">
+          <div className="bg-az-surface border border-az-border rounded-xl p-5">
+            <p className="text-xs font-medium text-az-text-secondary mb-3 text-center">
               Preview — scan to test the redirect
             </p>
             <div
@@ -400,37 +400,37 @@ export default function QrForge() {
               <canvas ref={canvasRef} className="rounded-lg max-w-full block" />
             </div>
             {scheme.light === '#00000000' && (
-              <p className="text-center text-xs text-slate-500 mt-2">Checkerboard = transparent pixels</p>
+              <p className="text-center text-xs text-az-text-muted mt-2">Checkerboard = transparent pixels</p>
             )}
           </div>
 
           {/* Destination preview */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-800 flex items-center gap-2">
-              <Monitor className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-xs text-slate-400 font-medium">Destination Preview</span>
+          <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-az-border flex items-center gap-2">
+              <Monitor className="w-3.5 h-3.5 text-az-text-muted" />
+              <span className="text-xs text-az-text-secondary font-medium">Destination Preview</span>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 bg-az-card rounded-lg px-3 py-2">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 rounded-full bg-red-500/60" />
                   <span className="w-2 h-2 rounded-full bg-yellow-500/60" />
                   <span className="w-2 h-2 rounded-full bg-emerald-500/60" />
                 </div>
-                <span className="text-xs text-slate-400 truncate flex-1 font-mono">{currentDest}</span>
+                <span className="text-xs text-az-text-secondary truncate flex-1 font-mono">{currentDest}</span>
               </div>
 
-              <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
+              <div className="bg-az-card rounded-xl overflow-hidden border border-az-border">
                 <div className="h-2 bg-gradient-to-r from-yellow-500 via-yellow-400 to-orange-500" />
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-black text-slate-900">A</div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-black text-az-black">A</div>
                     <div>
                       <p className="text-sm font-bold text-white">Azaman</p>
-                      <p className="text-xs text-slate-400">Moolre Startup Leaderboard</p>
+                      <p className="text-xs text-az-text-secondary">Moolre Startup Leaderboard</p>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs text-az-text-secondary leading-relaxed">
                     Scan this QR to vote for Azaman on the Moolre leaderboard. Every vote counts toward startup funding.
                   </p>
                   <a
@@ -450,7 +450,7 @@ export default function QrForge() {
           {/* Info callout */}
           <div className="flex items-start gap-2.5 p-3.5 bg-blue-500/8 border border-blue-500/20 rounded-xl">
             <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-az-text-secondary leading-relaxed">
               <strong className="text-blue-300">No reprinting ever needed.</strong> When you change the destination above, every already-printed QR code updates instantly via the permanent relay URL.
             </p>
           </div>

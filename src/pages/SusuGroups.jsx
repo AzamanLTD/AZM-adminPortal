@@ -16,23 +16,23 @@ import { toast } from 'sonner';
 const STATUS_STYLES = {
   CONFIGURING: 'bg-blue-500/20 text-blue-400',
   ACTIVE: 'bg-emerald-500/20 text-emerald-400',
-  COMPLETED: 'bg-slate-600/30 text-slate-300',
-  CANCELLED: 'bg-slate-600/30 text-slate-400',
+  COMPLETED: 'bg-az-border-bright/30 text-az-text-secondary',
+  CANCELLED: 'bg-az-border-bright/30 text-az-text-secondary',
   FROZEN_DISPUTE: 'bg-red-500/20 text-red-400',
 };
 const CYCLE_STYLES = {
-  PENDING: 'bg-slate-600/30 text-slate-300',
+  PENDING: 'bg-az-border-bright/30 text-az-text-secondary',
   COLLECTING: 'bg-amber-500/20 text-amber-400',
   COLLECTING_GRACE: 'bg-red-500/20 text-red-400',
   PAID_OUT: 'bg-emerald-500/20 text-emerald-400',
   DEFAULTED: 'bg-red-500/20 text-red-400',
 };
 const MEMBER_STYLES = {
-  PENDING_VOUCH: 'bg-slate-600/30 text-slate-400',
+  PENDING_VOUCH: 'bg-az-border-bright/30 text-az-text-secondary',
   PENDING_CONTRACT: 'bg-amber-500/20 text-amber-400',
   ACTIVE: 'bg-emerald-500/20 text-emerald-400',
   DEFAULTED: 'bg-red-500/20 text-red-400',
-  REMOVED: 'bg-slate-600/30 text-slate-500',
+  REMOVED: 'bg-az-border-bright/30 text-az-text-muted',
 };
 
 const FILTERS = ['ALL', 'ACTIVE', 'CONFIGURING', 'FROZEN_DISPUTE', 'COMPLETED', 'CANCELLED'];
@@ -62,36 +62,36 @@ function ResolveDialog({ susu, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
+      <DialogContent className="bg-az-surface border-az-border text-az-text-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Snowflake className="w-4 h-4 text-red-400" /> Resolve Frozen Susu
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-az-text-secondary">
             "{susu?.name}" is frozen ({susu?.frozenReason || 'dispute'}). Choose how to resolve the incident.
           </p>
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => setAction('REFUND_AND_CLOSE')}
-              className={`p-3 rounded-lg border text-left transition-colors ${action === 'REFUND_AND_CLOSE' ? 'border-red-500 bg-red-500/10' : 'border-slate-700 hover:border-slate-600'}`}>
+              className={`p-3 rounded-lg border text-left transition-colors ${action === 'REFUND_AND_CLOSE' ? 'border-red-500 bg-red-500/10' : 'border-az-border hover:border-az-border-bright'}`}>
               <RotateCcw className="w-4 h-4 text-red-400 mb-1.5" />
               <p className="text-sm font-medium text-white">Refund & Close</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Refund the open cycle's contributions, cancel the Susu.</p>
+              <p className="text-[11px] text-az-text-muted mt-0.5">Refund the open cycle's contributions, cancel the Susu.</p>
             </button>
             <button onClick={() => setAction('RESUME')}
-              className={`p-3 rounded-lg border text-left transition-colors ${action === 'RESUME' ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-700 hover:border-slate-600'}`}>
+              className={`p-3 rounded-lg border text-left transition-colors ${action === 'RESUME' ? 'border-emerald-500 bg-emerald-500/10' : 'border-az-border hover:border-az-border-bright'}`}>
               <Play className="w-4 h-4 text-emerald-400 mb-1.5" />
               <p className="text-sm font-medium text-white">Resume</p>
-              <p className="text-[11px] text-slate-500 mt-0.5">Lift the freeze and let cycles continue.</p>
+              <p className="text-[11px] text-az-text-muted mt-0.5">Lift the freeze and let cycles continue.</p>
             </button>
           </div>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
             placeholder="Resolution notes (required, recorded against the incident)…"
-            className="bg-slate-800 border-slate-700 text-white text-sm resize-none" />
+            className="bg-az-card border-az-border text-white text-sm resize-none" />
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-slate-400">Cancel</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-az-text-secondary">Cancel</Button>
           <Button onClick={submit} disabled={!notes.trim() || resolve.isPending}
             className={action === 'RESUME' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}>
             {action === 'RESUME' ? 'Resume Susu' : 'Refund & Close'}
@@ -107,7 +107,7 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-az-surface border-az-border text-az-text-primary max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PiggyBank className="w-4 h-4 text-emerald-400" />
@@ -115,15 +115,15 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
           </DialogTitle>
         </DialogHeader>
 
-        {isLoading && <p className="text-slate-500 text-sm py-6 text-center">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm py-6 text-center">Loading…</p>}
 
         {susu && (
           <div className="space-y-5">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className={`${STATUS_STYLES[susu.status]} border-0`}>{susu.status}</Badge>
-              <span className="text-sm text-slate-400">${Number(susu.contributionUsdc).toFixed(2)} / {susu.frequency.toLowerCase()}</span>
-              <span className="text-sm text-slate-500">· pool ${Number(susu.projectedPool).toFixed(2)}</span>
-              <span className="text-sm text-slate-500">· {susu.totalCycles} cycles</span>
+              <span className="text-sm text-az-text-secondary">${Number(susu.contributionUsdc).toFixed(2)} / {susu.frequency.toLowerCase()}</span>
+              <span className="text-sm text-az-text-muted">· pool ${Number(susu.projectedPool).toFixed(2)}</span>
+              <span className="text-sm text-az-text-muted">· {susu.totalCycles} cycles</span>
             </div>
 
             {susu.status === 'FROZEN_DISPUTE' && (
@@ -137,21 +137,21 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
 
             {/* Members */}
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-2">
+              <h4 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide flex items-center gap-2">
                 <Users className="w-3.5 h-3.5" /> Members ({susu.members.length})
               </h4>
               <div className="space-y-1.5">
                 {susu.members.map((m) => (
                   <button key={m.susuMemberId} onClick={() => onMember(m.userId)}
-                    className="w-full flex items-center justify-between bg-slate-800/40 hover:bg-slate-800 rounded-lg px-3 py-2 text-sm transition-colors">
+                    className="w-full flex items-center justify-between bg-az-card/40 hover:bg-az-card rounded-lg px-3 py-2 text-sm transition-colors">
                     <div className="flex items-center gap-2 min-w-0">
-                      <Badge className="bg-slate-700 text-slate-300 border-0 text-[10px]">#{m.payoutSlot ?? '—'}</Badge>
-                      <span className="text-slate-200 truncate">{m.displayName}</span>
+                      <Badge className="bg-az-border text-az-text-secondary border-0 text-[10px]">#{m.payoutSlot ?? '—'}</Badge>
+                      <span className="text-az-text-primary truncate">{m.displayName}</span>
                       {m.autoRetainNextCycle && <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px]">auto-retain</Badge>}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Badge className={`${MEMBER_STYLES[m.status]} border-0 text-[10px]`}>{m.status}</Badge>
-                      <Eye className="w-3.5 h-3.5 text-slate-500" />
+                      <Eye className="w-3.5 h-3.5 text-az-text-muted" />
                     </div>
                   </button>
                 ))}
@@ -160,19 +160,19 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
 
             {/* Cycle schedule */}
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-2">
+              <h4 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide flex items-center gap-2">
                 <CalendarClock className="w-3.5 h-3.5" /> Cycle Schedule ({susu.cycles.length})
               </h4>
-              <div className="bg-slate-800/40 rounded-lg overflow-hidden">
-                <div className="grid grid-cols-5 gap-2 px-3 py-2 border-b border-slate-700/50 text-[11px] text-slate-500 uppercase">
+              <div className="bg-az-card/40 rounded-lg overflow-hidden">
+                <div className="grid grid-cols-5 gap-2 px-3 py-2 border-b border-az-border/50 text-[11px] text-az-text-muted uppercase">
                   <span>#</span><span>Date</span><span>Recipient</span><span>Amount</span><span>Status</span>
                 </div>
                 {susu.cycles.map((c) => (
-                  <div key={c.id} className="grid grid-cols-5 gap-2 px-3 py-2 border-b border-slate-700/30 last:border-0 text-xs items-center">
-                    <span className="text-slate-400">{c.cycleNumber}</span>
-                    <span className="text-slate-400">{fmtDate(c.collectionDate)}</span>
-                    <span className="text-slate-400">#{c.payoutUserId}</span>
-                    <span className="text-slate-300">${Number(c.payoutAmount).toFixed(2)}</span>
+                  <div key={c.id} className="grid grid-cols-5 gap-2 px-3 py-2 border-b border-az-border/30 last:border-0 text-xs items-center">
+                    <span className="text-az-text-secondary">{c.cycleNumber}</span>
+                    <span className="text-az-text-secondary">{fmtDate(c.collectionDate)}</span>
+                    <span className="text-az-text-secondary">#{c.payoutUserId}</span>
+                    <span className="text-az-text-secondary">${Number(c.payoutAmount).toFixed(2)}</span>
                     <span>
                       <Badge className={`${CYCLE_STYLES[c.status]} border-0 text-[10px]`}>
                         {c.status === 'COLLECTING_GRACE' ? 'GRACE 24H' : c.status}
@@ -186,20 +186,20 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
             {/* Incidents */}
             {susu.warRoomAlerts?.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wide flex items-center gap-2">
+                <h4 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5" /> Incidents ({susu.warRoomAlerts.length})
                 </h4>
                 <div className="space-y-1.5">
                   {susu.warRoomAlerts.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between bg-slate-800/40 rounded-lg px-3 py-2 text-xs">
-                      <span className="text-slate-300">{a.alertType.replace(/_/g, ' ')}</span>
+                    <div key={a.id} className="flex items-center justify-between bg-az-card/40 rounded-lg px-3 py-2 text-xs">
+                      <span className="text-az-text-secondary">{a.alertType.replace(/_/g, ' ')}</span>
                       <div className="flex items-center gap-2">
                         {a.resolution
                           ? <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px]">{a.resolution}</Badge>
                           : a.acknowledgedAt
                             ? <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[10px]">ACK</Badge>
                             : <Badge className="bg-red-500/20 text-red-400 border-0 text-[10px]">OPEN</Badge>}
-                        <span className="text-slate-500">{fmtDate(a.createdAt)}</span>
+                        <span className="text-az-text-muted">{fmtDate(a.createdAt)}</span>
                       </div>
                     </div>
                   ))}
@@ -231,12 +231,12 @@ export default function SusuGroups() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Susu Groups Monitor</h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-az-text-secondary">
               {susus.length} groups{frozenCount > 0 && <span className="text-red-400"> · {frozenCount} frozen</span>}
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
@@ -245,15 +245,15 @@ export default function SusuGroups() {
       <div className="flex gap-1.5 flex-wrap">
         {FILTERS.map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-slate-700 text-slate-400 hover:border-slate-600'}`}>
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-az-border text-az-text-secondary hover:border-az-border-bright'}`}>
             {f.replace('_', ' ')}
           </button>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-slate-800 text-[11px] text-slate-500 uppercase">
+      <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-az-border text-[11px] text-az-text-muted uppercase">
           <span className="col-span-3">Group</span>
           <span className="col-span-2">Status</span>
           <span className="col-span-2">Contribution</span>
@@ -261,26 +261,26 @@ export default function SusuGroups() {
           <span className="col-span-2">Next Cycle</span>
           <span className="col-span-1 text-right">View</span>
         </div>
-        {isLoading && <p className="text-slate-500 text-sm text-center py-8">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
         {susus.map((s) => (
-          <div key={s.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-slate-800/50 last:border-0 text-sm hover:bg-slate-800/30 transition-colors items-center">
+          <div key={s.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 text-sm hover:bg-az-card/30 transition-colors items-center">
             <div className="col-span-3 min-w-0">
-              <p className="text-slate-200 truncate font-medium">{s.name}</p>
-              <p className="text-[11px] text-slate-500">created {fmtDate(s.createdAt)}</p>
+              <p className="text-az-text-primary truncate font-medium">{s.name}</p>
+              <p className="text-[11px] text-az-text-muted">created {fmtDate(s.createdAt)}</p>
             </div>
             <div className="col-span-2 flex items-center gap-1.5">
               <Badge className={`${STATUS_STYLES[s.status]} border-0 text-xs`}>{s.status === 'FROZEN_DISPUTE' ? 'FROZEN' : s.status}</Badge>
               {s.frozen && <Snowflake className="w-3.5 h-3.5 text-red-400" />}
             </div>
             <div className="col-span-2">
-              <span className="text-slate-300">${Number(s.contributionUsdc).toFixed(2)}</span>
-              <span className="text-[11px] text-slate-500"> /{s.frequency.toLowerCase()}</span>
+              <span className="text-az-text-secondary">${Number(s.contributionUsdc).toFixed(2)}</span>
+              <span className="text-[11px] text-az-text-muted"> /{s.frequency.toLowerCase()}</span>
             </div>
-            <div className="col-span-2 text-slate-300">
+            <div className="col-span-2 text-az-text-secondary">
               {s.activeMembers}/{s.memberCount}
               {s.defaultedMembers > 0 && <span className="text-red-400 text-xs"> · {s.defaultedMembers} def</span>}
             </div>
-            <div className="col-span-2 text-xs text-slate-400">
+            <div className="col-span-2 text-xs text-az-text-secondary">
               {s.nextCycle
                 ? <>#{s.nextCycle.cycleNumber} · {fmtDate(s.nextCycle.collectionDate)}{s.nextCycle.status === 'COLLECTING_GRACE' && <span className="text-red-400"> (grace)</span>}</>
                 : '—'}
@@ -291,14 +291,14 @@ export default function SusuGroups() {
                   <Snowflake className="w-3.5 h-3.5" />
                 </Button>
               )}
-              <Button size="sm" variant="ghost" onClick={() => setDetailId(s.id)} className="h-7 px-2 text-slate-400 hover:bg-slate-700">
+              <Button size="sm" variant="ghost" onClick={() => setDetailId(s.id)} className="h-7 px-2 text-az-text-secondary hover:bg-az-border">
                 <Eye className="w-3.5 h-3.5" />
               </Button>
             </div>
           </div>
         ))}
         {!isLoading && susus.length === 0 && (
-          <p className="text-slate-500 text-sm text-center py-10">No Susu groups for this filter</p>
+          <p className="text-az-text-muted text-sm text-center py-10">No Susu groups for this filter</p>
         )}
       </div>
 

@@ -24,7 +24,7 @@ const KYB_STATUS_STYLE = {
   APPROVED:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
   REJECTED:   'bg-red-500/20 text-red-400 border-red-500/30',
   VERIFIED:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  UNVERIFIED: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
+  UNVERIFIED: 'bg-az-text-muted/20 text-az-text-secondary border-az-text-muted/30',
 };
 
 // Maps the page's tab labels onto the backend KybStatus the queue filters by.

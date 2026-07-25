@@ -32,21 +32,21 @@ function RejectDialog({ submission, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100">
+      <DialogContent className="bg-az-surface border-az-border text-az-text-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <XCircle className="w-4 h-4 text-red-400" /> Reject Residency
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <p className="text-sm text-slate-400">Rejecting @{submission?.username}'s residency document.</p>
+          <p className="text-sm text-az-text-secondary">Rejecting @{submission?.username}'s residency document.</p>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3}
             placeholder="Reason for rejection (1–500 chars, shown to the user)…"
-            className="bg-slate-800 border-slate-700 text-white text-sm resize-none" />
-          <p className="text-[11px] text-slate-500">{reason.trim().length}/500</p>
+            className="bg-az-card border-az-border text-white text-sm resize-none" />
+          <p className="text-[11px] text-az-text-muted">{reason.trim().length}/500</p>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-slate-400">Cancel</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-az-text-secondary">Cancel</Button>
           <Button onClick={submit} disabled={!reason.trim() || reason.trim().length > 500 || reject.isPending}
             className="bg-red-600 hover:bg-red-500">Reject</Button>
         </DialogFooter>
@@ -59,15 +59,15 @@ function PreviewDialog({ submission, open, onOpenChange }) {
   const url = submission?.proofOfResidencyUrl;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 max-w-3xl">
+      <DialogContent className="bg-az-surface border-az-border text-az-text-primary max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-emerald-400" /> {submission?.username} — Residency Document
           </DialogTitle>
         </DialogHeader>
-        <div className="bg-slate-950 rounded-lg overflow-hidden flex items-center justify-center min-h-[400px]">
+        <div className="bg-az-black rounded-lg overflow-hidden flex items-center justify-center min-h-[400px]">
           {!url ? (
-            <p className="text-slate-500 text-sm py-10">No document URL on file</p>
+            <p className="text-az-text-muted text-sm py-10">No document URL on file</p>
           ) : isPdf(url) ? (
             <iframe title="residency" src={url} className="w-full h-[60vh]" />
           ) : (
@@ -98,35 +98,35 @@ export default function ResidencyQueue() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Proof of Residency Queue</h1>
-            <p className="text-sm text-slate-400">{queue.length} awaiting review</p>
+            <p className="text-sm text-az-text-secondary">{queue.length} awaiting review</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
 
       <div className="space-y-3">
-        {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
         {queue.map((s) => (
-          <div key={s.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
+          <div key={s.id} className="bg-az-surface border border-az-border rounded-xl p-4 flex items-center gap-4">
             <button onClick={() => setPreviewTarget(s)}
-              className="w-16 h-16 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden hover:border-emerald-500/50 transition-colors">
+              className="w-16 h-16 rounded-lg bg-az-black border border-az-border flex items-center justify-center flex-shrink-0 overflow-hidden hover:border-emerald-500/50 transition-colors">
               {s.proofOfResidencyUrl && !isPdf(s.proofOfResidencyUrl)
                 ? <img src={s.proofOfResidencyUrl} alt="" className="w-full h-full object-cover" />
-                : <FileText className="w-6 h-6 text-slate-500" />}
+                : <FileText className="w-6 h-6 text-az-text-muted" />}
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-semibold text-white">@{s.username}</span>
                 <Badge className="bg-amber-500/20 text-amber-400 border-0 text-xs">PENDING REVIEW</Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">{s.email}</p>
-              <p className="text-[11px] text-slate-500 mt-1">Submitted {fmtDateTime(s.proofOfResidencySubmittedAt)}</p>
+              <p className="text-xs text-az-text-muted mt-0.5">{s.email}</p>
+              <p className="text-[11px] text-az-text-muted mt-1">Submitted {fmtDateTime(s.proofOfResidencySubmittedAt)}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button size="sm" variant="outline" onClick={() => setPreviewTarget(s)}
-                className="border-slate-700 text-slate-300 hover:bg-slate-800 h-8">
+                className="border-az-border text-az-text-secondary hover:bg-az-card h-8">
                 <FileText className="w-3.5 h-3.5 mr-1.5" /> View
               </Button>
               <Button size="sm" onClick={() => approve.mutate(s.id, { onSuccess: () => toast.success('Residency approved') })}
@@ -142,7 +142,7 @@ export default function ResidencyQueue() {
           </div>
         ))}
         {!isLoading && queue.length === 0 && (
-          <div className="text-center py-12 text-slate-500 text-sm bg-slate-900 border border-slate-800 rounded-xl">
+          <div className="text-center py-12 text-az-text-muted text-sm bg-az-surface border border-az-border rounded-xl">
             No residency documents awaiting review
           </div>
         )}

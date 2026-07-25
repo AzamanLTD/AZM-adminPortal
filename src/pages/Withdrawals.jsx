@@ -34,25 +34,25 @@ export default function Withdrawals() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white">Pending Withdrawals</h1>
-          <p className="text-sm text-slate-400 mt-1">{withdrawals.length} awaiting approval</p>
+          <p className="text-sm text-az-text-secondary mt-1">{withdrawals.length} awaiting approval</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
 
       <div className="space-y-3">
-        {isLoading && <p className="text-slate-500 text-sm">Loading…</p>}
+        {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
         {withdrawals.map((w) => (
-          <div key={w.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center gap-4">
+          <div key={w.id} className="bg-az-surface border border-az-border rounded-xl p-4 flex items-center gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-semibold text-white">{w.userName}</span>
-                <Badge className={`${TYPE_COLORS[w.type] || 'bg-slate-500/20 text-slate-400'} border-0 text-xs`}>{w.type}</Badge>
+                <Badge className={`${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-az-text-secondary'} border-0 text-xs`}>{w.type}</Badge>
                 <span className="text-sm font-bold text-emerald-400">${w.amount} {w.currency}</span>
-                {w.type === 'FIAT' && <span className="text-xs text-slate-400">GHS {(w.amount * rate).toFixed(0)}</span>}
+                {w.type === 'FIAT' && <span className="text-xs text-az-text-secondary">GHS {(w.amount * rate).toFixed(0)}</span>}
               </div>
-              <div className="flex gap-3 mt-1 text-xs text-slate-500">
+              <div className="flex gap-3 mt-1 text-xs text-az-text-muted">
                 <span>{w.method || w.wallet}</span>
                 <span>Requested: {new Date(w.requestedAt).toLocaleString()}</span>
               </div>
@@ -78,7 +78,7 @@ export default function Withdrawals() {
           </div>
         ))}
         {!isLoading && withdrawals.length === 0 && (
-          <div className="text-center py-12 text-slate-500 text-sm bg-slate-900 border border-slate-800 rounded-xl">
+          <div className="text-center py-12 text-az-text-muted text-sm bg-az-surface border border-az-border rounded-xl">
             No pending withdrawals — all clear
           </div>
         )}
