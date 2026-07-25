@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useWithdrawals } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
@@ -6,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useStats } from '@/lib/useAdminData';
+import ActionDialog from '@/components/ActionDialog';
 
 const TYPE_COLORS = { FIAT: 'bg-blue-500/20 text-blue-400', CRYPTO: 'bg-purple-500/20 text-purple-400' };
 
@@ -14,6 +16,7 @@ export default function Withdrawals() {
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
   const qc = useQueryClient();
+  const [rejectTarget, setRejectTarget] = useState(null);
 
   const approve = useMutation({
     mutationFn: (id) => api.withdrawals.approve(id),
@@ -22,7 +25,7 @@ export default function Withdrawals() {
   });
   const reject = useMutation({
     mutationFn: ({ id, reason }) => api.withdrawals.reject(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] }); toast.success('Withdrawal rejected'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] }); toast.success('Withdrawal rejected'); setRejectTarget(null); },
     onError: (e) => toast.error(e.message || 'Failed to reject withdrawal'),
   });
 
@@ -66,7 +69,7 @@ export default function Withdrawals() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => { const r = prompt('Reason for rejection?'); if (r) reject.mutate({ id: w.id, reason: r }); }}
+                onClick={() => setRejectTarget(w)}
                 className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8"
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
@@ -80,6 +83,19 @@ export default function Withdrawals() {
           </div>
         )}
       </div>
+
+      <ActionDialog
+        open={!!rejectTarget}
+        title="Reject Withdrawal"
+        label="Reason for rejection"
+        placeholder="Enter rejection reason…"
+        confirmLabel="Reject"
+        variant="destructive"
+        isPending={reject.isPending}
+        inputType="textarea"
+        onConfirm={(reason) => reject.mutate({ id: rejectTarget.id, reason })}
+        onCancel={() => setRejectTarget(null)}
+      />
     </div>
   );
 }

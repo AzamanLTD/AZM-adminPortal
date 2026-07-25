@@ -30,7 +30,11 @@ export default function AuditLog() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
-  const { data, isLoading, isError, error } = useQuery({
+  // Server-side filtering via the `search` query param — no client-side
+  // re-filtering needed (which previously caused "Showing X of Y" count
+  // mismatches because `total` came from the server but `filtered` was
+  // re-filtered client-side).
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['audit-log', page, search],
     queryFn: () => api.auditLog.list(page, { search }),
   });
@@ -38,15 +42,16 @@ export default function AuditLog() {
   const entries = data?.entries || [];
   const total = data?.total || 0;
 
-  const filtered = search
-    ? entries.filter((e) => e.action.includes(search.toUpperCase()) || e.admin?.includes(search) || e.note?.includes(search))
-    : entries;
-
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-white">Audit Log</h1>
-        <p className="text-sm text-slate-400 mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-white">Audit Log</h1>
+          <p className="text-sm text-slate-400 mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-slate-700 text-slate-300 hover:bg-slate-800">
+          <FileText className="w-3.5 h-3.5 mr-2" /> Refresh
+        </Button>
       </div>
 
       <div className="relative">
@@ -54,7 +59,7 @@ export default function AuditLog() {
         <Input
           placeholder="Search by action, admin, or note…"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           className="pl-9 bg-slate-900 border-slate-800 text-white"
         />
       </div>
@@ -71,7 +76,7 @@ export default function AuditLog() {
             <p className="text-xs text-slate-500">{error?.message || 'Server error'}</p>
           </div>
         )}
-        {!isLoading && !isError && filtered.map((e) => (
+        {!isLoading && !isError && entries.map((e) => (
           <div key={e.id} className="grid grid-cols-5 gap-3 px-4 py-3 border-b border-slate-800/50 last:border-0 items-start hover:bg-slate-800/20 transition-colors">
             <span className="text-xs text-slate-500">{new Date(e.createdAt).toLocaleString()}</span>
             <Badge className={`${ACTION_COLORS[e.action] || 'bg-slate-500/20 text-slate-400'} border-0 text-xs w-fit`}>
@@ -88,18 +93,20 @@ export default function AuditLog() {
             <span className="text-xs text-slate-500 italic">{e.note || '–'}</span>
           </div>
         ))}
-        {!isLoading && !isError && filtered.length === 0 && (
-          <p className="text-slate-500 text-sm text-center py-8">No matching audit entries</p>
+        {!isLoading && !isError && entries.length === 0 && (
+          <p className="text-slate-500 text-sm text-center py-8">
+            {search ? `No entries matching "${search}"` : 'No audit entries yet'}
+          </p>
         )}
       </div>
 
       <div className="flex items-center justify-between text-sm">
-        <span className="text-slate-500">Showing {filtered.length} of {total}</span>
+        <span className="text-slate-500">Showing {entries.length} of {total}</span>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)} className="border-slate-700 text-slate-300 h-8">
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" disabled={filtered.length === 0} onClick={() => setPage(p => p + 1)} className="border-slate-700 text-slate-300 h-8">
+          <Button variant="outline" size="sm" disabled={entries.length === 0} onClick={() => setPage(p => p + 1)} className="border-slate-700 text-slate-300 h-8">
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
         </div>
