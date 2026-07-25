@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useGlobalSettings, useUpdateSettings, useStats } from '@/lib/useAdminData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw } from 'lucide-react';
+import api from '@/lib/api';
+import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, DollarSign, BarChart3, Clock, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 
 function pct(v) { return (parseFloat(v) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
@@ -202,6 +204,239 @@ function WithdrawalCalculator({ settings, rate }) {
   );
 }
 
+
+// ─── PROJECTED REVENUE IMPACT ────────────────────────────────────────────────
+function ProjectedRevenue({ form, dirty, liveSettings }) {
+  const { data: profitData, isLoading } = useQuery({
+    queryKey: ['admin', 'profit-breakdown'],
+    queryFn: () => api.admin.profitBreakdown(),
+    staleTime: 30000,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="bg-az-surface border border-az-border rounded-xl p-6">
+        <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide mb-3">Projected Revenue Impact</h2>
+        <p className="text-az-text-muted text-sm">Loading revenue data…</p>
+      </div>
+    );
+  }
+
+  const sourceBreakdown = profitData?.data?.sourceBreakdown || {};
+  const dailyPnl = profitData?.data?.dailyPnl || [];
+  const totalProfit30d = profitData?.data?.totalProfitLast30Days || 0;
+  const totalTxns30d = profitData?.data?.totalTransactionsLast30Days || 0;
+
+  // Calculate current daily average revenue
+  const dailyAvgRevenue = totalProfit30d / 30;
+  const monthlyProjected = dailyAvgRevenue * 30;
+
+  // Calculate projected revenue with new fees
+  // Current p2p fee vs new p2p fee — impact on trade fee revenue
+  const currentP2pFee = liveSettings.p2pFeePct;
+  const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;
+  const feeDelta = currentP2pFee - oldP2pFee;
+
+  // Estimate trade fee revenue portion
+  const tradeFeeRevenue = (sourceBreakdown.TRADE_FEE?.totalUsdc || sourceBreakdown.P2P_FEE?.totalUsdc || dailyAvgRevenue * 0.6);
+  const tradeFeeDaily = tradeFeeRevenue / 30;
+
+  // Projected daily revenue with new fees
+  const projectedTradeFeeDaily = tradeFeeDaily * (currentP2pFee / Math.max(oldP2pFee, 0.001));
+  const projectedDailyTotal = dailyAvgRevenue - tradeFeeDaily + projectedTradeFeeDaily;
+  const projectedMonthly = projectedDailyTotal * 30;
+  const monthlyDelta = projectedMonthly - monthlyProjected;
+  const pctChange = monthlyProjected > 0 ? ((monthlyDelta / monthlyProjected) * 100) : 0;
+
+  // Recent daily PnL for sparkline
+  const recentDays = dailyPnl.slice(-14);
+  const maxProfit = Math.max(...recentDays.map(d => d.profit || 0), 1);
+
+  function fmtUSD(n) {
+    if (n >= 1000000) return `$${(n / 1000000).toFixed(2)}M`;
+    if (n >= 1000) return `$${(n / 1000).toFixed(1)}K`;
+    return `$${Number(n).toFixed(2)}`;
+  }
+
+  return (
+    <div className="bg-az-surface border border-az-border rounded-xl p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <BarChart3 className="w-4 h-4 text-emerald-400" />
+        <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Projected Revenue Impact</h2>
+      </div>
+
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-az-card rounded-xl p-3 border border-az-border/50">
+          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">Current Monthly</p>
+          <p className="text-lg font-bold text-white mt-1">{fmtUSD(monthlyProjected)}</p>
+          <p className="text-[10px] text-az-text-muted mt-0.5">{fmtUSD(dailyAvgRevenue)}/day avg</p>
+        </div>
+        <div className="bg-az-card rounded-xl p-3 border border-az-border/50">
+          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">Projected Monthly</p>
+          <p className={`text-lg font-bold mt-1 ${dirty ? (monthlyDelta >= 0 ? 'text-emerald-400' : 'text-red-400') : 'text-white'}`}>
+            {fmtUSD(projectedMonthly)}
+          </p>
+          {dirty && (
+            <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${monthlyDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {monthlyDelta >= 0 ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
+              {Math.abs(pctChange).toFixed(1)}% ({monthlyDelta >= 0 ? '+' : ''}{fmtUSD(monthlyDelta)})
+            </p>
+          )}
+          {!dirty && <p className="text-[10px] text-az-text-muted mt-0.5">Save to see impact</p>}
+        </div>
+        <div className="bg-az-card rounded-xl p-3 border border-az-border/50">
+          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">30d Transactions</p>
+          <p className="text-lg font-bold text-white mt-1">{totalTxns30d.toLocaleString()}</p>
+          <p className="text-[10px] text-az-text-muted mt-0.5">{(totalTxns30d / 30).toFixed(0)}/day avg</p>
+        </div>
+      </div>
+
+      {/* Revenue by source */}
+      <div>
+        <h3 className="text-xs text-az-text-secondary mb-2">Revenue by Source (30d)</h3>
+        <div className="space-y-1.5">
+          {Object.entries(sourceBreakdown).map(([source, data]) => {
+            const pct = totalProfit30d > 0 ? ((data.totalUsdc / totalProfit30d) * 100) : 0;
+            return (
+              <div key={source} className="flex items-center gap-3">
+                <span className="text-xs text-az-text-secondary w-32 truncate">{source.replace(/_/g, ' ')}</span>
+                <div className="flex-1 h-2 bg-az-card rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500/60 rounded-full" style={{ width: `${Math.max(pct, 2)}%` }} />
+                </div>
+                <span className="text-xs text-white font-mono w-20 text-right">{fmtUSD(data.totalUsdc)}</span>
+                <span className="text-[10px] text-az-text-muted w-10 text-right">{pct.toFixed(0)}%</span>
+              </div>
+            );
+          })}
+          {Object.keys(sourceBreakdown).length === 0 && (
+            <p className="text-xs text-az-text-muted text-center py-2">No revenue data for this period</p>
+          )}
+        </div>
+      </div>
+
+      {/* 14-day sparkline */}
+      {recentDays.length > 0 && (
+        <div>
+          <h3 className="text-xs text-az-text-secondary mb-2">Daily Profit (last {recentDays.length} days)</h3>
+          <div className="flex items-end gap-1 h-16">
+            {recentDays.map((d, i) => {
+              const height = Math.max((d.profit / maxProfit) * 100, 2);
+              return (
+                <div key={i} className="flex-1 bg-emerald-500/40 hover:bg-emerald-500/70 rounded-t transition-colors group relative" style={{ height: `${height}%` }}>
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-az-card border border-az-border rounded px-1.5 py-0.5 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                    {fmtUSD(d.profit || 0)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {dirty && (
+        <div className={`rounded-lg p-3 flex items-center gap-2 ${monthlyDelta >= 0 ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-red-500/10 border border-red-500/30'}`}>
+          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${monthlyDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`} />
+          <p className={`text-xs ${monthlyDelta >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+            Your pending changes are projected to {monthlyDelta >= 0 ? 'increase' : 'decrease'} monthly revenue by {fmtUSD(Math.abs(monthlyDelta))} ({Math.abs(pctChange).toFixed(1)}%)
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CHANGE HISTORY ──────────────────────────────────────────────────────────
+function ChangeHistory() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'audit-log', 'fee-changes'],
+    queryFn: () => api.auditLog.list(1, { action: 'UPDATE_GLOBAL_SETTINGS' }),
+    staleTime: 30000,
+  });
+
+  const logs = data?.logs || [];
+
+  function timeAgo(d) {
+    if (!d) return '—';
+    const diff = Date.now() - new Date(d).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 30) return `${days}d ago`;
+    return new Date(d).toLocaleDateString();
+  }
+
+  function fmtChange(key, oldVal, newVal) {
+    const numFmt = (v) => {
+      const n = parseFloat(v);
+      if (isNaN(n)) return String(v);
+      if (key.toLowerCase().includes('pct') || key.toLowerCase().includes('margin') || key.toLowerCase().includes('share')) {
+        return `${(n * 100).toFixed(2)}%`;
+      }
+      return n.toFixed(2);
+    };
+    return `${key}: ${numFmt(oldVal)} → ${numFmt(newVal)}`;
+  }
+
+  return (
+    <div className="bg-az-surface border border-az-border rounded-xl p-6 space-y-3">
+      <div className="flex items-center gap-2">
+        <History className="w-4 h-4 text-blue-400" />
+        <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wide">Fee Change History</h2>
+      </div>
+
+      {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
+
+      {!isLoading && logs.length === 0 && (
+        <p className="text-az-text-muted text-sm text-center py-3">No fee changes logged</p>
+      )}
+
+      {!isLoading && logs.length > 0 && (
+        <div className="space-y-2">
+          {logs.slice(0, 10).map((log) => {
+            const changes = log.changes || {};
+            const changedKeys = Object.keys(changes).filter(k => k !== 'updatedBy' && k !== 'reason');
+            return (
+              <div key={log.id} className="bg-az-card rounded-lg p-3 border border-az-border/30">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3 h-3 text-az-text-muted" />
+                    <span className="text-xs text-az-text-secondary">{log.adminName || 'Admin'}</span>
+                    <span className="text-[10px] text-az-text-muted">{timeAgo(log.createdAt)}</span>
+                  </div>
+                  <span className="text-[10px] text-az-text-muted">{changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} changed</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {changedKeys.slice(0, 5).map(key => {
+                    const change = changes[key];
+                    const oldVal = change?.old ?? change?.oldValue ?? '?';
+                    const newVal = change?.new ?? change?.newValue ?? change ?? '?';
+                    const isIncrease = parseFloat(newVal) > parseFloat(oldVal);
+                    return (
+                      <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-az-border/50 text-az-text-secondary inline-flex items-center gap-1">
+                        {key}
+                        {isIncrease ? <ArrowUp className="w-2.5 h-2.5 text-emerald-400" /> : <ArrowDown className="w-2.5 h-2.5 text-red-400" />}
+                      </span>
+                    );
+                  })}
+                  {changedKeys.length > 5 && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-az-border/50 text-az-text-muted">
+                      +{changedKeys.length - 5} more
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function FeeEngine() {
   const { data: serverSettings, isLoading } = useGlobalSettings();
   const { mutate: updateSettings, isPending } = useUpdateSettings();
@@ -381,6 +616,12 @@ export default function FeeEngine() {
         onConfirm={confirmRemoveMethod}
         onCancel={() => setRemoveKey(null)}
       />
+
+      {/* Projected Revenue Impact */}
+      <ProjectedRevenue form={form} dirty={dirty} liveSettings={liveSettings} />
+
+      {/* Change History */}
+      <ChangeHistory />
     </div>
   );
 }
