@@ -92,6 +92,7 @@ export const users = {
     request(`/api/admin/users/${id}/role`, { method: 'POST', body: JSON.stringify({ role }) }),
   setRiskTier: (id, tier) =>
     request(`/api/admin/users/${id}/risk-tier`, { method: 'POST', body: JSON.stringify({ tier }) }),
+  detail: (id) => request(`/api/admin/users/${id}/detail`),
   credit: (id, amount) =>
     request(`/api/admin/users/${id}/credit`, { method: 'POST', body: JSON.stringify({ amount, reason: 'Admin credit via portal' }) }),
 };

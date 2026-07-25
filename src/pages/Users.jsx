@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import UserDetailDrawer from '@/components/UserDetailDrawer';
 import { useSearchParams } from 'react-router-dom';
 import { useUsers } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +7,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
 
@@ -92,6 +93,7 @@ export default function Users() {
 
   // Dialog state for user actions
   const [actionDialog, setActionDialog] = useState(null);
+  const [detailUserId, setDetailUserId] = useState(null);
   // { type: 'credit' | 'role' | 'ban' | 'reject', userId }
 
   const handleActionConfirm = (value) => {
@@ -183,7 +185,7 @@ export default function Users() {
             {users.map((u) => (
               <div key={u.id} className="grid grid-cols-6 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-center hover:bg-az-card/20 transition-colors">
                 <div className="col-span-2">
-                  <p className="text-sm font-medium text-white">{u.fullName}</p>
+                  <button onClick={() => setDetailUserId(u.id)} className="text-sm font-medium text-white hover:text-emerald-400 transition-colors text-left">{u.fullName}</button>
                   <p className="text-xs text-az-text-muted">{u.email}</p>
                 </div>
                 <span className="text-xs text-az-text-secondary">{u.role}</span>
@@ -198,6 +200,9 @@ export default function Users() {
                   <option value="HIGH_RISK">High Risk</option>
                 </select>
                 <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => setDetailUserId(u.id)} className="h-7 px-2 text-xs text-az-text-secondary hover:text-white hover:bg-az-border">
+                    <Eye className="w-3 h-3" />
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'credit', userId: u.id })} className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
                     $+
                   </Button>
@@ -225,6 +230,7 @@ export default function Users() {
           </div>
         </div>
       )}
+      {detailUserId && <UserDetailDrawer userId={detailUserId} onClose={() => setDetailUserId(null)} />}
     </div>
   );
 }
