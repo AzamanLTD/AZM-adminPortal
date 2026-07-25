@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit2, Trash2, Zap, Calendar, User } from 'lucide-react';
 import { toast } from 'sonner';
+import ErrorState from '@/components/ErrorState';
 
 const SCOPES = ['ALL', 'HOLIDAY', 'CUSTOM'];
 const SCOPE_COLORS = { ALL: 'bg-blue-500/20 text-blue-400', HOLIDAY: 'bg-amber-500/20 text-amber-400', CUSTOM: 'bg-purple-500/20 text-purple-400' };
@@ -14,7 +15,7 @@ const SCOPE_COLORS = { ALL: 'bg-blue-500/20 text-blue-400', HOLIDAY: 'bg-amber-5
 const EMPTY = { name: '', targetScope: 'ALL', targetValue: '', platformFeePct: '2', adminSplitPct: '60', vendorSplitPct: '40', exitFeePct: '2', priority: '0', validFrom: '', validUntil: '' };
 
 export default function FeeProfiles() {
-  const { data: profiles = [], isLoading } = useFeeProfiles();
+  const { data: profiles = [], isLoading, isError, refetch } = useFeeProfiles();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -72,6 +73,7 @@ export default function FeeProfiles() {
       {/* Profile list */}
       <div className="space-y-3">
         {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
+        {isError && <ErrorState message="Failed to load fee profiles." onRetry={refetch} />}
         {profiles.map((p) => (
           <div key={p.id} className="bg-az-surface border border-az-border rounded-xl p-4">
             <div className="flex items-start justify-between gap-4">

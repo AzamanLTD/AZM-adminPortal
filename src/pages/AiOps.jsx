@@ -5,15 +5,16 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { Bot, TrendingUp, Gift } from 'lucide-react';
 import { toast } from 'sonner';
+import ErrorState from '@/components/ErrorState';
 
 export default function AiOps() {
-  const { data: insights, isLoading: loadingInsights } = useQuery({
+  const { data: insights, isLoading: loadingInsights, isError: insightsError, refetch: refetchInsights } = useQuery({
     queryKey: ['ai', 'insights'],
-    queryFn: () => api.aiOps.cfoInsights().catch(() => ({ summary: 'CFO insights unavailable. Connect AI endpoint to activate.', recommendations: [] })),
+    queryFn: () => api.aiOps.cfoInsights(),
   });
-  const { data: candidates = [], isLoading: loadingCandidates } = useQuery({
+  const { data: candidates = [], isLoading: loadingCandidates, isError: candidatesError, refetch: refetchCandidates } = useQuery({
     queryKey: ['ai', 'discounts'],
-    queryFn: () => api.aiOps.discountCandidates().catch(() => []),
+    queryFn: () => api.aiOps.discountCandidates(),
   });
 
   const approve = useMutation({
@@ -37,6 +38,7 @@ export default function AiOps() {
           <h2 className="text-sm font-semibold text-az-text-secondary">CFO Insights</h2>
         </div>
         {loadingInsights && <p className="text-az-text-muted text-sm">Generating insights…</p>}
+        {insightsError && <ErrorState message="Failed to generate AI insights." onRetry={refetchInsights} compact />}
         {insights && (
           <>
             <p className="text-sm text-az-text-secondary leading-relaxed">{insights.summary}</p>
@@ -61,6 +63,7 @@ export default function AiOps() {
           <h2 className="text-sm font-semibold text-az-text-secondary">Loyalty Discount Candidates</h2>
         </div>
         {loadingCandidates && <p className="text-az-text-muted text-sm">Loading…</p>}
+        {candidatesError && <ErrorState message="Failed to load discount candidates." onRetry={refetchCandidates} compact />}
         {candidates.map((c) => (
           <div key={c.userId} className="flex items-center gap-4 bg-az-card rounded-xl p-3">
             <div className="flex-1">

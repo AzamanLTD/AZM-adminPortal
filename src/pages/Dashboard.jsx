@@ -1,5 +1,6 @@
 import { useStats, useSystemHealth } from '@/lib/useAdminData';
 import StatCard from '@/components/admin/StatCard';
+import ErrorState from '@/components/ErrorState';
 import PoolBar from '@/components/admin/PoolBar';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,8 +16,8 @@ function fmt(n, prefix = '') {
 }
 
 export default function Dashboard() {
-  const { data: stats = {}, isLoading: loadingStats } = useStats();
-  const { data: health = {}, isLoading: loadingHealth } = useSystemHealth();
+  const { data: stats = {}, isLoading: loadingStats, isError: statsError, refetch: refetchStats } = useStats();
+  const { data: health = {}, isLoading: loadingHealth, isError: healthError, refetch: refetchHealth } = useSystemHealth();
   const navigate = useNavigate();
   const rate = stats.ghsRate || 12.5;
 
@@ -30,6 +31,8 @@ export default function Dashboard() {
         <h1 className="text-xl font-bold text-white">Command Center</h1>
         <p className="text-sm text-az-text-secondary mt-1">Real-time platform overview</p>
       </div>
+
+      {statsError && <ErrorState message="Failed to load platform stats." onRetry={refetchStats} />}
 
       {/* Primary KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -74,6 +77,7 @@ export default function Dashboard() {
         {/* System Pools */}
         <div className="lg:col-span-2 space-y-3">
           <h2 className="text-sm font-semibold text-az-text-secondary uppercase tracking-wide">Pool Health</h2>
+          {healthError && <ErrorState message="Failed to load system health." onRetry={refetchHealth} compact />}
           <PoolBar label="Master Crypto (USDC)" balance={pools.masterCrypto?.balance || 0} currency="USDC" max={100000} />
           <PoolBar label="Hot Wallet (USDC)" balance={pools.hotWallet?.balance || 0} currency="USDC" max={20000} />
           <PoolBar

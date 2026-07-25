@@ -4,14 +4,17 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import ErrorState from '@/components/ErrorState';
 import { Settings, Smartphone, Zap, Bot, DollarSign } from 'lucide-react';
 
 export default function Config() {
   const qc = useQueryClient();
 
-  const { data: vg } = useQuery({ queryKey: ['version-gate'], queryFn: () => api.versionGate.get().catch(() => ({ minVersion: '1.0.0', updateUrl: '', message: '' })) });
-  const { data: po } = useQuery({ queryKey: ['payout-settings'], queryFn: () => api.payouts.getSettings().catch(() => ({ threshold: 100, maxAmount: 1000, intervalHours: 24, enabled: true })) });
-  const { data: gs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03 } })) });
+  const { data: vg, isError: vgError, refetch: refetchVg } = useQuery({ queryKey: ['version-gate'], queryFn: () => api.versionGate.get().catch(() => ({ minVersion: '1.0.0', updateUrl: '', message: '', _error: true })) });
+  const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => api.payouts.getSettings().catch(() => ({ threshold: 100, maxAmount: 1000, intervalHours: 24, enabled: true, _error: true })) });
+  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03 }, _error: true })) });
+
+  const hasAnyError = vgError || poError || gsError;
 
   const [vgForm, setVgForm] = useState({});
   const [poForm, setPoForm] = useState({});
@@ -32,6 +35,17 @@ export default function Config() {
         <h1 className="text-xl font-bold text-white">System Configuration</h1>
         <p className="text-sm text-az-text-secondary mt-1">App version gate, payout automation, and system controls.</p>
       </div>
+
+      {hasAnyError && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-center gap-3 text-sm">
+          <span className="text-amber-400">⚠ Some settings failed to load. Values shown may be defaults.</span>
+          <div className="flex gap-2 ml-auto">
+            {vgError && <Button variant="ghost" size="sm" onClick={refetchVg} className="h-7 text-xs">Retry VG</Button>}
+            {poError && <Button variant="ghost" size="sm" onClick={refetchPo} className="h-7 text-xs">Retry PO</Button>}
+            {gsError && <Button variant="ghost" size="sm" onClick={refetchGs} className="h-7 text-xs">Retry GS</Button>}
+          </div>
+        </div>
+      )}
 
       {/* Version Gate */}
       <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">

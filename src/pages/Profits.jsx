@@ -1,6 +1,7 @@
 import { useProfitBreakdown, useStats } from '@/lib/useAdminData';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import StatCard from '@/components/admin/StatCard';
+import ErrorState from '@/components/ErrorState';
 import { TrendingUp, DollarSign, Hash } from 'lucide-react';
 
 const SOURCE_COLORS = {
@@ -25,7 +26,7 @@ const CustomTooltip = ({ active, payload, label, rate }) => {
 };
 
 export default function Profits() {
-  const { data: breakdown = {}, isLoading } = useProfitBreakdown();
+  const { data: breakdown = {}, isLoading, isError, refetch } = useProfitBreakdown();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
 
@@ -38,6 +39,8 @@ export default function Profits() {
         <h1 className="text-xl font-bold text-white">Revenue Dashboard</h1>
         <p className="text-sm text-az-text-secondary mt-1">Last 30 days — all amounts in USD and GHS</p>
       </div>
+
+      {isError && <ErrorState message="Failed to load revenue data." onRetry={refetch} />}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard label="Total Profit (30d)" value={`$${totalProfit30d.toLocaleString()}`} sub={`₵${(totalProfit30d * rate).toLocaleString()}`} icon={TrendingUp} color="emerald" />
