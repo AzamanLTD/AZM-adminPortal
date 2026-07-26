@@ -19,8 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
-  ShieldCheck, ShieldAlert, ChevronRight, X, Clock,
-  TrendingUp, User, Zap, Filter, CheckSquare, Square
+  ShieldCheck, ShieldAlert, ChevronRight, X,
+  TrendingUp, User, CheckSquare, Square
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';

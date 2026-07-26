@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X, Shield, ShieldCheck, ShieldX, AlertTriangle, DollarSign, Activity, FileText, Clock, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Hash, Mail, Phone, MapPin, Calendar, Award, Zap, Skull } from 'lucide-react';
+import { X, Shield, ShieldCheck, AlertTriangle, DollarSign, Activity, FileText, Clock, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Hash, Mail, Phone, MapPin, Calendar, Award, Zap, Skull } from 'lucide-react';
 import { toast } from 'sonner';
 
 const KYC_COLORS = { VERIFIED: 'bg-emerald-500/20 text-emerald-400', PENDING: 'bg-amber-500/20 text-amber-400', REJECTED: 'bg-red-500/20 text-red-400', UNVERIFIED: 'bg-az-text-muted/20 text-az-text-secondary', NONE: 'bg-az-text-muted/20 text-az-text-secondary' };

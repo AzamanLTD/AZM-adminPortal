@@ -4,7 +4,7 @@
  * All functions return the response data directly or throw on error.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://azaman-backend-9d3u.onrender.com';
 
 async function request(path, options = {}) {
   const token = localStorage.getItem('admin_token');

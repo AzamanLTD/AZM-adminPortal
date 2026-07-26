@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, DollarSign, BarChart3, Clock, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';
 
 function pct(v) { return (parseFloat(v) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }

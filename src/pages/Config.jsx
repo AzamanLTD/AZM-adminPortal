@@ -4,8 +4,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import ErrorState from '@/components/ErrorState';
-import { Settings, Smartphone, Zap, Bot, DollarSign, Shield, QrCode, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function Config() {
   const qc = useQueryClient();

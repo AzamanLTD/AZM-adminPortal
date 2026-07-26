@@ -14,19 +14,17 @@
 import { useState, useMemo } from 'react';
 import { useStats, useSystemHealth, useProfitBreakdown, useWithdrawals, useDisputes, usePendingKyc, useEscrowDisputes } from '@/lib/useAdminData';
 import StatCard from '@/components/admin/StatCard';
-import Sparkline from '@/components/admin/Sparkline';
 import ErrorState from '@/components/ErrorState';
 import PoolBar from '@/components/admin/PoolBar';
 import { useNavigate } from 'react-router-dom';
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer
 } from 'recharts';
 import {
   TrendingUp, Users, Activity, AlertTriangle, Wallet,
   ShieldCheck, Clock, Server, Cpu, Radio,
-  Lock, ShieldAlert, Building2, Zap, CheckCircle,
-  DollarSign, ArrowRight, RefreshCw, ChevronDown
+  Lock, ShieldAlert, Building2, CheckCircle, ArrowRight, RefreshCw, ChevronDown
 } from 'lucide-react';
 
 const TIME_RANGES = [

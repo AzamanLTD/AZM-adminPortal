@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, ArrowRight, CornerDownLeft, ArrowUp, ArrowDown,
+  Search, CornerDownLeft,
   LayoutDashboard, Swords, Users, TrendingUp, Wallet,
   Sliders, FileText, Shield, Database, Zap, Bot,
   PiggyBank, Siren, Home, Building2, Lock, FileCheck, QrCode,

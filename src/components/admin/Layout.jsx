@@ -6,7 +6,7 @@ import {
   Bell, Settings, LogOut, Database, Zap, Bot,
   PiggyBank, Siren, Home, Activity, Building2, Lock, FileCheck, QrCode,
   Store,
-  Menu, X,
+  Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStats } from '@/lib/useAdminData';

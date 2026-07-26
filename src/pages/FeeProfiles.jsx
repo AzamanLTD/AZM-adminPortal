@@ -4,7 +4,6 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Plus, Edit2, Trash2, Zap, Calendar, User } from 'lucide-react';
 import { toast } from 'sonner';
 import ErrorState from '@/components/ErrorState';

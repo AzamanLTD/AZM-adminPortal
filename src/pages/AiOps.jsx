@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import {
   Bot, TrendingUp, Gift, Brain, Scale, Handshake, ListOrdered,
-  Activity, Zap, RefreshCw, AlertTriangle, CheckCircle2, Loader2
+  Activity, Zap, RefreshCw, CheckCircle2, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ErrorState from '@/components/ErrorState';

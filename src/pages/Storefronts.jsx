@@ -4,7 +4,7 @@ import { storefronts as sfApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StatCard from '@/components/admin/StatCard';
-import { Store, Eye, EyeOff, ChevronLeft, ChevronRight, Lock, Unlock, History, Image as ImageIcon, X, RotateCcw, AlertCircle } from 'lucide-react';
+import { Store, ChevronLeft, ChevronRight, Lock, Unlock, History, Image as ImageIcon, X, RotateCcw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
