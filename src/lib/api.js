@@ -267,11 +267,23 @@ export const aiOps = {
     }),
 };
 
+// ── Two-Factor Authentication (Admin) ─────────────────────────────────────────
+export const twoFactor = {
+  status: () => request('/api/security/2fa/status'),
+  setup: () => request('/api/security/2fa/setup', { method: 'POST' }),
+  verify: (token) => request('/api/security/2fa/verify', { method: 'POST', body: JSON.stringify({ token }) }),
+  disable: (token) => request('/api/security/2fa/disable', { method: 'POST', body: JSON.stringify({ token }) }),
+};
+
+export const paymentHealth = {
+  get: () => request('/api/admin/payment-providers/health'),
+};
+
 export default {
   auth, admin, settings, feeProfiles, trades, users, kyc, withdrawals,
   payouts, vendors, tradeAccounts, warRoom, susuIncidents, susuAdmin,
   proofOfResidency, versionGate, auditLog, aiOps, twoFactor,
-  businessKyb, escrow, businesses,
+  businessKyb, escrow, businesses, paymentHealth,
 };
 // ── Admin Storefronts ──────────────────────────────────────────────────────────
 export const storefronts = {
