@@ -4,8 +4,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import ErrorState from '@/components/ErrorState';
-import { Settings, Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2 } from 'lucide-react';
+import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function Config() {
   const qc = useQueryClient();
@@ -14,14 +13,7 @@ export default function Config() {
   const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => api.payouts.getSettings().catch(() => ({ threshold: 100, maxAmount: 1000, intervalHours: 24, enabled: true, _error: true })) });
   const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03 }, _error: true })) });
 
-  const { data: ph, refetch: refetchPh } = useQuery({
-    queryKey: ['payment-health'],
-    queryFn: () => api.paymentHealth.get().catch(() => null),
-    refetchInterval: 30000,
-  });
-
   const hasAnyError = vgError || poError || gsError;
-  
 
   const [vgForm, setVgForm] = useState({});
   const [poForm, setPoForm] = useState({});
@@ -255,57 +247,6 @@ export default function Config() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Payment Provider Health */}
-      <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-emerald-400" />
-          <h2 className="text-sm font-semibold text-az-text-secondary">Payment Provider Health</h2>
-          <span className="text-xs text-az-text-secondary ml-auto">Auto-refreshes every 30s</span>
-        </div>
-        {ph && Object.keys(ph).length > 0 ? (
-          <div className="space-y-3">
-            {Object.entries(ph).map(([name, info]) => (
-              <div key={name} className="bg-az-card border border-az-border rounded-lg p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${info.healthy ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                    <span className="text-sm font-medium text-white capitalize">{name}</span>
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded ${info.healthy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {info.healthy ? 'Healthy' : 'Unhealthy'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-4 gap-2 text-xs">
-                  <div>
-                    <span className="text-az-text-secondary block">Successes</span>
-                    <span className="text-emerald-400 font-medium">{info.successes ?? 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-az-text-secondary block">Failures</span>
-                    <span className="text-red-400 font-medium">{info.failures ?? 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-az-text-secondary block">Last Success</span>
-                    <span className="text-az-text-secondary">{info.lastSuccessAt ? new Date(info.lastSuccessAt).toLocaleTimeString() : '—'}</span>
-                  </div>
-                  <div>
-                    <span className="text-az-text-secondary block">Last Error</span>
-                    <span className="text-az-text-secondary truncate max-w-[100px]" title={info.lastError}>{info.lastError || '—'}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-xs text-az-text-secondary">
-            Failover service not initialized or using single provider mode.
-          </div>
-        )}
-        <Button variant="outline" size="sm" onClick={refetchPh} className="border-az-border text-az-text-secondary hover:bg-az-card">
-          Refresh Health
-        </Button>
       </div>
 
       {/* KYC Provider note */}
