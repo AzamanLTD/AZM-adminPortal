@@ -3,8 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Search, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { FileText, Search, ChevronLeft, ChevronRight, AlertTriangle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const ACTION_COLORS = {
   SETTINGS_CHANGE: 'bg-blue-500/20 text-blue-400',
@@ -26,14 +27,45 @@ const ACTION_COLORS = {
   PROFIT_LIQUIDATION: 'bg-purple-500/20 text-purple-400',
 };
 
+function escapeCsvValue(val) {
+  if (val == null) return '';
+  const s = String(val);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+  return s;
+}
+
+function downloadCsv(entries) {
+  const headers = ['Time', 'Action', 'Admin', 'Field', 'Old Value', 'New Value', 'Target ID', 'Note'];
+  const rows = entries.map(e => [
+    new Date(e.createdAt).toISOString(),
+    e.action,
+    e.admin,
+    e.field || '',
+    e.oldValue || '',
+    e.newValue || '',
+    e.targetId || '',
+    e.note || '',
+  ].map(escapeCsvValue).join(','));
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `audit-log-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  toast.success(`Exported ${entries.length} entries to CSV`);
+}
+
 export default function AuditLog() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
 
-  // Server-side filtering via the `search` query param — no client-side
-  // re-filtering needed (which previously caused "Showing X of Y" count
-  // mismatches because `total` came from the server but `filtered` was
-  // re-filtered client-side).
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['audit-log', page, search],
     queryFn: () => api.auditLog.list(page, { search }),
@@ -42,6 +74,14 @@ export default function AuditLog() {
   const entries = data?.entries || [];
   const total = data?.total || 0;
 
+  const handleExport = () => {
+    if (entries.length === 0) {
+      toast.error('No entries to export');
+      return;
+    }
+    downloadCsv(entries);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -49,9 +89,14 @@ export default function AuditLog() {
           <h1 className="text-xl font-bold text-white">Audit Log</h1>
           <p className="text-sm text-az-text-secondary mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
-          <FileText className="w-3.5 h-3.5 mr-2" /> Refresh
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport} className="border-az-border text-az-text-secondary hover:bg-az-card">
+            <Download className="w-3.5 h-3.5 mr-2" /> Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+            <FileText className="w-3.5 h-3.5 mr-2" /> Refresh
+          </Button>
+        </div>
       </div>
 
       <div className="relative">

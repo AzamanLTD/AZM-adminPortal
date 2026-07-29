@@ -13,12 +13,50 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+
+// ── Campaign API helpers ─────────────────────────────────────────────────────
+async function fetchCampaigns() {
+  const res = await fetch(`${API_BASE}/api/qr/campaigns`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('azaman_token')}` },
+  });
+  if (!res.ok) throw new Error('Failed to load campaigns');
+  return res.json();
+}
+
+async function createCampaign(data) {
+  const res = await fetch(`${API_BASE}/api/qr/campaigns`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('azaman_token')}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to create campaign');
+  return res.json();
+}
+
+async function updateCampaign(id, data) {
+  const res = await fetch(`${API_BASE}/api/qr/campaigns/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('azaman_token')}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Failed to update campaign');
+  return res.json();
+}
+
+async function deleteCampaign(id) {
+  const res = await fetch(`${API_BASE}/api/qr/campaigns/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${localStorage.getItem('azaman_token')}` },
+  });
+  if (!res.ok) throw new Error('Failed to delete campaign');
+  return res.json();
+}
 import QRCode from 'qrcode';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   QrCode, Download, Link2, RefreshCw, Check, Printer,
   Monitor, Shirt, ImageIcon, AlertCircle, Clock, ExternalLink,
-  ChevronDown, Loader2, Sparkles, Globe, BarChart3, Activity, Users,
+  ChevronDown, Loader2, Sparkles, Globe, BarChart3, Activity, Users, Plus, Copy, Eye, EyeOff, Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,7 +159,31 @@ export default function QrForge() {
   const { data: analytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['qr-analytics'],
     queryFn: fetchAnalytics,
-    staleTime: 30_000,
+    staleTime: 60_000,
+  });
+
+  // ── Campaign queries ────────────────────────────────────────────────────────
+  const { data: campaignsData, isLoading: campaignsLoading, isError: campaignsError, refetch: refetchCampaigns } = useQuery({
+    queryKey: ['qr-campaigns'],
+    queryFn: fetchCampaigns,
+  });
+
+  const createCampaignMut = useMutation({
+    mutationFn: createCampaign,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['qr-campaigns'] }); toast.success('Campaign created'); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const updateCampaignMut = useMutation({
+    mutationFn: ({ id, data }) => updateCampaign(id, data),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['qr-campaigns'] }); toast.success('Campaign updated'); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteCampaignMut = useMutation({
+    mutationFn: deleteCampaign,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['qr-campaigns'] }); toast.success('Campaign deleted'); },
+    onError: (e) => toast.error(e.message),
   });
 
   const [editUrl,   setEditUrl]   = useState('');
@@ -663,6 +725,82 @@ export default function QrForge() {
           </div>
         </div>
       </div>
+
+        {/* ── Campaign Management Section ────────────────────────────────────── */}
+        <div className="bg-az-surface border border-az-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-400" /> Multi-Campaign QR
+              </h3>
+              <p className="text-xs text-az-text-muted mt-0.5">Create separate QR campaigns with unique slugs and individual analytics.</p>
+            </div>
+            <Button size="sm" onClick={() => {
+              const name = prompt('Campaign name:');
+              if (!name) return;
+              const url = prompt('Destination URL (https://...):');
+              if (!url || !url.startsWith('http')) { toast.error('Valid URL required'); return; }
+              createCampaignMut.mutate({ name, destinationUrl: url });
+            }} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Plus className="w-3.5 h-3.5 mr-1" /> New Campaign
+            </Button>
+          </div>
+
+          {campaignsLoading && <p className="text-az-text-muted text-sm py-4 text-center">Loading campaigns…</p>}
+          {campaignsError && <p className="text-red-400 text-sm py-4 text-center">Failed to load campaigns</p>}
+          {campaignsData?.campaigns && campaignsData.campaigns.length === 0 && (
+            <p className="text-az-text-muted text-sm py-4 text-center italic">No campaigns yet. Create one to get a unique QR slug.</p>
+          )}
+          {campaignsData?.campaigns && campaignsData.campaigns.length > 0 && (
+            <div className="space-y-2">
+              {campaignsData.campaigns.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg bg-az-card border border-az-border/50">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white">{c.name}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${c.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-az-text-muted/20 text-az-text-muted'}`}>
+                        {c.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-az-text-muted">
+                      <span className="font-mono">/{c.slug}</span>
+                      <span className="truncate max-w-[200px]" title={c.destinationUrl}>{c.destinationUrl}</span>
+                      <span>{c.totalScans} scans</span>
+                    </div>
+                    <div className="text-[10px] text-az-text-muted mt-0.5 font-mono">
+                      QR URL: {PERMANENT_QR_URL}/{c.slug}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      navigator.clipboard.writeText(`${PERMANENT_QR_URL}/${c.slug}`);
+                      toast.success('Campaign QR URL copied');
+                    }} className="text-az-text-muted hover:text-white">
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      const url = prompt('New destination URL:', c.destinationUrl);
+                      if (url && url.startsWith('http')) updateCampaignMut.mutate({ id: c.id, data: { destinationUrl: url } });
+                    }} className="text-az-text-muted hover:text-white">
+                      <Link2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      updateCampaignMut.mutate({ id: c.id, data: { isActive: !c.isActive } });
+                    }} className={c.isActive ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-400 hover:text-emerald-300'}>
+                      {c.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      if (confirm(`Delete campaign "${c.name}"?`)) deleteCampaignMut.mutate(c.id);
+                    }} className="text-red-400 hover:text-red-300">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
     </div>
   );
 }
