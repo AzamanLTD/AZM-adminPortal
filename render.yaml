@@ -1,5 +1,7 @@
 # =============================================================================
 # Render Blueprint — azaman-admin-portal (static site)
+# DEPRECATED: This service is now deployed on Vercel at https://azm-admin-portal.vercel.app
+# This file is kept for reference only. Vercel deployment uses vercel.json + dashboard env vars.
 #
 # Build Command:  npm run build
 # Publish Dir:    dist
