@@ -1,21 +1,24 @@
 // src/components/admin/AlertBanner.jsx
 // =============================================================================
-// AZAMAN ADMIN — real-time alert banner (A-02)
+// AZAMAN ADMIN — real-time alert banner (A-02 / Phase J.2)
 //
 // Opens a Socket.IO connection to the backend using the admin's JWT, joins the
-// 'admin_spy_room', and renders a stack of up to 5 transient alert strips at
+// 'admin_spy_room', and renders a stack of up to 5 animated alert strips at
 // the very top of the admin shell. Pairs with the backend adminAlertService
 // (B-11), which emits 'admin_alert' (and a few typed convenience events) into
 // that room.
 //
-// Self-contained: it manages its own socket lifecycle and alert queue, so
-// integrating it is a single <AlertBanner/> at the top of Layout. It degrades
-// gracefully — if the socket can't connect (no token, backend down), it simply
-// renders nothing.
+// Phase J.2 enhancements:
+//   - Framer Motion spring entrance/exit animations
+//   - Audio alert for HIGH/CRITICAL severity
+//   - Additional event types: dispute:escalated, kyb:submitted, susu:defaulted,
+//     admin:login_from_new_location
+//   - formatAlertMessage helper for richer alert text
 // =============================================================================
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { X } from 'lucide-react';
 
@@ -25,10 +28,10 @@ const AUTO_DISMISS_MS = 30_000;
 
 // Severity → strip styling + where a click should take the operator.
 const SEVERITY_STYLE = {
-  CRITICAL: { bg: '#f43f5e22', border: '#f43f5e', text: '#f43f5e' },
-  HIGH:     { bg: '#f59e0b22', border: '#f59e0b', text: '#f59e0b' },
-  MEDIUM:   { bg: '#4f8ef722', border: '#4f8ef7', text: '#4f8ef7' },
-  LOW:      { bg: '#00d97e22', border: '#00d97e', text: '#00d97e' },
+  CRITICAL: { bg: 'rgba(244,63,94,0.13)', border: '#f43f5e', text: '#f43f5e', emoji: '🚨' },
+  HIGH:     { bg: 'rgba(245,158,11,0.13)', border: '#f59e0b', text: '#f59e0b', emoji: '⚠️' },
+  MEDIUM:   { bg: 'rgba(79,142,247,0.13)', border: '#4f8ef7', text: '#4f8ef7', emoji: '🔔' },
+  LOW:      { bg: 'rgba(0,217,126,0.13)', border: '#00d97e', text: '#00d97e', emoji: 'ℹ️' },
 };
 
 // Map an alert to the most relevant admin page.
@@ -37,14 +40,38 @@ function routeForAlert(alert) {
     case 'LARGE_WITHDRAWAL_PENDING':
       return '/withdrawals';
     case 'DISPUTE_FILED':
+    case 'DISPUTE_ESCALATED':
     case 'SUSPICIOUS_TRADE_PATTERN':
       return '/war-room';
     case 'KYC_MANUAL_REVIEW_REQUIRED':
       return '/users';
+    case 'KYB_SUBMITTED':
+      return '/business-kyb';
     case 'FIAT_POOL_LOW':
       return '/pools';
+    case 'SUSU_DEFAULTED':
+      return '/susu';
+    case 'ADMIN_LOGIN_NEW_LOCATION':
+      return '/settings';
     default:
       return null;
+  }
+}
+
+function formatAlertMessage(type, data = {}) {
+  switch (type) {
+    case 'DISPUTE_ESCALATED':
+      return `Dispute escalated — GHS ${data.amount?.toFixed(2) ?? 'N/A'} at risk`;
+    case 'LARGE_WITHDRAWAL_PENDING':
+      return `Large withdrawal request: GHS ${data.amount?.toFixed(2) ?? 'N/A'} from @${data.username || 'user'}`;
+    case 'KYB_SUBMITTED':
+      return `New KYB submission from ${data.businessName || 'unknown business'}`;
+    case 'SUSU_DEFAULTED':
+      return `Susu default: ${data.memberName || 'member'} missed cycle ${data.cycleNumber ?? '?'}`;
+    case 'ADMIN_LOGIN_NEW_LOCATION':
+      return `Admin login from new location: ${data.location || 'unknown'}`;
+    default:
+      return data.message || '';
   }
 }
 
@@ -54,24 +81,54 @@ const nextId = () => `${Date.now()}_${_seq++}`;
 export default function AlertBanner() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
+  const audioRef = useRef(null);
+
+  // Web Audio API beep for critical alerts — no audio file needed.
+  const playAlertSound = useCallback(() => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+      // Cleanup context after sound finishes
+      osc.onended = () => ctx.close();
+    } catch {
+      // AudioContext may not be available (SSR or permissions) — silently ignore
+    }
+  }, []);
 
   const dismiss = useCallback((id) => {
     setAlerts((prev) => prev.filter((a) => a._id !== id));
   }, []);
 
   const pushAlert = useCallback((raw) => {
+    const type = raw.type || 'GENERIC';
+    const severity = (raw.severity || 'MEDIUM').toUpperCase();
     const alert = {
       _id: nextId(),
-      type: raw.type || 'GENERIC',
-      severity: (raw.severity || 'MEDIUM').toUpperCase(),
-      title: raw.title || raw.message || 'Alert',
-      message: raw.message || raw.title || '',
+      type,
+      severity,
+      title: raw.title || formatAlertMessage(type, raw) || 'Alert',
+      message: raw.message || formatAlertMessage(type, raw) || raw.title || '',
       timestamp: raw.timestamp || new Date().toISOString(),
     };
     setAlerts((prev) => [alert, ...prev].slice(0, MAX_ALERTS));
+
+    // Play audio beep for high/critical severity
+    if (severity === 'HIGH' || severity === 'CRITICAL') {
+      playAlertSound();
+    }
+
     // Auto-dismiss after a while so the bar doesn't accumulate stale strips.
     setTimeout(() => dismiss(alert._id), AUTO_DISMISS_MS);
-  }, [dismiss]);
+  }, [dismiss, playAlertSound]);
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
@@ -84,7 +141,6 @@ export default function AlertBanner() {
     });
 
     socket.on('connect', () => {
-      // The backend joins admins to admin_spy_room on this event.
       socket.emit('join_admin_spy');
     });
 
@@ -117,56 +173,96 @@ export default function AlertBanner() {
       }),
     );
 
+    // Phase J.2 — additional critical event types.
+    socket.on('dispute:escalated', (d) =>
+      pushAlert({
+        type: 'DISPUTE_ESCALATED',
+        severity: 'HIGH',
+        ...d,
+      }),
+    );
+    socket.on('kyb:submitted', (d) =>
+      pushAlert({
+        type: 'KYB_SUBMITTED',
+        severity: 'MEDIUM',
+        ...d,
+      }),
+    );
+    socket.on('susu:defaulted', (d) =>
+      pushAlert({
+        type: 'SUSU_DEFAULTED',
+        severity: 'HIGH',
+        ...d,
+      }),
+    );
+    socket.on('admin:login_from_new_location', (d) =>
+      pushAlert({
+        type: 'ADMIN_LOGIN_NEW_LOCATION',
+        severity: 'CRITICAL',
+        ...d,
+      }),
+    );
+
     return () => {
       socket.off('admin_alert', pushAlert);
+      socket.off('dispute:escalated');
+      socket.off('kyb:submitted');
+      socket.off('susu:defaulted');
+      socket.off('admin:login_from_new_location');
       socket.disconnect();
     };
   }, [pushAlert]);
 
-  if (alerts.length === 0) return null;
-
   return (
-    <div className="flex flex-col">
-      {alerts.map((a) => {
-        const s = SEVERITY_STYLE[a.severity] || SEVERITY_STYLE.MEDIUM;
-        const route = routeForAlert(a);
-        return (
-          <div
-            key={a._id}
-            onClick={() => route && navigate(route)}
-            className="flex items-center justify-between px-6 py-2 border-b text-sm"
-            style={{
-              background: s.bg,
-              borderColor: s.border,
-              color: s.text,
-              cursor: route ? 'pointer' : 'default',
-            }}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide flex-shrink-0"
-                style={{ background: s.border, color: '#0a0a0f' }}
-              >
-                {a.severity}
-              </span>
-              <span className="font-semibold flex-shrink-0">{a.title}</span>
-              {a.message && (
-                <span className="text-[#b8b8c8] truncate">— {a.message}</span>
-              )}
-            </div>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                dismiss(a._id);
+    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      <AnimatePresence>
+        {alerts.map((a) => {
+          const s = SEVERITY_STYLE[a.severity] || SEVERITY_STYLE.MEDIUM;
+          const route = routeForAlert(a);
+          return (
+            <motion.div
+              key={a._id}
+              initial={{ opacity: 0, y: -20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 100, scale: 0.95 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              onClick={() => route && navigate(route)}
+              className="flex items-center justify-between px-6 py-2.5 border-b text-sm pointer-events-auto"
+              style={{
+                background: s.bg,
+                borderColor: s.border,
+                color: s.text,
+                cursor: route ? 'pointer' : 'default',
+                backdropFilter: 'blur(8px)',
               }}
-              className="p-1 rounded hover:bg-black/20 flex-shrink-0"
-              title="Dismiss"
             >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        );
-      })}
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="flex-shrink-0 text-base">{s.emoji}</span>
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide flex-shrink-0"
+                  style={{ background: s.border, color: '#0a0a0f' }}
+                >
+                  {a.severity}
+                </span>
+                <span className="font-semibold flex-shrink-0">{a.title}</span>
+                {a.message && a.message !== a.title && (
+                  <span className="text-[#b8b8c8] truncate">— {a.message}</span>
+                )}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  dismiss(a._id);
+                }}
+                className="p-1 rounded hover:bg-black/20 flex-shrink-0 transition-colors"
+                title="Dismiss"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
