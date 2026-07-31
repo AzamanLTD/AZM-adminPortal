@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
+import { Link, useLocation, Outlet } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard, Swords, Users, TrendingUp, Wallet,
@@ -81,7 +81,7 @@ function NavItem({ item, collapsed, badges }) {
   return (
     <Link
       to={item.to}
-      className={cn('az-nav-item', isActive && 'active', collapsed && 'justify-center !px-0')}
+      className={cn('az-nav-item group', isActive && 'active', collapsed && 'justify-center !px-0')}
       title={collapsed ? item.label : undefined}
     >
       <item.icon
@@ -120,6 +120,8 @@ export default function AdminLayout() {
 
   const location    = useLocation();
   const { logout }  = useAuth?.() ?? {};
+
+  // useAdminNotifications returns { open, resolved, all, unreadCount, markRead, markAllRead, isLoading }
   const notifications = useAdminNotifications();
   const { data: stats = {} } = useStats();
 
@@ -130,6 +132,8 @@ export default function AdminLayout() {
     withdrawals:     stats.pendingWithdrawals || 0,
     biz_kyb:         stats.pendingBusinessKyb || 0,
   };
+
+  const unreadCount = notifications?.unreadCount || 0;
 
   // Apply/remove dark class
   useEffect(() => {
@@ -157,8 +161,6 @@ export default function AdminLayout() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   /* ── Sidebar content (shared between desktop + mobile) ── */
   const SidebarContent = () => (
@@ -366,13 +368,16 @@ export default function AdminLayout() {
         </main>
       </div>
 
-      {/* Overlay panels */}
+      {/* Overlay panels — use onOpenChange (not onClose) to match component API */}
       <NotificationCenter
         open={notifOpen}
-        onClose={() => setNotifOpen(false)}
+        onOpenChange={setNotifOpen}
         notifications={notifications}
       />
-      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} />
+      <CommandPalette
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+      />
     </div>
   );
 }
