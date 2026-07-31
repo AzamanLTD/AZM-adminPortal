@@ -2,8 +2,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from './api';
 
 // Decode JWT payload (no verification — the backend already verified it).
-// We only need this to extract `role` when the login response's user object
-// doesn't include it (older backend versions).
 function decodeJwtPayload(token) {
   try {
     const base64Url = token.split('.')[1];
@@ -36,6 +34,7 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     setIsLoadingAuth(true);
     const token = localStorage.getItem('admin_token');
+
     if (!token) {
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
@@ -43,23 +42,43 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    try {
-      // Verify token is still valid by hitting a protected endpoint
-      const data = await api.admin.stats();
-      // If we get here, token is valid and user is admin
-      setIsAuthenticated(true);
-      // Decode token to get user info
-      const payload = decodeJwtPayload(token);
-      setUser({ role: 'ADMIN', id: payload?.id, username: payload?.username });
-      setAuthError(null);
-    } catch (error) {
-      // Token expired or not admin
+    // Decode JWT locally — trust it immediately without a network round-trip.
+    // This makes the dashboard load instantly (same pattern as Vercel/Sentry).
+    // The actual data endpoints will 401 if the token is truly invalid.
+    const payload = decodeJwtPayload(token);
+
+    if (!payload) {
+      // Malformed token
       localStorage.removeItem('admin_token');
-      setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: error.message });
-    } finally {
       setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthError({ type: 'auth_required', message: 'Invalid session. Please log in again.' });
+      return;
     }
+
+    // Check token expiry
+    if (payload.exp && Date.now() / 1000 > payload.exp) {
+      localStorage.removeItem('admin_token');
+      setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthError({ type: 'auth_required', message: 'Session expired. Please log in again.' });
+      return;
+    }
+
+    // Token looks valid — authenticate from JWT payload, let dashboard load data async
+    const role = payload.role;
+    if (role !== 'ADMIN') {
+      localStorage.removeItem('admin_token');
+      setIsLoadingAuth(false);
+      setIsAuthenticated(false);
+      setAuthError({ type: 'auth_required', message: 'Access denied. Admin credentials required.' });
+      return;
+    }
+
+    setIsAuthenticated(true);
+    setUser({ role: 'ADMIN', id: payload.id, username: payload.username });
+    setAuthError(null);
+    setIsLoadingAuth(false);
   };
 
   const login = async (email, password) => {
@@ -68,12 +87,10 @@ export const AuthProvider = ({ children }) => {
       if (!data.success) throw new Error(data.message || 'Login failed');
 
       const token = data.accessToken || data.token;
-      const user = data.user;
+      if (!token) throw new Error('No token returned from server');
 
-      // Check role from the user object first, fall back to decoding the JWT.
-      // Some backend deployments return the user object without a `role` field,
-      // but the JWT always carries it.
-      let role = user?.role;
+      // Check role from user object first, fall back to JWT payload
+      let role = data.user?.role;
       if (!role) {
         const payload = decodeJwtPayload(token);
         role = payload?.role;
@@ -84,7 +101,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       localStorage.setItem('admin_token', token);
-      setUser({ ...user, role: 'ADMIN' });
+      const payload = decodeJwtPayload(token);
+      setUser({ role: 'ADMIN', id: payload?.id, username: payload?.username, ...data.user });
       setIsAuthenticated(true);
       setAuthError(null);
       return { success: true };
@@ -100,10 +118,6 @@ export const AuthProvider = ({ children }) => {
     setAuthError({ type: 'auth_required', message: 'Logged out' });
   };
 
-  const navigateToLogin = () => {
-    // No-op — handled by routing in App.jsx
-  };
-
   return (
     <AuthContext.Provider value={{
       user,
@@ -115,7 +129,7 @@ export const AuthProvider = ({ children }) => {
       authChecked: !isLoadingAuth,
       login,
       logout,
-      navigateToLogin,
+      navigateToLogin: () => {},
       checkUserAuth: checkAuth,
       checkAppState: checkAuth,
     }}>
@@ -126,8 +140,6 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };

@@ -1,158 +1,215 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
-import ParticleField from '@/components/ui/ParticleField';
-import { spring } from '@/lib/motion';
+import { Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [showPw,   setShowPw]   = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-
+    setLoading(true);
     const result = await login(email, password);
-    if (!result.success) {
-      setError(result.message);
-    }
-    setIsLoading(false);
+    if (!result.success) setError(result.message);
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden"
-      style={{ background: 'var(--az-bg)' }}>
-      {/* Particle field background */}
-      <ParticleField color="#00D97E" count={500} />
-
-      {/* Vignette overlay */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, transparent 0%, var(--az-bg) 80%)' }} />
-
-      <motion.div
-        initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-sm"
+    <div
+      className="min-h-screen flex"
+      style={{ background: 'var(--az-bg)' }}
+    >
+      {/* ── Left branding panel ── */}
+      <div
+        className="hidden lg:flex flex-col justify-between w-[340px] shrink-0 p-10 border-r"
+        style={{
+          background:  'var(--az-sidebar-bg)',
+          borderColor: 'var(--az-sidebar-border)',
+        }}
       >
-        {/* Glass card */}
-        <div className="az-glass rounded-2xl p-8 shadow-2xl"
-          style={{
-            background: 'rgba(13, 13, 26, 0.72)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-          }}>
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ ...spring.bouncy, delay: 0.2 }}
-              className="inline-block mb-4"
-            >
-              <img
-                src="/azaman-logo.png"
-                alt="Azaman"
-                className="w-14 h-14 rounded-2xl object-contain mx-auto"
-                style={{ filter: 'drop-shadow(0 0 12px rgba(0, 217, 126, 0.4))' }}
+        {/* Top: logo + tagline */}
+        <div>
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="flex items-center gap-3 mb-10"
+          >
+            <img
+              src="/azaman-logo.png"
+              alt="Azaman"
+              className="w-9 h-9 rounded-xl object-contain"
+            />
+            <div>
+              <p className="text-sm font-bold tracking-tight" style={{ color: 'var(--az-text)' }}>AZAMAN</p>
+              <p className="text-[11px] font-medium" style={{ color: 'var(--az-text-muted)' }}>Admin Portal</p>
+            </div>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+            className="text-[22px] font-bold leading-snug mb-3"
+            style={{ color: 'var(--az-text)' }}
+          >
+            Platform<br />Control Center
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="text-sm leading-relaxed"
+            style={{ color: 'var(--az-text-secondary)' }}
+          >
+            Manage users, compliance, finance, Susu groups, and merchants across the Azaman platform.
+          </motion.p>
+        </div>
+
+        {/* Middle: feature list */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="space-y-3"
+        >
+          {[
+            'Real-time platform stats',
+            'KYC / KYB compliance queue',
+            'Fee engine & revenue reporting',
+            'Susu group monitoring',
+            'Withdrawal & dispute management',
+          ].map((f) => (
+            <div key={f} className="flex items-center gap-2.5">
+              <div
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: 'var(--az-emerald)' }}
               />
-            </motion.div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--az-text-primary)' }}>Azaman Admin</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--az-text-secondary)' }}>Control Center Access</p>
+              <span className="text-sm" style={{ color: 'var(--az-text-secondary)' }}>{f}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Footer */}
+        <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>
+          © 2026 Azaman. All rights reserved.
+        </p>
+      </div>
+
+      {/* ── Right form panel ── */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          className="w-full max-w-[360px]"
+        >
+          {/* Mobile logo */}
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <img src="/azaman-logo.png" alt="Azaman" className="w-8 h-8 rounded-xl object-contain" />
+            <p className="text-sm font-bold" style={{ color: 'var(--az-text)' }}>AZAMAN Admin</p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={spring.snappy}
-                className="flex items-center gap-2 rounded-lg p-3"
-                style={{
-                  background: 'var(--az-red-soft)',
-                  border: '1px solid var(--az-red-soft)',
-                }}
-              >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--az-red)' }} />
-                <p className="text-sm" style={{ color: 'var(--az-red)' }}>{error}</p>
-              </motion.div>
-            )}
+          <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--az-text)' }}>Sign in</h2>
+          <p className="text-sm mb-7" style={{ color: 'var(--az-text-muted)' }}>
+            Admin access only
+          </p>
 
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs block mb-1.5 font-medium" style={{ color: 'var(--az-text-secondary)' }}>Email</label>
-              <Input
+              <label
+                className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                style={{ color: 'var(--az-text-muted)' }}
+              >
+                Email
+              </label>
+              <input
                 type="email"
+                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@azaman.app"
-                required
                 className="az-input"
+                autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="text-xs block mb-1.5 font-medium" style={{ color: 'var(--az-text-secondary)' }}>Password</label>
+              <label
+                className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
+                style={{ color: 'var(--az-text-muted)' }}
+              >
+                Password
+              </label>
               <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  required
                   className="az-input pr-10"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPw((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
                   style={{ color: 'var(--az-text-muted)' }}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPw
+                    ? <EyeOff style={{ width: 15, height: 15 }} />
+                    : <Eye    style={{ width: 15, height: 15 }} />}
                 </button>
               </div>
             </div>
 
-            <motion.div whileTap={{ scale: 0.98 }} transition={{ duration: 0.08 }}>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full font-medium transition-all"
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.18 }}
+                className="flex items-center gap-2 p-3 rounded-md"
                 style={{
-                  background: 'var(--az-emerald)',
-                  color: '#070710',
-                  boxShadow: '0 4px 12px var(--az-emerald-glow), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  background: 'var(--az-danger-subtle)',
+                  border:     '1px solid rgba(220,38,38,0.18)',
                 }}
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 rounded-full animate-spin"
-                      style={{ borderColor: 'rgba(7,7,16,0.3)', borderTopColor: '#070710' }} />
-                    Authenticating...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <LogIn className="w-4 h-4" />
-                    Sign In
-                  </div>
-                )}
-              </Button>
-            </motion.div>
+                <AlertCircle style={{ width: 13, height: 13, color: 'var(--az-danger)', flexShrink: 0 }} />
+                <p className="text-xs" style={{ color: 'var(--az-danger)' }}>{error}</p>
+              </motion.div>
+            )}
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.08 }}
+              className="az-btn-primary w-full mt-1"
+            >
+              {loading ? (
+                <div className="az-spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight style={{ width: 14, height: 14 }} />
+                </>
+              )}
+            </motion.button>
           </form>
 
           <p className="text-xs text-center mt-6" style={{ color: 'var(--az-text-muted)' }}>
             Only admin accounts can access this portal.
           </p>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

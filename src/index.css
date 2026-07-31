@@ -3,487 +3,577 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ═══════════════════════════════════════════════════════════════
-   AZAMAN ADMIN — DESIGN TOKENS
-   "Obsidian Glass" — Dark-first, data-dense, spring-physical
-   ═══════════════════════════════════════════════════════════════ */
+/*
+ * AZAMAN ADMIN — "Civic Clean" Design System
+ * Light-first. Emerald accent. Sentry-inspired nav depth.
+ * Reference: Klaviyo light mode + Sentry nav + your images.
+ */
 
 @layer base {
 
-  /* ── Dark mode (default) ─────────────────────────────────────── */
-  :root, .dark {
-    /* Backgrounds — 5 elevation levels */
-    --az-bg:          #070710;
-    --az-surface-1:   #0D0D1A;
-    --az-surface-2:   #11111F;
-    --az-surface-3:   #161626;
-    --az-surface-4:   #1C1C2E;
-    --az-surface-5:   #22223A;
+  /* ── LIGHT MODE (default) ─────────────────────────────────── */
+  :root {
+    /* Page background — very slightly cool grey, like Klaviyo */
+    --az-bg:          #F5F6F8;
+    --az-bg-subtle:   #EDEEF2;
+
+    /* Sidebar — pure white, crisp against the body */
+    --az-sidebar-bg:  #FFFFFF;
+    --az-sidebar-border: rgba(0, 0, 0, 0.08);
+
+    /* Surface elevations */
+    --az-surface-0:   #FFFFFF;
+    --az-surface-1:   #F9FAFB;
+    --az-surface-2:   #F3F4F6;
+    --az-surface-3:   #E9EAEC;
+    --az-surface-4:   #E0E1E6;
+    --az-surface-5:   #D5D6DC;
 
     /* Borders */
-    --az-border:        rgba(255,255,255,0.07);
-    --az-border-bright:  rgba(255,255,255,0.12);
-    --az-border-focus:   rgba(124,92,250,0.5);
+    --az-border:        rgba(0, 0, 0, 0.08);
+    --az-border-strong: rgba(0, 0, 0, 0.13);
+    --az-border-focus:  rgba(0, 217, 126, 0.45);
 
     /* Text */
-    --az-text-primary:   #F0F0F8;
-    --az-text-secondary: #8888AA;
-    --az-text-muted:     #4A4A6A;
-    --az-text-disabled:  #2E2E4A;
+    --az-text:           #111318;
+    --az-text-primary:   var(--az-text);
+    --az-text-secondary: #4B5563;
+    --az-text-muted:     #9CA3AF;
+    --az-text-disabled:  #D1D5DB;
 
-    /* Brand colors */
-    --az-emerald:       #00D97E;
-    --az-emerald-soft:  rgba(0,217,126,0.12);
-    --az-emerald-glow:  rgba(0,217,126,0.25);
-
-    --az-violet:        #7C5CFA;
-    --az-violet-soft:   rgba(124,92,250,0.12);
-    --az-violet-glow:   rgba(124,92,250,0.25);
-
-    --az-blue:          #4F8EF7;
-    --az-blue-soft:     rgba(79,142,247,0.12);
-    --az-blue-glow:     rgba(79,142,247,0.25);
-
-    --az-amber:         #F59E0B;
-    --az-amber-soft:    rgba(245,158,11,0.12);
-
-    --az-red:           #F43F5E;
-    --az-red-soft:      rgba(244,63,94,0.12);
-    --az-red-glow:      rgba(244,63,94,0.25);
-
-    --az-teal:          #06B6D4;
-    --az-teal-soft:     rgba(6,182,212,0.12);
-
-    /* Semantic tokens */
-    --az-success:  var(--az-emerald);
-    --az-warning:  var(--az-amber);
-    --az-danger:   var(--az-red);
-    --az-info:     var(--az-blue);
-    --az-primary:  var(--az-emerald);
-
-    /* ── Backward-compatible aliases (keep existing pages working) ── */
-    --az-black:        var(--az-bg);
-    --az-surface:       var(--az-surface-1);
-    --az-card:          var(--az-surface-2);
-    --az-emerald-dim:   var(--az-emerald-soft);
-    --az-blue-dim:      var(--az-blue-soft);
-    --az-purple:        var(--az-violet);
-    --az-purple-dim:    var(--az-violet-soft);
-    --az-amber-dim:     var(--az-amber-soft);
-    --az-red-dim:       var(--az-red-soft);
-
-    /* Sidebar */
-    --sidebar-width:     240px;
-    --sidebar-width-collapsed: 64px;
-    --header-height:     52px;
-
-    /* shadcn/ui mappings — dark */
-    --background:         240 15% 3%;
-    --foreground:         240 15% 95%;
-    --card:               240 12% 8%;
-    --card-foreground:    240 15% 95%;
-    --popover:            240 12% 10%;
-    --popover-foreground: 240 15% 95%;
-    --primary:            152 100% 43%;
-    --primary-foreground: 240 12% 5%;
-    --secondary:          240 8% 14%;
-    --secondary-foreground: 240 15% 80%;
-    --muted:              240 8% 14%;
-    --muted-foreground:   240 8% 50%;
-    --accent:             240 8% 18%;
-    --accent-foreground:  240 15% 95%;
-    --destructive:        348 83% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border:             240 8% 12%;
-    --input:              240 8% 14%;
-    --ring:               152 100% 43%;
-    --radius:             0.75rem;
-    --sidebar-background: 240 12% 5%;
-    --sidebar-foreground: 240 15% 95%;
-    --sidebar-primary:    152 100% 43%;
-    --sidebar-primary-foreground: 240 12% 5%;
-    --sidebar-accent:     240 8% 15%;
-    --sidebar-accent-foreground: 240 15% 95%;
-    --sidebar-border:     240 8% 12%;
-    --sidebar-ring:       152 100% 43%;
-    --chart-1: 152 100% 43%;
-    --chart-2: 240 60% 70%;
-    --chart-3: 210 70% 60%;
-    --chart-4: 40 80% 55%;
-    --chart-5: 340 75% 60%;
-  }
-
-  /* ── Light mode ──────────────────────────────────────────────── */
-  .light {
-    --az-bg:          #F5F4F2;
-    --az-surface-1:   #FFFFFF;
-    --az-surface-2:   #FAFAFA;
-    --az-surface-3:   #F5F5F5;
-    --az-surface-4:   #EFEFEF;
-    --az-surface-5:   #E5E5E5;
-
-    --az-border:        rgba(0,0,0,0.07);
-    --az-border-bright: rgba(0,0,0,0.12);
-    --az-border-focus:   rgba(124,92,250,0.4);
-
-    --az-text-primary:   #0F0F1A;
-    --az-text-secondary: #5A5A7A;
-    --az-text-muted:     #9A9AB0;
-    --az-text-disabled:  #C8C8D8;
-
-    /* Brand colors — slightly richer in light mode */
-    --az-emerald:       #00B868;
-    --az-emerald-soft:  rgba(0,184,104,0.1);
-    --az-emerald-glow:  rgba(0,184,104,0.2);
-
-    --az-violet:        #6C4FD1;
-    --az-violet-soft:   rgba(108,79,209,0.1);
-    --az-violet-glow:   rgba(108,79,209,0.2);
-
-    --az-blue:          #3B7AE5;
-    --az-blue-soft:     rgba(59,122,229,0.1);
-
-    --az-amber:         #D97706;
-    --az-amber-soft:    rgba(217,119,6,0.1);
-
-    --az-red:           #E11D48;
-    --az-red-soft:      rgba(225,29,72,0.1);
-    --az-red-glow:      rgba(225,29,72,0.15);
-
-    --az-teal:          #0891B2;
-    --az-teal-soft:     rgba(8,145,178,0.1);
+    /* Emerald — admin brand accent, used SPARINGLY */
+    --az-emerald:        #00D97E;
+    --az-emerald-hover:  #00C571;
+    --az-emerald-subtle: rgba(0, 217, 126, 0.08);
+    --az-emerald-border: rgba(0, 217, 126, 0.25);
+    --az-emerald-glow:   rgba(0, 217, 126, 0.18);
+    --az-emerald-dim:    rgba(0, 217, 126, 0.08);
+    --az-emerald-soft:   rgba(0, 217, 126, 0.08);
 
     /* Semantic */
-    --az-success:  var(--az-emerald);
-    --az-warning:  var(--az-amber);
-    --az-danger:   var(--az-red);
-    --az-info:     var(--az-blue);
-    --az-primary:  var(--az-emerald);
+    --az-success:        #16A34A;
+    --az-success-subtle: rgba(22, 163, 74, 0.08);
+    --az-warning:        #D97706;
+    --az-warning-subtle: rgba(217, 119, 6, 0.10);
+    --az-warning-soft:   rgba(217, 119, 6, 0.10);
+    --az-danger:         #DC2626;
+    --az-danger-subtle:  rgba(220, 38, 38, 0.08);
+    --az-red:            var(--az-danger);
+    --az-red-soft:       var(--az-danger-subtle);
+    --az-red-dim:        var(--az-danger-subtle);
+    --az-red-glow:       rgba(220, 38, 38, 0.15);
+    --az-info:           #2563EB;
+    --az-info-subtle:    rgba(37, 99, 235, 0.08);
+    --az-blue:           var(--az-info);
+    --az-blue-soft:      var(--az-info-subtle);
+    --az-blue-dim:       var(--az-info-subtle);
+    --az-amber:          var(--az-warning);
+    --az-amber-soft:     var(--az-warning-subtle);
+    --az-amber-dim:      var(--az-warning-subtle);
+    --az-violet:         #6C4FD1;
+    --az-violet-soft:    rgba(108, 79, 209, 0.10);
+    --az-violet-glow:    rgba(108, 79, 209, 0.18);
+    --az-purple:         var(--az-violet);
+    --az-purple-dim:     var(--az-violet-soft);
+    --az-teal:           #0D9488;
+    --az-teal-soft:      rgba(13, 148, 136, 0.10);
+    --az-cyan:           var(--az-teal);
+    --az-cyan-dim:       var(--az-teal-soft);
+    --az-primary:        var(--az-emerald);
 
-    /* Backward-compatible aliases */
-    --az-black:        var(--az-bg);
-    --az-surface:       var(--az-surface-1);
-    --az-card:          var(--az-surface-2);
-    --az-emerald-dim:   var(--az-emerald-soft);
-    --az-blue-dim:      var(--az-blue-soft);
-    --az-purple:        var(--az-violet);
-    --az-purple-dim:    var(--az-violet-soft);
-    --az-amber-dim:     var(--az-amber-soft);
-    --az-red-dim:       var(--az-red-soft);
+    /* Nav item states — Sentry pattern */
+    --az-nav-hover:     rgba(0, 0, 0, 0.04);
+    --az-nav-active-bg: rgba(0, 217, 126, 0.08);
+    --az-nav-active-bar: var(--az-emerald);
 
-    /* shadcn/ui light */
-    --background:         0 0% 97%;
-    --foreground:         240 10% 6%;
+    /* Layout */
+    --sidebar-width:           240px;
+    --sidebar-width-collapsed: 56px;
+    --header-height:           52px;
+
+    /* Shadows — subtle, calibrated for light mode */
+    --az-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --az-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --az-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+    --az-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.07), 0 4px 6px rgba(0, 0, 0, 0.04);
+
+    /* shadcn/ui compatibility (HSL parts) */
+    --background:         220 14% 96%;
+    --foreground:         220 14% 7%;
     --card:               0 0% 100%;
-    --card-foreground:    240 10% 6%;
+    --card-foreground:    220 14% 7%;
     --popover:            0 0% 100%;
-    --popover-foreground:  240 10% 6%;
-    --primary:            152 72% 36%;
-    --primary-foreground: 0 0% 98%;
-    --secondary:          240 4% 95%;
-    --secondary-foreground: 240 10% 20%;
-    --muted:              240 4% 95%;
-    --muted-foreground:   240 4% 46%;
-    --accent:             240 4% 94%;
-    --accent-foreground:  240 10% 6%;
-    --destructive:        348 83% 48%;
+    --popover-foreground: 220 14% 7%;
+    --primary:            152 100% 43%;
+    --primary-foreground: 220 14% 5%;
+    --secondary:          220 9% 96%;
+    --secondary-foreground: 220 14% 7%;
+    --muted:              220 9% 96%;
+    --muted-foreground:   220 9% 46%;
+    --accent:             220 9% 94%;
+    --accent-foreground:  220 14% 7%;
+    --destructive:        0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border:             240 6% 88%;
-    --input:              240 6% 90%;
-    --ring:               152 72% 36%;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 10% 6%;
-    --sidebar-primary:    152 72% 36%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent:     240 4% 94%;
-    --sidebar-accent-foreground: 240 10% 6%;
-    --sidebar-border:     240 6% 88%;
-    --sidebar-ring:       152 72% 36%;
-    --chart-1: 152 72% 36%;
-    --chart-2: 250 50% 55%;
-    --chart-3: 210 60% 50%;
-    --chart-4: 40 75% 50%;
-    --chart-5: 340 70% 55%;
+    --border:             220 9% 91%;
+    --input:              220 9% 91%;
+    --ring:               152 100% 43%;
+    --radius:             0.5rem;
+
+    /* Legacy aliases for existing pages */
+    --az-black:    var(--az-bg);
+    --az-surface:  var(--az-surface-0);
+    --az-card:     var(--az-surface-0);
+    --az-card-elevated: var(--az-surface-1);
+    --az-text-tertiary: var(--az-text-muted);
+    --az-bg-alt:   var(--az-bg-subtle);
   }
 
-  /* ── Global resets ───────────────────────────────────────────── */
-  *, *::before, *::after {
-    box-sizing: border-box;
-    border-color: var(--az-border);
+  /* ── DARK MODE ───────────────────────────────────────────── */
+  .dark, [data-theme="dark"] {
+    --az-bg:          #0D0E11;
+    --az-bg-subtle:   #111318;
+
+    --az-sidebar-bg:  #111318;
+    --az-sidebar-border: rgba(255, 255, 255, 0.07);
+
+    --az-surface-0:   #161820;
+    --az-surface-1:   #1C1E26;
+    --az-surface-2:   #22242E;
+    --az-surface-3:   #2A2D38;
+    --az-surface-4:   #32364A;
+    --az-surface-5:   #3A3E52;
+
+    --az-border:        rgba(255, 255, 255, 0.08);
+    --az-border-strong: rgba(255, 255, 255, 0.13);
+    --az-border-focus:  rgba(0, 217, 126, 0.4);
+
+    --az-text:           #F0F1F3;
+    --az-text-primary:   var(--az-text);
+    --az-text-secondary: #9CA3AF;
+    --az-text-muted:     #6B7280;
+    --az-text-disabled:  #374151;
+
+    --az-emerald:        #00D97E;
+    --az-emerald-hover:  #00F090;
+    --az-emerald-subtle: rgba(0, 217, 126, 0.10);
+    --az-emerald-border: rgba(0, 217, 126, 0.25);
+    --az-emerald-glow:   rgba(0, 217, 126, 0.18);
+    --az-emerald-dim:    rgba(0, 217, 126, 0.10);
+    --az-emerald-soft:   rgba(0, 217, 126, 0.10);
+
+    --az-success:        #22C55E;
+    --az-success-subtle: rgba(34, 197, 94, 0.12);
+    --az-warning:        #F59E0B;
+    --az-warning-subtle: rgba(245, 158, 11, 0.12);
+    --az-warning-soft:   rgba(245, 158, 11, 0.12);
+    --az-danger:         #F87171;
+    --az-danger-subtle:  rgba(248, 113, 113, 0.12);
+    --az-red:            var(--az-danger);
+    --az-red-soft:       var(--az-danger-subtle);
+    --az-red-dim:        var(--az-danger-subtle);
+    --az-red-glow:       rgba(248, 113, 113, 0.20);
+    --az-info:           #60A5FA;
+    --az-info-subtle:    rgba(96, 165, 250, 0.12);
+    --az-blue:           var(--az-info);
+    --az-blue-soft:      var(--az-info-subtle);
+    --az-blue-dim:       var(--az-info-subtle);
+    --az-amber:          var(--az-warning);
+    --az-amber-soft:     var(--az-warning-subtle);
+    --az-amber-dim:      var(--az-warning-subtle);
+    --az-violet:         #7C5CFA;
+    --az-violet-soft:    rgba(124, 92, 250, 0.12);
+    --az-violet-glow:    rgba(124, 92, 250, 0.20);
+    --az-purple:         var(--az-violet);
+    --az-purple-dim:     var(--az-violet-soft);
+    --az-teal:           #2DD4BF;
+    --az-teal-soft:      rgba(45, 212, 191, 0.12);
+    --az-cyan:           var(--az-teal);
+    --az-cyan-dim:       var(--az-teal-soft);
+    --az-primary:        var(--az-emerald);
+
+    --az-nav-hover:     rgba(255, 255, 255, 0.05);
+    --az-nav-active-bg: rgba(0, 217, 126, 0.10);
+    --az-nav-active-bar: var(--az-emerald);
+
+    --az-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --az-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.30);
+    --az-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.30);
+    --az-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.55), 0 4px 6px rgba(0, 0, 0, 0.35);
+
+    --background:         222 14% 7%;
+    --foreground:         210 14% 95%;
+    --card:               222 14% 10%;
+    --card-foreground:    210 14% 95%;
+    --popover:            222 14% 10%;
+    --popover-foreground: 210 14% 95%;
+    --primary:            152 100% 43%;
+    --primary-foreground: 222 14% 5%;
+    --secondary:          222 14% 12%;
+    --secondary-foreground: 210 14% 95%;
+    --muted:              222 14% 12%;
+    --muted-foreground:   220 9% 46%;
+    --accent:             222 14% 15%;
+    --accent-foreground:  210 14% 95%;
+    --destructive:        0 91% 71%;
+    --destructive-foreground: 0 0% 7%;
+    --border:             222 14% 18%;
+    --input:              222 14% 18%;
+    --ring:               152 100% 43%;
+
+    /* Dark legacy aliases */
+    --az-black:    #0D0E11;
+    --az-surface:  var(--az-surface-0);
+    --az-card:     var(--az-surface-1);
+    --az-card-elevated: var(--az-surface-2);
+    --az-text-tertiary: var(--az-text-muted);
+    --az-bg-alt:   var(--az-bg-subtle);
   }
 
-  html { font-size: 16px; scroll-behavior: smooth; }
+  /* Global resets */
+  *, *::before, *::after { box-sizing: border-box; }
 
   body {
-    background-color: var(--az-bg);
-    color: var(--az-text-primary);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-feature-settings: 'cv02','cv03','cv04','cv11','ss01';
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-    line-height: 1.5;
-    overflow-x: hidden;
+    background: var(--az-bg);
+    color: var(--az-text);
+    margin: 0;
+    transition: background 0.2s, color 0.2s;
   }
 
-  /* Scrollbars */
-  ::-webkit-scrollbar       { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--az-surface-4); border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--az-surface-5); }
-
-  /* Focus visible */
-  :focus-visible {
-    outline: 2px solid var(--az-border-focus);
-    outline-offset: 2px;
-    border-radius: 6px;
-  }
-
-  /* Selection */
-  ::selection {
-    background: var(--az-violet-soft);
-    color: var(--az-text-primary);
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--az-border-strong) transparent;
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   TYPOGRAPHY SCALE
-   ═══════════════════════════════════════════════════════════════ */
-@layer utilities {
-  .text-display-2xl { font-size: 4.5rem;  line-height: 1;    letter-spacing: -0.02em; font-weight: 700; }
-  .text-display-xl  { font-size: 3.75rem; line-height: 1;    letter-spacing: -0.02em; font-weight: 700; }
-  .text-display-lg  { font-size: 3rem;    line-height: 1.05; letter-spacing: -0.02em; font-weight: 600; }
-  .text-display-md  { font-size: 2.25rem; line-height: 1.1;  letter-spacing: -0.02em; font-weight: 600; }
+/* ─────────────────────────────────────────────────────────────
+   COMPONENT LAYER
+   ───────────────────────────────────────────────────────────── */
+@layer components {
 
-  .text-ui-xs  { font-size: 0.6875rem; line-height: 1.45; letter-spacing: 0.04em;  font-weight: 500; text-transform: uppercase; }
-  .text-ui-sm  { font-size: 0.75rem;   line-height: 1.5;  letter-spacing: 0.02em;  font-weight: 500; }
-  .text-ui-md  { font-size: 0.875rem;  line-height: 1.5;  letter-spacing: 0;       font-weight: 500; }
-  .text-ui-lg  { font-size: 1rem;      line-height: 1.5;  letter-spacing: -0.01em; font-weight: 600; }
-
-  .text-data-sm  { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;  font-weight: 400; }
-  .text-data-md  { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 500; }
-  .text-data-lg  { font-family: 'JetBrains Mono', monospace; font-size: 1rem;     font-weight: 600; }
-  .text-data-xl  { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem;   font-weight: 600; letter-spacing: -0.02em; }
-
-/* ═══════════════════════════════════════════════════════════════
-   COMPONENT UTILITIES
-   ═══════════════════════════════════════════════════════════════ */
-
-  /* ── Card system ─────────────────────────────────────────────── */
+  /* ── CARD ────────────────────────────────────────────────── */
   .az-card {
-    background: var(--az-surface-2);
+    background: var(--az-surface-0);
     border: 1px solid var(--az-border);
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-  }
-  .az-card-elevated {
-    background: var(--az-surface-3);
-    border: 1px solid var(--az-border-bright);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px -8px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
-    position: relative;
-    overflow: hidden;
-  }
-  .light .az-card-elevated {
-    box-shadow: 0 4px 16px -4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+    border-radius: 8px;
+    box-shadow: var(--az-shadow-sm);
   }
 
-  /* Glowing card borders (keep legacy names + add new) */
-  .az-card-glow-emerald, .az-card-emerald {
-    background: var(--az-surface-2);
-    border: 1px solid var(--az-emerald-soft);
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px var(--az-emerald-soft), 0 4px 20px var(--az-emerald-soft);
+  /* ── INPUT ───────────────────────────────────────────────── */
+  .az-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--az-border-strong);
+    border-radius: 6px;
+    background: var(--az-surface-0);
+    color: var(--az-text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .az-card-glow-blue, .az-card-violet {
-    background: var(--az-surface-2);
-    border: 1px solid var(--az-violet-soft);
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px var(--az-violet-soft), 0 4px 20px var(--az-violet-soft);
-  }
-  .az-card-red {
-    background: var(--az-surface-2);
-    border: 1px solid var(--az-red-soft);
-    border-radius: 12px;
-    box-shadow: 0 0 0 1px var(--az-red-soft), 0 4px 20px var(--az-red-soft);
-  }
-
-  /* ── Sidebar ─────────────────────────────────────────────────── */
-  .az-sidebar {
-    background: var(--az-surface-1);
-    border-right: 1px solid var(--az-border);
-    height: 100dvh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  .az-input::placeholder { color: var(--az-text-muted); }
+  .az-input:focus {
+    border-color: var(--az-emerald-border);
+    box-shadow: 0 0 0 3px var(--az-emerald-subtle);
   }
 
+  /* ── NAV ITEM — Sentry-style ─────────────────────────────── */
   .az-nav-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 0.8125rem;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
     font-weight: 500;
     color: var(--az-text-secondary);
     cursor: pointer;
-    transition: color 0.15s, background 0.15s;
-    white-space: nowrap;
-    user-select: none;
+    transition: background 0.12s, color 0.12s;
     position: relative;
+    text-decoration: none;
+    user-select: none;
+    min-height: 32px;
   }
-  .az-nav-item:hover  { color: var(--az-text-primary); background: var(--az-surface-3); }
-  .az-nav-item.active { color: var(--az-emerald); background: var(--az-emerald-soft); }
+  .az-nav-item:hover {
+    background: var(--az-nav-hover);
+    color: var(--az-text);
+  }
+  .az-nav-item.active {
+    background: var(--az-nav-active-bg);
+    color: var(--az-emerald);
+    font-weight: 600;
+  }
   .az-nav-item.active::before {
     content: '';
     position: absolute;
-    left: -2px; top: 50%;
-    transform: translateY(-50%);
-    width: 3px; height: 60%;
-    background: var(--az-emerald);
-    border-radius: 0 3px 3px 0;
-    box-shadow: 0 0 8px var(--az-emerald-glow);
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 2px;
+    border-radius: 0 2px 2px 0;
+    background: var(--az-nav-active-bar);
   }
+  .az-nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
 
-  .az-nav-section-label {
-    font-size: 0.65rem;
+  /* ── NAV SECTION LABEL ───────────────────────────────────── */
+  .az-nav-label {
+    font-size: 10.5px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
     color: var(--az-text-muted);
-    padding: 12px 12px 4px;
+    padding: 14px 10px 4px;
+    display: block;
   }
 
-  /* ── Buttons ─────────────────────────────────────────────────── */
-  .az-btn {
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 6px; padding: 8px 14px; border-radius: 8px;
-    font-size: 0.8125rem; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
-    user-select: none; border: none; outline: none;
+  /* ── STAT CARD ───────────────────────────────────────────── */
+  .az-stat-card {
+    background: var(--az-surface-0);
+    border: 1px solid var(--az-border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    box-shadow: var(--az-shadow-xs);
+    transition: box-shadow 0.15s, transform 0.15s;
   }
-  .az-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .az-btn-primary {
-    background: var(--az-emerald);
-    color: #070710;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.12);
-  }
-  .az-btn-primary:hover:not(:disabled) {
-    box-shadow: 0 4px 12px var(--az-emerald-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+  .az-stat-card:hover {
+    box-shadow: var(--az-shadow-md);
     transform: translateY(-1px);
   }
-  .az-btn-primary:active:not(:disabled) { transform: translateY(0); }
 
-  .az-btn-secondary {
-    background: var(--az-surface-3);
-    color: var(--az-text-primary);
-    border: 1px solid var(--az-border-bright);
+  /* ── BADGE ───────────────────────────────────────────────── */
+  .az-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
   }
-  .az-btn-secondary:hover:not(:disabled) { background: var(--az-surface-4); }
+  .az-badge-emerald { background: var(--az-emerald-subtle); color: var(--az-emerald); }
+  .az-badge-red     { background: var(--az-danger-subtle);  color: var(--az-danger);  }
+  .az-badge-amber   { background: var(--az-warning-subtle); color: var(--az-warning); }
+  .az-badge-blue    { background: var(--az-info-subtle);    color: var(--az-info);    }
+  .az-badge-muted   { background: var(--az-surface-2);      color: var(--az-text-muted); border: 1px solid var(--az-border); }
 
-  .az-btn-ghost { background: transparent; color: var(--az-text-secondary); }
-  .az-btn-ghost:hover:not(:disabled) { background: var(--az-surface-3); color: var(--az-text-primary); }
-
-  .az-btn-danger { background: var(--az-red-soft); color: var(--az-red); border: 1px solid transparent; }
-  .az-btn-danger:hover:not(:disabled) { background: var(--az-red); color: #fff; box-shadow: 0 0 12px var(--az-red-glow); }
-
-  /* ── Input ───────────────────────────────────────────────────── */
-  .az-input {
-    width: 100%; background: var(--az-surface-2); border: 1px solid var(--az-border);
-    border-radius: 8px; padding: 8px 12px; font-size: 0.875rem; color: var(--az-text-primary);
-    transition: border-color 0.15s, box-shadow 0.15s; outline: none;
-  }
-  .az-input::placeholder { color: var(--az-text-muted); }
-  .az-input:focus { border-color: var(--az-border-focus); box-shadow: 0 0 0 3px var(--az-emerald-soft); }
-
-  /* ── Table ───────────────────────────────────────────────────── */
-  .az-table   { width: 100%; border-collapse: separate; border-spacing: 0; }
-  .az-th      { padding: 10px 16px; text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--az-text-muted); border-bottom: 1px solid var(--az-border); white-space: nowrap; }
-  .az-td      { padding: 11px 16px; font-size: 0.8125rem; color: var(--az-text-primary); border-bottom: 1px solid var(--az-border); vertical-align: middle; }
-  .az-tr      { transition: background 0.1s; }
-  .az-tr:hover .az-td { background: var(--az-surface-3); }
-  .az-tr:last-child .az-td { border-bottom: none; }
-
-  /* Keep legacy table row class working */
-  .az-table-row { border-bottom: 1px solid var(--az-border); transition: background 0.15s; }
-  .az-table-row:hover { background: var(--az-surface-3); }
-
-  /* ── Status chips ────────────────────────────────────────────── */
-  .az-chip         { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; }
-  .az-chip-emerald { background: var(--az-emerald-soft); color: var(--az-emerald); }
-  .az-chip-red     { background: var(--az-red-soft);     color: var(--az-red);     }
-  .az-chip-amber   { background: var(--az-amber-soft);   color: var(--az-amber);   }
-  .az-chip-blue    { background: var(--az-blue-soft);    color: var(--az-blue);    }
-  .az-chip-violet  { background: var(--az-violet-soft);  color: var(--az-violet);  }
-
-  /* ── Skeleton (shimmer) ──────────────────────────────────────── */
-  .az-skeleton {
-    background: linear-gradient(90deg, var(--az-surface-3) 0%, var(--az-surface-4) 50%, var(--az-surface-3) 100%);
-    background-size: 400% 100%;
-    animation: az-shimmer 1.8s ease-in-out infinite;
+  /* ── PRIMARY BUTTON (Sentry depth) ──────────────────────── */
+  .az-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
     border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    background: var(--az-emerald);
+    color: #0A0B0E;
+    border: none;
+    cursor: pointer;
+    transition: background 0.12s, box-shadow 0.12s, transform 0.08s;
+    box-shadow: 0 1px 2px rgba(0, 217, 126, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
-  @keyframes az-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
-
-  /* Keep legacy shimmer */
-  .az-shimmer {
-    background: linear-gradient(90deg, var(--az-surface-2) 25%, var(--az-surface-4) 50%, var(--az-surface-2) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+  .az-btn-primary:hover {
+    background: var(--az-emerald-hover);
+    box-shadow: 0 2px 4px rgba(0, 217, 126, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .az-btn-primary:active { transform: scale(0.98); }
+  .az-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-  /* ── Typography helpers ──────────────────────────────────────── */
-  .az-mono { font-family: 'JetBrains Mono', monospace; }
-  .az-gradient-text {
-    background: linear-gradient(135deg, var(--az-emerald) 0%, var(--az-blue) 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  /* ── SECONDARY BUTTON ────────────────────────────────────── */
+  .az-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    background: var(--az-surface-0);
+    color: var(--az-text);
+    border: 1px solid var(--az-border-strong);
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    box-shadow: var(--az-shadow-xs);
+  }
+  .az-btn-secondary:hover { background: var(--az-surface-1); }
+  .az-btn-secondary:active { transform: scale(0.98); }
+  .az-btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── DANGER BUTTON ───────────────────────────────────────── */
+  .az-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 13px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: inherit;
+    background: var(--az-danger);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.12s, transform 0.08s;
+    box-shadow: 0 1px 2px rgba(220, 38, 38, 0.25);
+  }
+  .az-btn-danger:hover { opacity: 0.9; }
+  .az-btn-danger:active { transform: scale(0.98); }
+
+  /* ── GLASS CARD (login page only) ────────────────────────── */
+  .az-glass {
+    background: var(--az-surface-0);
+    border: 1px solid var(--az-border);
+    border-radius: 12px;
+    box-shadow: var(--az-shadow-lg);
+  }
+  .dark .az-glass {
+    background: rgba(22, 24, 32, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 
-  /* ── Layout ──────────────────────────────────────────────────── */
-  .az-header {
-    height: var(--header-height); background: var(--az-surface-1);
-    border-bottom: 1px solid var(--az-border); display: flex; align-items: center;
-    padding: 0 16px; gap: 12px; position: sticky; top: 0; z-index: 40;
-    backdrop-filter: blur(8px);
+  /* ── TABLE ───────────────────────────────────────────────── */
+  .az-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
   }
-  .az-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 24px; }
+  .az-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--az-text-muted);
+    border-bottom: 1px solid var(--az-border);
+    white-space: nowrap;
+    background: var(--az-surface-1);
+  }
+  .az-table th:first-child { border-radius: 6px 0 0 0; }
+  .az-table th:last-child  { border-radius: 0 6px 0 0; }
+  .az-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--az-border);
+    color: var(--az-text);
+    vertical-align: middle;
+  }
+  .az-table tr:last-child td { border-bottom: none; }
+  .az-table tbody tr { transition: background 0.1s; }
+  .az-table tbody tr:hover { background: var(--az-surface-1); }
 
-  /* ── Divider ─────────────────────────────────────────────────── */
-  .az-divider { height: 1px; background: var(--az-border); }
+  /* ── POOL BAR ────────────────────────────────────────────── */
+  .az-pool-bar-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--az-surface-2);
+    overflow: hidden;
+  }
+  .az-pool-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--az-emerald);
+    transition: width 0.5s ease;
+  }
 
-  /* ── Badge ───────────────────────────────────────────────────── */
-  .az-badge { display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9999px; background: var(--az-red); color: #fff; line-height: 1; }
+  /* ── PAGE HEADER ─────────────────────────────────────────── */
+  .az-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .az-page-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--az-text);
+    line-height: 1.3;
+  }
+  .az-page-subtitle {
+    font-size: 13px;
+    color: var(--az-text-muted);
+    margin-top: 2px;
+  }
 
-  /* ── Glass effect ────────────────────────────────────────────── */
-  .az-glass { backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.4); }
-  .dark .az-glass { background: rgba(13,13,28,0.8); border: 1px solid rgba(255,255,255,0.06); }
+  /* ── SECTION CARD (wraps tables / lists) ─────────────────── */
+  .az-section {
+    background: var(--az-surface-0);
+    border: 1px solid var(--az-border);
+    border-radius: 8px;
+    box-shadow: var(--az-shadow-xs);
+    overflow: hidden;
+  }
+  .az-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--az-border);
+  }
+  .az-section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--az-text);
+  }
 
-  /* ── Glow effects (legacy) ──────────────────────────────────── */
-  .az-glow-emerald { box-shadow: 0 0 12px var(--az-emerald-glow); }
-  .az-glow-red { box-shadow: 0 0 12px var(--az-red-glow); }
-  .az-glow-amber { box-shadow: 0 0 12px var(--az-amber-soft); }
+  /* ── DIVIDER ─────────────────────────────────────────────── */
+  .az-divider {
+    height: 1px;
+    background: var(--az-border);
+    margin: 0;
+  }
 
-  /* ── Pulse animation (legacy) ───────────────────────────────── */
-  .az-pulse { animation: az-pulse 2s ease-in-out infinite; }
-  @keyframes az-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-}
+  /* ── SKELETON ────────────────────────────────────────────── */
+  .az-skeleton {
+    background: var(--az-surface-2);
+    border-radius: 4px;
+    animation: az-pulse 1.6s ease-in-out infinite;
+  }
 
-/* ─── Recharts overrides ─────────────────────────────────────── */
-.recharts-cartesian-grid-horizontal line { stroke: var(--az-border) !important; }
-.recharts-text { fill: var(--az-text-muted) !important; font-size: 0.7rem !important; }
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: var(--az-surface-1) !important; border: 1px solid var(--az-border-bright) !important;
-  border-radius: 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-  font-size: 0.8rem;
-}
-.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+  @keyframes az-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.5; }
+  }
+
+  /* ── EMPTY STATE ─────────────────────────────────────────── */
+  .az-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--az-text-muted);
+  }
+  .az-empty svg { width: 32px; height: 32px; opacity: 0.4; }
+  .az-empty-title { font-size: 13.5px; font-weight: 600; color: var(--az-text-secondary); }
+  .az-empty-desc  { font-size: 12.5px; }
+
+  /* ── SPINNER ─────────────────────────────────────────────── */
+  .az-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--az-border-strong);
+    border-top-color: var(--az-emerald);
+    border-radius: 50%;
+    animation: az-spin 0.7s linear infinite;
+  }
+  @keyframes az-spin {
+    to { transform: rotate(360deg); }
+  }
 }
