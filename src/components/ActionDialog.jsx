@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,8 +33,14 @@ export default function ActionDialog({
   isPending = false,
   inputType = 'text',
   options = [],
+  defaultValue = '',
 }) {
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(defaultValue);
+
+  // Sync defaultValue when dialog opens
+  useEffect(() => {
+    if (open) setValue(defaultValue);
+  }, [open, defaultValue]);
 
   if (!open) return null;
 

@@ -13,6 +13,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import ActionDialog from '@/components/ActionDialog';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 // ── Campaign API helpers ─────────────────────────────────────────────────────
 async function fetchCampaigns() {
@@ -194,6 +196,16 @@ export default function QrForge() {
   const [history, setHistory]         = useState(loadHistory);
   const [saved, setSaved]             = useState(false);
   const [downloading, setDownloading] = useState(null);
+
+  // ── Dialog state (replacing prompt()/confirm()) ──────────────────────────────
+  const [newCampaignOpen, setNewCampaignOpen] = useState(false);
+  const [newCampaignName, setNewCampaignName] = useState('');
+  const [newCampaignUrl, setNewCampaignUrl] = useState('');
+  const [editUrlOpen, setEditUrlOpen] = useState(false);
+  const [editUrlValue, setEditUrlValue] = useState('');
+  const [editCampaignId, setEditCampaignId] = useState(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteCampaign, setDeleteCampaign] = useState(null);
 
   useEffect(() => {
     if (dest && !editUrl) {
@@ -736,11 +748,9 @@ export default function QrForge() {
               <p className="text-xs text-az-text-muted mt-0.5">Create separate QR campaigns with unique slugs and individual analytics.</p>
             </div>
             <Button size="sm" onClick={() => {
-              const name = prompt('Campaign name:');
-              if (!name) return;
-              const url = prompt('Destination URL (https://...):');
-              if (!url || !url.startsWith('http')) { toast.error('Valid URL required'); return; }
-              createCampaignMut.mutate({ name, destinationUrl: url });
+              setNewCampaignName('');
+              setNewCampaignUrl('');
+              setNewCampaignOpen(true);
             }} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="w-3.5 h-3.5 mr-1" /> New Campaign
             </Button>
@@ -779,8 +789,9 @@ export default function QrForge() {
                       <Copy className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      const url = prompt('New destination URL:', c.destinationUrl);
-                      if (url && url.startsWith('http')) updateCampaignMut.mutate({ id: c.id, data: { destinationUrl: url } });
+                      setEditCampaignId(c.id);
+                      setEditUrlValue(c.destinationUrl);
+                      setEditUrlOpen(true);
                     }} className="text-az-text-muted hover:text-white">
                       <Link2 className="w-3.5 h-3.5" />
                     </Button>
@@ -790,7 +801,8 @@ export default function QrForge() {
                       {c.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      if (confirm(`Delete campaign "${c.name}"?`)) deleteCampaignMut.mutate(c.id);
+                      setDeleteCampaign(c);
+                      setDeleteOpen(true);
                     }} className="text-red-400 hover:text-red-300">
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
