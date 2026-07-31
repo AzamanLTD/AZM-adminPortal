@@ -1,6 +1,25 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from './api';
 
+// Decode JWT payload (no verification — the backend already verified it).
+// We only need this to extract `role` when the login response's user object
+// doesn't include it (older backend versions).
+function decodeJwtPayload(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonStr = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonStr);
+  } catch {
+    return null;
+  }
+}
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -29,7 +48,9 @@ export const AuthProvider = ({ children }) => {
       const data = await api.admin.stats();
       // If we get here, token is valid and user is admin
       setIsAuthenticated(true);
-      setUser({ role: 'ADMIN' });
+      // Decode token to get user info
+      const payload = decodeJwtPayload(token);
+      setUser({ role: 'ADMIN', id: payload?.id, username: payload?.username });
       setAuthError(null);
     } catch (error) {
       // Token expired or not admin
@@ -49,13 +70,21 @@ export const AuthProvider = ({ children }) => {
       const token = data.accessToken || data.token;
       const user = data.user;
 
-      // Verify admin role
-      if (user.role !== 'ADMIN') {
+      // Check role from the user object first, fall back to decoding the JWT.
+      // Some backend deployments return the user object without a `role` field,
+      // but the JWT always carries it.
+      let role = user?.role;
+      if (!role) {
+        const payload = decodeJwtPayload(token);
+        role = payload?.role;
+      }
+
+      if (role !== 'ADMIN') {
         throw new Error('Access denied. Admin credentials required.');
       }
 
       localStorage.setItem('admin_token', token);
-      setUser(user);
+      setUser({ ...user, role: 'ADMIN' });
       setIsAuthenticated(true);
       setAuthError(null);
       return { success: true };
