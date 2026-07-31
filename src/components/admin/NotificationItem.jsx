@@ -13,19 +13,19 @@ import {
 } from 'lucide-react';
 
 const SOURCE_META = {
-  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-blue-500/20 text-blue-400' },
-  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-red-500/20 text-red-400' },
-  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-amber-500/20 text-amber-400' },
-  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-emerald-500/20 text-emerald-400' },
-  VENDOR:     { label: 'Vendor',     icon: Store,       color: 'bg-purple-500/20 text-purple-400' },
-  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-emerald-500/20 text-emerald-400' },
-  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-red-500/20 text-red-400' },
+  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]' },
+  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-[var(--az-red-soft)] text-[var(--az-red)]' },
+  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]' },
+  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' },
+  VENDOR:     { label: 'Vendor',     icon: Store,       color: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]' },
+  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' },
+  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-[var(--az-red-soft)] text-[var(--az-red)]' },
 };
 
 const SEV_DOT = {
-  CRITICAL: 'text-red-500',
-  HIGH: 'text-amber-400',
-  MEDIUM: 'text-blue-400',
+  CRITICAL: 'text-[var(--az-red)]',
+  HIGH: 'text-[var(--az-amber)]',
+  MEDIUM: 'text-[var(--az-blue)]',
   LOW: 'text-az-text-muted',
 };
 
@@ -81,7 +81,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
   return (
     <div
       className={`rounded-xl border transition-colors ${
-        resolved ? 'border-az-border bg-az-surface/60' : 'border-az-border bg-az-surface'
+        resolved ? 'border-az-border bg-az-surface/60' : 'border-az-border bg-[var(--az-surface-2)]'
       } ${!n.read && !resolved ? 'ring-1 ring-emerald-500/20' : ''}`}
     >
       <button
@@ -103,7 +103,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Circle className={`w-2 h-2 fill-current ${SEV_DOT[n.severity] || 'text-az-text-muted'}`} />
-            <span className="text-sm font-medium text-white truncate">{n.title}</span>
+            <span className="text-sm font-medium text-[var(--az-text-primary)] truncate">{n.title}</span>
           </div>
           {n.description && (
             <p className="text-xs text-az-text-secondary mt-0.5 truncate">{n.description}</p>
@@ -111,7 +111,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
           <div className="flex items-center gap-2 mt-1">
             <Badge className={`${meta.color} border-0 text-[10px]`}>{meta.label}</Badge>
             {resolved && (
-              <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px]">RESOLVED</Badge>
+              <Badge className="bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-0 text-[10px]">RESOLVED</Badge>
             )}
             <span className="text-[10px] text-az-text-muted">{fmtTime(n.createdAt)}</span>
           </div>
@@ -128,7 +128,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
           {n.route && (
             <button
               onClick={() => onNavigate?.(n.route)}
-              className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-medium"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--az-emerald)] hover:text-emerald-300 font-medium"
             >
               View details <ExternalLink className="w-3 h-3" />
             </button>

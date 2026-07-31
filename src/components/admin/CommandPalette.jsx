@@ -146,7 +146,7 @@ export default function CommandPalette({ open, onOpenChange }) {
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-xl bg-az-surface border border-az-border rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xl bg-[var(--az-surface-2)] border border-az-border rounded-2xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Search input */}
@@ -158,9 +158,9 @@ export default function CommandPalette({ open, onOpenChange }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search pages and actions…"
-            className="flex-1 bg-transparent text-white text-sm placeholder:text-az-text-muted outline-none"
+            className="flex-1 bg-transparent text-[var(--az-text-primary)] text-sm placeholder:text-az-text-muted outline-none"
           />
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-az-text-muted bg-az-card border border-az-border rounded">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-az-text-muted bg-[var(--az-surface-3)] border border-az-border rounded">
             ESC
           </kbd>
         </div>
@@ -183,8 +183,8 @@ export default function CommandPalette({ open, onOpenChange }) {
                 onMouseEnter={() => setSelectedIndex(i)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                   active
-                    ? 'bg-emerald-500/10 text-emerald-400'
-                    : 'text-az-text-secondary hover:bg-az-card'
+                    ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'
+                    : 'text-az-text-secondary hover:bg-[var(--az-surface-3)]'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -204,12 +204,12 @@ export default function CommandPalette({ open, onOpenChange }) {
         <div className="flex items-center justify-between px-4 py-2 border-t border-az-border text-xs text-az-text-muted">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-az-card border border-az-border rounded font-mono">↑</kbd>
-              <kbd className="px-1 py-0.5 bg-az-card border border-az-border rounded font-mono">↓</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↑</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↓</kbd>
               Navigate
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-az-card border border-az-border rounded font-mono">↵</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↵</kbd>
               Select
             </span>
           </div>

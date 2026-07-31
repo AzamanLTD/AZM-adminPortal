@@ -36,9 +36,9 @@ function getSLA(createdAt) {
 }
 
 const SLA_STYLES = {
-  normal: { badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-400' },
-  warning: { badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20', dot: 'bg-amber-400' },
-  critical: { badge: 'bg-red-500/10 text-red-400 border-red-500/30', dot: 'bg-red-400' },
+  normal: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]', dot: 'bg-emerald-400' },
+  warning: { badge: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-[var(--az-amber-soft)]', dot: 'bg-amber-400' },
+  critical: { badge: 'bg-[var(--az-red-soft)] text-[var(--az-red)] border-[var(--az-red-glow)]', dot: 'bg-red-400' },
 };
 
 function SLATimer({ createdAt }) {
@@ -221,8 +221,8 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
 function PatternAlert({ pattern }) {
   const Icon = pattern.icon;
   const styles = {
-    high: 'bg-red-500/10 border-red-500/20 text-red-400',
-    medium: 'bg-amber-500/10 border-amber-500/20 text-amber-400',
+    high: 'bg-[var(--az-red-soft)] border-[var(--az-red-glow)] text-[var(--az-red)]',
+    medium: 'bg-[var(--az-amber-soft)] border-[var(--az-amber-soft)] text-[var(--az-amber)]',
     warning: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
   };
   return (
@@ -494,7 +494,7 @@ function DisputeCard({ dispute, allDisputes }) {
                 <Button
                   onClick={handleResolve}
                   disabled={!reason.trim() || resolve.isPending}
-                  className="w-full bg-[#4f8ef7] hover:bg-[#3d7ef0] text-white font-semibold text-sm"
+                  className="w-full bg-[#4f8ef7] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
                 >
                   {resolve.isPending ? 'Resolving…' : 'Resolve Dispute'}
                 </Button>
@@ -513,7 +513,7 @@ function DisputeCard({ dispute, allDisputes }) {
                 <Button
                   onClick={() => inject.mutate({ id: dispute.id, message: injectMsg })}
                   disabled={!injectMsg || inject.isPending}
-                  className="w-full bg-[#4f8ef7] hover:bg-[#3d7ef0] text-white font-semibold text-sm"
+                  className="w-full bg-[#4f8ef7] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-2" />
                   {inject.isPending ? 'Injecting…' : 'Inject Message'}

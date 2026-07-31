@@ -26,8 +26,8 @@ import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
 
 const TYPE_COLORS = {
-  FIAT: 'bg-blue-500/20 text-blue-400',
-  CRYPTO: 'bg-purple-500/20 text-purple-400',
+  FIAT: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]',
+  CRYPTO: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]',
 };
 
 /* ── Risk scoring engine ───────────────────────────────────────────────── */
@@ -92,9 +92,9 @@ function computeRiskScore(w) {
 }
 
 const RISK_STYLES = {
-  HIGH: { badge: 'bg-red-500/20 text-red-400 border-red-500/30', icon: ShieldAlert, label: 'High Risk' },
-  MEDIUM: { badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30', icon: AlertTriangle, label: 'Medium Risk' },
-  LOW: { badge: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', icon: ShieldCheck, label: 'Low Risk' },
+  HIGH: { badge: 'bg-[var(--az-red-soft)] text-[var(--az-red)] border-[var(--az-red-glow)]', icon: ShieldAlert, label: 'High Risk' },
+  MEDIUM: { badge: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-amber-500/30', icon: AlertTriangle, label: 'Medium Risk' },
+  LOW: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]', icon: ShieldCheck, label: 'Low Risk' },
 };
 
 /* ── Detail drawer ──────────────────────────────────────────────────────── */
@@ -107,21 +107,21 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-md h-full bg-az-surface border-l border-az-border overflow-y-auto"
+        className="relative w-full max-w-md h-full bg-[var(--az-surface-2)] border-l border-az-border overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-az-surface border-b border-az-border px-5 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[var(--az-surface-2)] border-b border-az-border px-5 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${RISK_STYLES[risk.level].badge}`}>
               <RiskIcon className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-white">Withdrawal Review</h2>
+              <h2 className="text-sm font-bold text-[var(--az-text-primary)]">Withdrawal Review</h2>
               <p className="text-xs text-az-text-muted">Risk score: {risk.score}/100 · {RISK_STYLES[risk.level].label}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-az-card text-az-text-muted">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--az-surface-3)] text-az-text-muted">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -129,9 +129,9 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
         {/* Content */}
         <div className="p-5 space-y-5">
           {/* Amount */}
-          <div className="bg-az-card border border-az-border rounded-xl p-4">
+          <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4">
             <p className="text-xs text-az-text-muted uppercase tracking-wide mb-1">Amount</p>
-            <p className="text-2xl font-bold text-emerald-400">
+            <p className="text-2xl font-bold text-[var(--az-emerald)]">
               ${Number(withdrawal.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {withdrawal.currency}
             </p>
             {withdrawal.type === 'FIAT' && (
@@ -142,36 +142,36 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           {/* User info */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">User</h3>
-            <div className="bg-az-card border border-az-border rounded-xl p-4 space-y-2">
+            <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Username</span>
-                <span className="text-sm font-medium text-white">{u.username || '—'}</span>
+                <span className="text-sm font-medium text-[var(--az-text-primary)]">{u.username || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Email</span>
-                <span className="text-sm font-medium text-white truncate ml-2">{u.email || '—'}</span>
+                <span className="text-sm font-medium text-[var(--az-text-primary)] truncate ml-2">{u.email || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">KYC Status</span>
-                <Badge className={`border-0 text-xs ${u.kycStatus === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                <Badge className={`border-0 text-xs ${u.kycStatus === 'VERIFIED' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]'}`}>
                   {u.kycStatus || 'UNVERIFIED'}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Ban Status</span>
-                <Badge className={`border-0 text-xs ${u.banStatus === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+                <Badge className={`border-0 text-xs ${u.banStatus === 'ACTIVE' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-[var(--az-red-soft)] text-[var(--az-red)]'}`}>
                   {u.banStatus || 'ACTIVE'}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Strikes</span>
-                <span className={`text-sm font-medium ${u.strikeCount >= 3 ? 'text-red-400' : u.strikeCount >= 1 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                <span className={`text-sm font-medium ${u.strikeCount >= 3 ? 'text-[var(--az-red)]' : u.strikeCount >= 1 ? 'text-[var(--az-amber)]' : 'text-[var(--az-emerald)]'}`}>
                   {u.strikeCount || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Completed Trades</span>
-                <span className="text-sm font-medium text-white">{u.tradesCompleted || 0}</span>
+                <span className="text-sm font-medium text-[var(--az-text-primary)]">{u.tradesCompleted || 0}</span>
               </div>
             </div>
           </div>
@@ -181,20 +181,20 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
             <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Risk Factors</h3>
             <div className="space-y-2">
               {risk.factors.length === 0 && (
-                <div className="text-sm text-emerald-400 flex items-center gap-2">
+                <div className="text-sm text-[var(--az-emerald)] flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4" /> No risk factors detected
                 </div>
               )}
               {risk.factors.map((f, i) => (
                 <div key={i} className={`flex items-center justify-between p-3 rounded-lg border ${
-                  f.level === 'critical' ? 'bg-red-500/5 border-red-500/20' :
-                  f.level === 'high' ? 'bg-red-500/5 border-red-500/15' :
-                  f.level === 'medium' ? 'bg-amber-500/5 border-amber-500/15' :
-                  'bg-blue-500/5 border-blue-500/15'
+                  f.level === 'critical' ? 'bg-[var(--az-red)]/5 border-[var(--az-red-glow)]' :
+                  f.level === 'high' ? 'bg-[var(--az-red)]/5 border-red-500/15' :
+                  f.level === 'medium' ? 'bg-[var(--az-amber)]/5 border-amber-500/15' :
+                  'bg-[var(--az-blue)]/5 border-blue-500/15'
                 }`}>
                   <span className={`text-sm ${
-                    f.level === 'critical' || f.level === 'high' ? 'text-red-400' :
-                    f.level === 'medium' ? 'text-amber-400' : 'text-blue-400'
+                    f.level === 'critical' || f.level === 'high' ? 'text-[var(--az-red)]' :
+                    f.level === 'medium' ? 'text-[var(--az-amber)]' : 'text-[var(--az-blue)]'
                   }`}>{f.label}</span>
                   <span className="text-xs font-mono text-az-text-muted">{f.weight > 0 ? '+' : ''}{f.weight}</span>
                 </div>
@@ -205,7 +205,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           {/* Payment details */}
           <div className="space-y-3">
             <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Payment Details</h3>
-            <div className="bg-az-card border border-az-border rounded-xl p-4 space-y-2">
+            <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Type</span>
                 <Badge className={`border-0 text-xs ${TYPE_COLORS[withdrawal.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>
@@ -214,7 +214,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Method</span>
-                <span className="text-sm font-medium text-white">{withdrawal.method || withdrawal.wallet || '—'}</span>
+                <span className="text-sm font-medium text-[var(--az-text-primary)]">{withdrawal.method || withdrawal.wallet || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-az-text-muted">Requested</span>
@@ -228,7 +228,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+              className="flex-1 bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)]"
               disabled={approvePending}
               onClick={() => onApprove(withdrawal.id)}
             >
@@ -237,7 +237,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
             </Button>
             <Button
               variant="outline"
-              className="flex-1 border-red-500/50 text-red-400 hover:bg-red-500/10"
+              className="flex-1 border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)]"
               disabled={rejectPending}
               onClick={() => onReject(withdrawal)}
             >
@@ -364,14 +364,14 @@ export default function Withdrawals() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Pending Withdrawals</h1>
+          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Pending Withdrawals</h1>
           <p className="text-sm text-az-text-secondary mt-1">
             {summary.total} pending · ${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} total value
-            {summary.highRisk > 0 && <span className="text-red-400 ml-2">· {summary.highRisk} high-risk</span>}
+            {summary.highRisk > 0 && <span className="text-[var(--az-red)] ml-2">· {summary.highRisk} high-risk</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
           </Button>
         </div>
@@ -379,33 +379,33 @@ export default function Withdrawals() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <Wallet className="w-3.5 h-3.5 text-blue-400" />
+            <Wallet className="w-3.5 h-3.5 text-[var(--az-blue)]" />
             <span className="text-xs text-az-text-muted uppercase">Total Pending</span>
           </div>
-          <p className="text-xl font-bold text-white">{summary.total}</p>
+          <p className="text-xl font-bold text-[var(--az-text-primary)]">{summary.total}</p>
         </div>
-        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+            <TrendingUp className="w-3.5 h-3.5 text-[var(--az-emerald)]" />
             <span className="text-xs text-az-text-muted uppercase">Total Value</span>
           </div>
-          <p className="text-xl font-bold text-emerald-400">${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+          <p className="text-xl font-bold text-[var(--az-emerald)]">${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         </div>
-        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
+            <ShieldAlert className="w-3.5 h-3.5 text-[var(--az-red)]" />
             <span className="text-xs text-az-text-muted uppercase">High Risk</span>
           </div>
-          <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-red-400' : 'text-emerald-400'}`}>{summary.highRisk}</p>
+          <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-[var(--az-red)]' : 'text-[var(--az-emerald)]'}`}>{summary.highRisk}</p>
         </div>
-        <div className="bg-az-surface border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <User className="w-3.5 h-3.5 text-purple-400" />
+            <User className="w-3.5 h-3.5 text-[var(--az-violet)]" />
             <span className="text-xs text-az-text-muted uppercase">FIAT / Crypto</span>
           </div>
-          <p className="text-xl font-bold text-white">{summary.fiatCount} <span className="text-az-text-muted text-sm">/</span> {summary.cryptoCount}</p>
+          <p className="text-xl font-bold text-[var(--az-text-primary)]">{summary.fiatCount} <span className="text-az-text-muted text-sm">/</span> {summary.cryptoCount}</p>
         </div>
       </div>
 
@@ -413,13 +413,13 @@ export default function Withdrawals() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           {/* Type filter */}
-          <div className="flex items-center gap-1 bg-az-surface border border-az-border rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-az-border rounded-lg p-0.5">
             {['ALL', 'FIAT', 'CRYPTO'].map(type => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  filterType === type ? 'bg-az-card text-white' : 'text-az-text-muted hover:text-az-text-secondary'
+                  filterType === type ? 'bg-[var(--az-surface-3)] text-[var(--az-text-primary)]' : 'text-az-text-muted hover:text-az-text-secondary'
                 }`}
               >
                 {type}
@@ -427,17 +427,17 @@ export default function Withdrawals() {
             ))}
           </div>
           {/* Risk filter */}
-          <div className="flex items-center gap-1 bg-az-surface border border-az-border rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-az-border rounded-lg p-0.5">
             {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(risk => (
               <button
                 key={risk}
                 onClick={() => setFilterRisk(risk)}
                 className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   filterRisk === risk
-                    ? risk === 'HIGH' ? 'bg-red-500/20 text-red-400'
-                      : risk === 'MEDIUM' ? 'bg-amber-500/20 text-amber-400'
-                      : risk === 'LOW' ? 'bg-emerald-500/20 text-emerald-400'
-                      : 'bg-az-card text-white'
+                    ? risk === 'HIGH' ? 'bg-[var(--az-red-soft)] text-[var(--az-red)]'
+                      : risk === 'MEDIUM' ? 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]'
+                      : risk === 'LOW' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'
+                      : 'bg-[var(--az-surface-3)] text-[var(--az-text-primary)]'
                     : 'text-az-text-muted hover:text-az-text-secondary'
                 }`}
               >
@@ -455,7 +455,7 @@ export default function Withdrawals() {
             <Button
               size="sm"
               onClick={() => setShowBatchConfirm(true)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white h-8"
+              className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8"
             >
               <CheckSquare className="w-3.5 h-3.5 mr-1.5" />
               Batch Approve ({selectedArray.length})
@@ -464,7 +464,7 @@ export default function Withdrawals() {
         ) : (
           <button
             onClick={selectAllLowRisk}
-            className="text-xs text-az-text-muted hover:text-emerald-400 transition-colors"
+            className="text-xs text-az-text-muted hover:text-[var(--az-emerald)] transition-colors"
           >
             Select all low-risk
           </button>
@@ -482,8 +482,8 @@ export default function Withdrawals() {
           return (
             <div
               key={w.id}
-              className={`bg-az-surface border rounded-xl p-4 flex items-center gap-3 transition-colors ${
-                isSelected ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-az-border'
+              className={`bg-[var(--az-surface-2)] border rounded-xl p-4 flex items-center gap-3 transition-colors ${
+                isSelected ? 'border-emerald-500/40 bg-[var(--az-emerald)]/5' : 'border-az-border'
               }`}
             >
               {/* Checkbox */}
@@ -493,7 +493,7 @@ export default function Withdrawals() {
                 title={isSelected ? 'Deselect' : 'Select for batch'}
               >
                 {isSelected
-                  ? <CheckSquare className="w-4 h-4 text-emerald-400" />
+                  ? <CheckSquare className="w-4 h-4 text-[var(--az-emerald)]" />
                   : <Square className="w-4 h-4 text-az-text-muted hover:text-az-text-secondary" />
                 }
               </button>
@@ -509,9 +509,9 @@ export default function Withdrawals() {
                 onClick={() => setDetailTarget(w)}
               >
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-semibold text-white">{w.userName || w.user?.username || 'Unknown'}</span>
+                  <span className="text-sm font-semibold text-[var(--az-text-primary)]">{w.userName || w.user?.username || 'Unknown'}</span>
                   <Badge className={`border-0 text-xs ${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>{w.type}</Badge>
-                  <span className="text-sm font-bold text-emerald-400">
+                  <span className="text-sm font-bold text-[var(--az-emerald)]">
                     ${Number(w.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {w.currency}
                   </span>
                   {w.type === 'FIAT' && (
@@ -527,10 +527,10 @@ export default function Withdrawals() {
                   <span>{w.method || w.wallet || '—'}</span>
                   <span>{w.requestedAt ? new Date(w.requestedAt).toLocaleString() : ''}</span>
                   {w.user?.kycStatus !== 'VERIFIED' && (
-                    <span className="text-amber-400">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
+                    <span className="text-[var(--az-amber)]">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
                   )}
                   {w.user?.strikeCount > 0 && (
-                    <span className="text-red-400">{w.user.strikeCount} strike{w.user.strikeCount > 1 ? 's' : ''}</span>
+                    <span className="text-[var(--az-red)]">{w.user.strikeCount} strike{w.user.strikeCount > 1 ? 's' : ''}</span>
                   )}
                 </div>
               </div>
@@ -539,7 +539,7 @@ export default function Withdrawals() {
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => setDetailTarget(w)}
-                  className="p-2 rounded-lg hover:bg-az-card text-az-text-muted hover:text-white transition-colors"
+                  className="p-2 rounded-lg hover:bg-[var(--az-surface-3)] text-az-text-muted hover:text-[var(--az-text-primary)] transition-colors"
                   title="View details"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -548,7 +548,7 @@ export default function Withdrawals() {
                   size="sm"
                   onClick={() => approve.mutate(w.id)}
                   disabled={approve.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white h-8"
+                  className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8"
                 >
                   <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
                 </Button>
@@ -556,7 +556,7 @@ export default function Withdrawals() {
                   size="sm"
                   variant="outline"
                   onClick={() => setRejectTarget(w)}
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8"
+                  className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8"
                 >
                   <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
                 </Button>
@@ -565,7 +565,7 @@ export default function Withdrawals() {
           );
         })}
         {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-12 text-az-text-muted text-sm bg-az-surface border border-az-border rounded-xl">
+          <div className="text-center py-12 text-az-text-muted text-sm bg-[var(--az-surface-2)] border border-az-border rounded-xl">
             {withdrawals.length === 0 ? 'No pending withdrawals — all clear' : 'No withdrawals match the current filters'}
           </div>
         )}
@@ -589,13 +589,13 @@ export default function Withdrawals() {
       {showBatchConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowBatchConfirm(false)} />
-          <div className="relative bg-az-surface border border-az-border rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
+          <div className="relative bg-[var(--az-surface-2)] border border-az-border rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
             <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                <CheckSquare className="w-4 h-4 text-emerald-400" />
+              <div className="w-9 h-9 rounded-lg bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] flex items-center justify-center flex-shrink-0">
+                <CheckSquare className="w-4 h-4 text-[var(--az-emerald)]" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-white">Batch Approve {selectedArray.length} Withdrawals</h2>
+                <h2 className="text-base font-semibold text-[var(--az-text-primary)]">Batch Approve {selectedArray.length} Withdrawals</h2>
                 <p className="text-sm text-az-text-muted mt-1">
                   This will approve all selected withdrawals sequentially. Each will be processed by the payout worker.
                 </p>
@@ -604,13 +604,13 @@ export default function Withdrawals() {
             <div className="flex gap-3">
               <Button
                 variant="ghost"
-                className="flex-1 border border-az-border text-az-text-secondary hover:text-white hover:bg-az-card"
+                className="flex-1 border border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-[var(--az-surface-3)]"
                 onClick={() => setShowBatchConfirm(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+                className="flex-1 bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)]"
                 disabled={batchApprove.isPending}
                 onClick={() => batchApprove.mutate(selectedArray)}
               >

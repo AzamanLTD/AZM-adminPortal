@@ -43,10 +43,10 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
       >
         <SheetHeader className="p-4 border-b border-az-border">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-white flex items-center gap-2">
+            <SheetTitle className="text-[var(--az-text-primary)] flex items-center gap-2">
               Notifications
               {unreadCount > 0 && (
-                <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">
+                <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]">
                   {unreadCount} new
                 </span>
               )}
@@ -55,7 +55,7 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
               onClick={markAllRead}
               disabled={unreadCount === 0}
               aria-label="Mark all notifications as read"
-              className="text-xs text-az-text-secondary hover:text-emerald-400 disabled:opacity-40 disabled:hover:text-az-text-secondary inline-flex items-center gap-1.5"
+              className="text-xs text-az-text-secondary hover:text-[var(--az-emerald)] disabled:opacity-40 disabled:hover:text-az-text-secondary inline-flex items-center gap-1.5"
             >
               <CheckCheck className="w-3.5 h-3.5" /> Mark all read
             </button>
@@ -71,7 +71,7 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
                   onClick={() => setTab(t.key)}
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     tab === t.key
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                      ? 'border-emerald-500 bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'
                       : 'border-az-border text-az-text-secondary hover:border-az-border-bright'
                   }`}
                 >

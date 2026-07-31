@@ -32,23 +32,23 @@ function RejectDialog({ submission, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-az-surface border-az-border text-az-text-primary">
+      <DialogContent className="bg-[var(--az-surface-2)] border-az-border text-az-text-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-400" /> Reject Residency
+            <XCircle className="w-4 h-4 text-[var(--az-red)]" /> Reject Residency
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <p className="text-sm text-az-text-secondary">Rejecting @{submission?.username}'s residency document.</p>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3}
             placeholder="Reason for rejection (1–500 chars, shown to the user)…"
-            className="bg-az-card border-az-border text-white text-sm resize-none" />
+            className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm resize-none" />
           <p className="text-[11px] text-az-text-muted">{reason.trim().length}/500</p>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-az-text-secondary">Cancel</Button>
           <Button onClick={submit} disabled={!reason.trim() || reason.trim().length > 500 || reject.isPending}
-            className="bg-red-600 hover:bg-red-500">Reject</Button>
+            className="bg-red-600 hover:bg-[var(--az-red)]">Reject</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -59,10 +59,10 @@ function PreviewDialog({ submission, open, onOpenChange }) {
   const url = submission?.proofOfResidencyUrl;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-az-surface border-az-border text-az-text-primary max-w-3xl">
+      <DialogContent className="bg-[var(--az-surface-2)] border-az-border text-az-text-primary max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-emerald-400" /> {submission?.username} — Residency Document
+            <FileText className="w-4 h-4 text-[var(--az-emerald)]" /> {submission?.username} — Residency Document
           </DialogTitle>
         </DialogHeader>
         <div className="bg-az-black rounded-lg overflow-hidden flex items-center justify-center min-h-[400px]">
@@ -75,7 +75,7 @@ function PreviewDialog({ submission, open, onOpenChange }) {
           )}
         </div>
         <a href={url} target="_blank" rel="noreferrer"
-          className="text-xs text-emerald-400 hover:underline flex items-center gap-1 justify-center">
+          className="text-xs text-[var(--az-emerald)] hover:underline flex items-center gap-1 justify-center">
           Open in new tab <ExternalLink className="w-3 h-3" />
         </a>
       </DialogContent>
@@ -93,15 +93,15 @@ export default function ResidencyQueue() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-            <Home className="w-4 h-4 text-emerald-400" />
+          <div className="w-8 h-8 bg-[var(--az-emerald-soft)] rounded-lg flex items-center justify-center">
+            <Home className="w-4 h-4 text-[var(--az-emerald)]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Proof of Residency Queue</h1>
+            <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Proof of Residency Queue</h1>
             <p className="text-sm text-az-text-secondary">{queue.length} awaiting review</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
@@ -109,7 +109,7 @@ export default function ResidencyQueue() {
       <div className="space-y-3">
         {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
         {queue.map((s) => (
-          <div key={s.id} className="bg-az-surface border border-az-border rounded-xl p-4 flex items-center gap-4">
+          <div key={s.id} className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 flex items-center gap-4">
             <button onClick={() => setPreviewTarget(s)}
               className="w-16 h-16 rounded-lg bg-az-black border border-az-border flex items-center justify-center flex-shrink-0 overflow-hidden hover:border-emerald-500/50 transition-colors">
               {s.proofOfResidencyUrl && !isPdf(s.proofOfResidencyUrl)
@@ -118,31 +118,31 @@ export default function ResidencyQueue() {
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-white">@{s.username}</span>
-                <Badge className="bg-amber-500/20 text-amber-400 border-0 text-xs">PENDING REVIEW</Badge>
+                <span className="text-sm font-semibold text-[var(--az-text-primary)]">@{s.username}</span>
+                <Badge className="bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-0 text-xs">PENDING REVIEW</Badge>
               </div>
               <p className="text-xs text-az-text-muted mt-0.5">{s.email}</p>
               <p className="text-[11px] text-az-text-muted mt-1">Submitted {fmtDateTime(s.proofOfResidencySubmittedAt)}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button size="sm" variant="outline" onClick={() => setPreviewTarget(s)}
-                className="border-az-border text-az-text-secondary hover:bg-az-card h-8">
+                className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)] h-8">
                 <FileText className="w-3.5 h-3.5 mr-1.5" /> View
               </Button>
               <Button size="sm" onClick={() => approve.mutate(s.id, { onSuccess: () => toast.success('Residency approved') })}
                 disabled={approve.isPending}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+                className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8">
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
               </Button>
               <Button size="sm" variant="outline" onClick={() => setRejectTarget(s)}
-                className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+                className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8">
                 <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
               </Button>
             </div>
           </div>
         ))}
         {!isLoading && queue.length === 0 && (
-          <div className="text-center py-12 text-az-text-muted text-sm bg-az-surface border border-az-border rounded-xl">
+          <div className="text-center py-12 text-az-text-muted text-sm bg-[var(--az-surface-2)] border border-az-border rounded-xl">
             No residency documents awaiting review
           </div>
         )}

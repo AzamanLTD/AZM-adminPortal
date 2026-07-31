@@ -8,23 +8,23 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 const ACTION_COLORS = {
-  SETTINGS_CHANGE: 'bg-blue-500/20 text-blue-400',
-  FEE_PROFILE_CREATE: 'bg-emerald-500/20 text-emerald-400',
-  FEE_PROFILE_UPDATE: 'bg-emerald-500/20 text-emerald-400',
-  FEE_PROFILE_DELETE: 'bg-red-500/20 text-red-400',
-  USER_BAN: 'bg-red-500/20 text-red-400',
-  USER_ROLE_CHANGE: 'bg-purple-500/20 text-purple-400',
-  USER_RISK_TIER_CHANGE: 'bg-amber-500/20 text-amber-400',
-  KYC_APPROVE: 'bg-emerald-500/20 text-emerald-400',
-  KYC_REJECT: 'bg-red-500/20 text-red-400',
-  DISPUTE_RESOLVE: 'bg-purple-500/20 text-purple-400',
-  FORCE_RELEASE: 'bg-amber-500/20 text-amber-400',
-  FORCE_CANCEL: 'bg-red-500/20 text-red-400',
-  WITHDRAWAL_APPROVE: 'bg-emerald-500/20 text-emerald-400',
-  WITHDRAWAL_REJECT: 'bg-red-500/20 text-red-400',
-  CORPORATE_PURCHASE: 'bg-blue-500/20 text-blue-400',
+  SETTINGS_CHANGE: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]',
+  FEE_PROFILE_CREATE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  FEE_PROFILE_UPDATE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  FEE_PROFILE_DELETE: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  USER_BAN: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  USER_ROLE_CHANGE: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]',
+  USER_RISK_TIER_CHANGE: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]',
+  KYC_APPROVE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  KYC_REJECT: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  DISPUTE_RESOLVE: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]',
+  FORCE_RELEASE: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]',
+  FORCE_CANCEL: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  WITHDRAWAL_APPROVE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  WITHDRAWAL_REJECT: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  CORPORATE_PURCHASE: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]',
   COLD_STORAGE_TRANSFER: 'bg-az-text-muted/20 text-az-text-secondary',
-  PROFIT_LIQUIDATION: 'bg-purple-500/20 text-purple-400',
+  PROFIT_LIQUIDATION: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]',
 };
 
 function escapeCsvValue(val) {
@@ -86,14 +86,14 @@ export default function AuditLog() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Audit Log</h1>
+          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Audit Log</h1>
           <p className="text-sm text-az-text-secondary mt-1">Complete history of every admin action — fee changes, bans, KYC decisions, dispute resolutions.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExport} className="border-az-border text-az-text-secondary hover:bg-az-card">
+          <Button variant="outline" size="sm" onClick={handleExport} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
             <Download className="w-3.5 h-3.5 mr-2" /> Export CSV
           </Button>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
             <FileText className="w-3.5 h-3.5 mr-2" /> Refresh
           </Button>
         </div>
@@ -105,19 +105,19 @@ export default function AuditLog() {
           placeholder="Search by action, admin, or note…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="pl-9 bg-az-surface border-az-border text-white"
+          className="pl-9 bg-[var(--az-surface-2)] border-az-border text-[var(--az-text-primary)]"
         />
       </div>
 
-      <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
         <div className="grid grid-cols-5 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
           <span>Time</span><span>Action</span><span>Admin</span><span>Details</span><span>Note</span>
         </div>
         {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
         {isError && (
           <div className="flex flex-col items-center py-8 gap-2">
-            <AlertTriangle className="w-5 h-5 text-red-400" />
-            <p className="text-sm text-red-400">Failed to load audit log</p>
+            <AlertTriangle className="w-5 h-5 text-[var(--az-red)]" />
+            <p className="text-sm text-[var(--az-red)]">Failed to load audit log</p>
             <p className="text-xs text-az-text-muted">{error?.message || 'Server error'}</p>
           </div>
         )}
@@ -130,9 +130,9 @@ export default function AuditLog() {
             <span className="text-xs text-az-text-secondary truncate">{e.admin}</span>
             <div className="text-xs text-az-text-secondary">
               {e.field && <span>{e.field}: </span>}
-              {e.oldValue && <span className="text-red-400">{e.oldValue}</span>}
+              {e.oldValue && <span className="text-[var(--az-red)]">{e.oldValue}</span>}
               {e.oldValue && e.newValue && <span className="text-az-text-muted"> → </span>}
-              {e.newValue && <span className="text-emerald-400">{e.newValue}</span>}
+              {e.newValue && <span className="text-[var(--az-emerald)]">{e.newValue}</span>}
               {e.targetId && <span className="text-az-text-muted ml-1">({e.targetId})</span>}
             </div>
             <span className="text-xs text-az-text-muted italic">{e.note || '–'}</span>

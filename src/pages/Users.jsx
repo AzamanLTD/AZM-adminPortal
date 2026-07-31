@@ -11,8 +11,8 @@ import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRig
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
 
-const KYC_COLORS = { VERIFIED: 'bg-emerald-500/20 text-emerald-400', PENDING: 'bg-amber-500/20 text-amber-400', REJECTED: 'bg-red-500/20 text-red-400', NONE: 'bg-az-text-muted/20 text-az-text-secondary' };
-const RISK_COLORS = { STANDARD: 'bg-az-text-muted/20 text-az-text-secondary', TRUSTED: 'bg-emerald-500/20 text-emerald-400', HIGH_RISK: 'bg-red-500/20 text-red-400' };
+const KYC_COLORS = { VERIFIED: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]', PENDING: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]', REJECTED: 'bg-[var(--az-red-soft)] text-[var(--az-red)]', NONE: 'bg-az-text-muted/20 text-az-text-secondary' };
+const RISK_COLORS = { STANDARD: 'bg-az-text-muted/20 text-az-text-secondary', TRUSTED: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]', HIGH_RISK: 'bg-[var(--az-red-soft)] text-[var(--az-red)]' };
 
 function KYCPanel({ userId }) {
   const { data, isLoading } = useQuery({ queryKey: ['kyc', 'pending'], queryFn: () => api.kyc.pending() });
@@ -39,16 +39,16 @@ function KYCPanel({ userId }) {
       />
       {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {pending.map((k) => (
-        <div key={k.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={k.id} className="bg-[var(--az-surface-3)] rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-white">{k.userName || k.userId}</p>
+            <p className="text-sm font-medium text-[var(--az-text-primary)]">{k.userName || k.userId}</p>
             <p className="text-xs text-az-text-secondary mt-0.5">{k.email} · Submitted {new Date(k.submittedAt).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => approve.mutate(k.id)} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+            <Button size="sm" onClick={() => approve.mutate(k.id)} className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8">
               <ShieldCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setRejectDialog(k.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(k.id)} className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8">
               <ShieldX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>
@@ -147,13 +147,13 @@ export default function Users() {
       />
 
       <div>
-        <h1 className="text-xl font-bold text-white">Users and KYC</h1>
+        <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Users and KYC</h1>
         <p className="text-sm text-az-text-secondary mt-1">{total} total users</p>
       </div>
 
-      <div className="flex gap-1 bg-az-surface border border-az-border rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-[var(--az-surface-2)] border border-az-border rounded-xl p-1 w-fit">
         {['users', 'kyc', 'vendors', 'trade-accounts'].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-lg text-sm capitalize transition-colors ${activeTab === t ? 'bg-az-border text-white' : 'text-az-text-secondary hover:text-az-text-primary'}`}>
+          <button key={t} onClick={() => setActiveTab(t)} className={`px-4 py-1.5 rounded-lg text-sm capitalize transition-colors ${activeTab === t ? 'bg-az-border text-[var(--az-text-primary)]' : 'text-az-text-secondary hover:text-az-text-primary'}`}>
             {t === 'kyc' ? 'Pending KYC' : t === 'trade-accounts' ? 'Trade Accounts' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
@@ -173,11 +173,11 @@ export default function Users() {
               placeholder="Search by name or email…"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              className="pl-9 bg-az-surface border-az-border text-white"
+              className="pl-9 bg-[var(--az-surface-2)] border-az-border text-[var(--az-text-primary)]"
             />
           </div>
 
-          <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
             <div className="grid grid-cols-6 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
               <span className="col-span-2">User</span><span>Role</span><span>KYC</span><span>Risk Tier</span><span>Actions</span>
             </div>
@@ -185,7 +185,7 @@ export default function Users() {
             {users.map((u) => (
               <div key={u.id} className="grid grid-cols-6 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-center hover:bg-az-card/20 transition-colors">
                 <div className="col-span-2">
-                  <button onClick={() => setDetailUserId(u.id)} className="text-sm font-medium text-white hover:text-emerald-400 transition-colors text-left">{u.fullName}</button>
+                  <button onClick={() => setDetailUserId(u.id)} className="text-sm font-medium text-[var(--az-text-primary)] hover:text-[var(--az-emerald)] transition-colors text-left">{u.fullName}</button>
                   <p className="text-xs text-az-text-muted">{u.email}</p>
                 </div>
                 <span className="text-xs text-az-text-secondary">{u.role}</span>
@@ -193,23 +193,23 @@ export default function Users() {
                 <select
                   value={u.riskTier || 'STANDARD'}
                   onChange={(e) => setRisk.mutate({ id: u.id, tier: e.target.value })}
-                  className="bg-az-card border border-az-border rounded-lg px-2 py-1 text-xs text-white"
+                  className="bg-[var(--az-surface-3)] border border-az-border rounded-lg px-2 py-1 text-xs text-[var(--az-text-primary)]"
                 >
                   <option value="STANDARD">Standard</option>
                   <option value="TRUSTED">Trusted</option>
                   <option value="HIGH_RISK">High Risk</option>
                 </select>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => setDetailUserId(u.id)} className="h-7 px-2 text-xs text-az-text-secondary hover:text-white hover:bg-az-border">
+                  <Button variant="ghost" size="sm" onClick={() => setDetailUserId(u.id)} className="h-7 px-2 text-xs text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-border">
                     <Eye className="w-3 h-3" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'credit', userId: u.id })} className="h-7 px-2 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'credit', userId: u.id })} className="h-7 px-2 text-xs text-[var(--az-emerald)] hover:text-emerald-300 hover:bg-[var(--az-emerald-soft)]">
                     $+
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'role', userId: u.id })} className="h-7 px-2 text-xs text-az-text-secondary hover:text-white hover:bg-az-border">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'role', userId: u.id })} className="h-7 px-2 text-xs text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-border">
                     Role
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'ban', userId: u.id })} className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                  <Button variant="ghost" size="sm" onClick={() => setActionDialog({ type: 'ban', userId: u.id })} className="h-7 px-2 text-xs text-[var(--az-red)] hover:text-red-300 hover:bg-[var(--az-red-soft)]">
                     <UserX className="w-3 h-3" />
                   </Button>
                 </div>
@@ -263,16 +263,16 @@ function VendorPanel() {
       />
       {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {apps.map((a) => (
-        <div key={a.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={a.id} className="bg-[var(--az-surface-3)] rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
+            <p className="text-sm font-medium text-[var(--az-text-primary)]">{a.userName || a.userId}</p>
             <p className="text-xs text-az-text-secondary mt-0.5">Applied {new Date(a.appliedAt || a.createdAt).toLocaleDateString()}</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => review.mutate({ id: a.id, action: 'APPROVE', reason: 'Approved' })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+            <Button size="sm" onClick={() => review.mutate({ id: a.id, action: 'APPROVE', reason: 'Approved' })} className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8">
               <UserCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8">
               <UserX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>
@@ -316,16 +316,16 @@ function TradeAccountsPanel() {
       />
       {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
       {accounts.map((a) => (
-        <div key={a.id} className="bg-az-card rounded-xl p-4 flex items-center justify-between gap-4">
+        <div key={a.id} className="bg-[var(--az-surface-3)] rounded-xl p-4 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-white">{a.userName || a.userId}</p>
+            <p className="text-sm font-medium text-[var(--az-text-primary)]">{a.userName || a.userId}</p>
             <p className="text-xs text-az-text-secondary mt-0.5">Status: {a.status} · Tier: {a.tier || 'N/A'}</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => approve.mutate({ id: a.id })} className="bg-emerald-600 hover:bg-emerald-500 text-white h-8">
+            <Button size="sm" onClick={() => approve.mutate({ id: a.id })} className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8">
               <UserCheck className="w-3.5 h-3.5 mr-1.5" /> Approve
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-red-400 hover:bg-red-500/10 h-8">
+            <Button size="sm" variant="outline" onClick={() => setRejectDialog(a.id)} className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8">
               <UserX className="w-3.5 h-3.5 mr-1.5" /> Reject
             </Button>
           </div>

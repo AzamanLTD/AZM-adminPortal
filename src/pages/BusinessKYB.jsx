@@ -20,10 +20,10 @@ const DOC_TYPE_LABELS = {
 };
 
 const KYB_STATUS_STYLE = {
-  PENDING:    'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  APPROVED:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  REJECTED:   'bg-red-500/20 text-red-400 border-red-500/30',
-  VERIFIED:   'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  PENDING:    'bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-amber-500/30',
+  APPROVED:   'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]',
+  REJECTED:   'bg-[var(--az-red-soft)] text-[var(--az-red)] border-[var(--az-red-glow)]',
+  VERIFIED:   'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]',
   UNVERIFIED: 'bg-az-text-muted/20 text-az-text-secondary border-az-text-muted/30',
 };
 
@@ -54,23 +54,23 @@ function DocumentCard({ doc }) {
         <img src={doc.documentUrl} alt={doc.documentType}
              className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
-          <Eye className="w-6 h-6 text-white" />
+          <Eye className="w-6 h-6 text-[var(--az-text-primary)]" />
         </div>
       </div>
 
       {doc.reviewNotes && doc.status === 'REJECTED' && (
-        <p className="text-xs text-red-400/80 bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-1.5">{doc.reviewNotes}</p>
+        <p className="text-xs text-[var(--az-red)]/80 bg-[var(--az-red-soft)] border border-[var(--az-red-glow)] rounded-lg px-2.5 py-1.5">{doc.reviewNotes}</p>
       )}
 
       {doc.status === 'PENDING' && !showRejectInput && (
         <div className="flex gap-2">
           <Button size="sm" onClick={() => reviewMutation.mutate({ status: 'APPROVED' })}
                   disabled={reviewMutation.isPending}
-                  className="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-600/30 h-8">
+                  className="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-[var(--az-emerald)] border border-emerald-600/30 h-8">
             <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve
           </Button>
           <Button size="sm" onClick={() => setShowRejectInput(true)}
-                  className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 h-8">
+                  className="flex-1 bg-[var(--az-red-soft)] hover:bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)] h-8">
             <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
           </Button>
         </div>
@@ -84,7 +84,7 @@ function DocumentCard({ doc }) {
             <Button size="sm" variant="ghost" onClick={() => { setShowRejectInput(false); setNotes(''); }} className="text-[#7b7b9a] h-8">Cancel</Button>
             <Button size="sm" onClick={() => reviewMutation.mutate({ status: 'REJECTED', reviewNotes: notes })}
                     disabled={!notes.trim() || reviewMutation.isPending}
-                    className="flex-1 bg-red-500/20 text-red-400 border border-red-500/30 h-8">
+                    className="flex-1 bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)] h-8">
               Confirm Reject
             </Button>
           </div>
@@ -153,7 +153,7 @@ export default function BusinessKYB() {
           <h1 className="text-xl font-bold text-[#e8e8f0]">Business KYB Review</h1>
           <p className="text-sm text-[#7b7b9a] mt-1">Verify business identity documents</p>
         </div>
-        {pendingCount > 0 && <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full px-3 py-1 font-semibold">{pendingCount} Pending</span>}
+        {pendingCount > 0 && <span className="text-xs bg-[var(--az-amber-soft)] text-[var(--az-amber)] border border-amber-500/30 rounded-full px-3 py-1 font-semibold">{pendingCount} Pending</span>}
       </div>
 
       {/* Stats row */}
@@ -170,7 +170,7 @@ export default function BusinessKYB() {
       <div className="flex gap-1 bg-[#13131e] border border-[#2a2a3e] rounded-xl p-1 w-fit">
         {['PENDING', 'APPROVED', 'REJECTED'].map((tab) => (
           <button key={tab} onClick={() => { setActiveTab(tab); setSelectedId(null); }}
-                  className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab ? 'bg-[#2a2a3e] text-white' : 'text-[#4a4a6a] hover:text-[#7b7b9a]'}`}>
+                  className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab ? 'bg-[#2a2a3e] text-[var(--az-text-primary)]' : 'text-[#4a4a6a] hover:text-[#7b7b9a]'}`}>
             {tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
         ))}
@@ -233,20 +233,20 @@ export default function BusinessKYB() {
                  <div className="border-t border-[#2a2a3e] pt-4 space-y-3">
                    <p className="text-xs text-[#7b7b9a]">After reviewing all documents above, make a final decision on this business.</p>
                    {!allDocsApproved && (
-                     <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2">
-                       <Clock className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                       <span className="text-xs text-amber-400">All documents must be APPROVED before the business can be verified.</span>
+                     <div className="flex items-center gap-2 bg-[var(--az-amber-soft)] border border-amber-500/30 rounded-xl px-3 py-2">
+                       <Clock className="w-3.5 h-3.5 text-[var(--az-amber)] flex-shrink-0" />
+                       <span className="text-xs text-[var(--az-amber)]">All documents must be APPROVED before the business can be verified.</span>
                      </div>
                    )}
                    {!showRejectBizInput ? (
                      <div className="flex gap-3">
                        <Button onClick={() => approveBiz.mutate(selectedBiz.bizId)}
                                disabled={approveBiz.isPending || !allDocsApproved}
-                               className="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-600/30 disabled:opacity-40">
+                               className="flex-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-[var(--az-emerald)] border border-emerald-600/30 disabled:opacity-40">
                          <CheckCircle2 className="w-4 h-4 mr-2" /> Approve Business
                        </Button>
                        <Button onClick={() => setShowRejectBizInput(true)}
-                               className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30">
+                               className="flex-1 bg-[var(--az-red-soft)] hover:bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)]">
                          <XCircle className="w-4 h-4 mr-2" /> Reject Business
                        </Button>
                      </div>
@@ -259,7 +259,7 @@ export default function BusinessKYB() {
                          <Button variant="ghost" onClick={() => { setShowRejectBizInput(false); setRejectReason(''); }} className="text-[#7b7b9a]">Cancel</Button>
                          <Button onClick={() => rejectBiz.mutate({ bizId: selectedBiz.bizId, reason: rejectReason })}
                                  disabled={!rejectReason.trim() || rejectBiz.isPending}
-                                 className="flex-1 bg-red-500/20 text-red-400 border border-red-500/30">
+                                 className="flex-1 bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)]">
                            Confirm Reject Business
                          </Button>
                        </div>

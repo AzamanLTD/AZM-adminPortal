@@ -10,9 +10,9 @@ import { Lock, ArrowRight, ShieldAlert, AlertTriangle, Scale, CheckCircle, Dolla
 import { toast } from 'sonner';
 
 const RULINGS = [
-  { value: 'FULL_RELEASE', label: 'Full Release', desc: '100% to Payee (Seller)', color: 'text-emerald-400', active: 'border-emerald-500/50 bg-emerald-500/10' },
-  { value: 'FULL_REFUND',  label: 'Full Refund',  desc: '100% to Payer (Buyer)',  color: 'text-blue-400',    active: 'border-blue-500/50 bg-blue-500/10' },
-  { value: 'SPLIT',        label: 'Custom Split',  desc: 'Set custom percentages', color: 'text-amber-400',   active: 'border-amber-500/50 bg-amber-500/10' },
+  { value: 'FULL_RELEASE', label: 'Full Release', desc: '100% to Payee (Seller)', color: 'text-[var(--az-emerald)]', active: 'border-emerald-500/50 bg-[var(--az-emerald-soft)]' },
+  { value: 'FULL_REFUND',  label: 'Full Refund',  desc: '100% to Payer (Buyer)',  color: 'text-[var(--az-blue)]',    active: 'border-blue-500/50 bg-[var(--az-blue-soft)]' },
+  { value: 'SPLIT',        label: 'Custom Split',  desc: 'Set custom percentages', color: 'text-[var(--az-amber)]',   active: 'border-amber-500/50 bg-[var(--az-amber-soft)]' },
 ];
 
 const DISPUTE_STATUS_STYLE = {

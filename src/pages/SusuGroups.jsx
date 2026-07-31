@@ -14,24 +14,24 @@ import {
 import { toast } from 'sonner';
 
 const STATUS_STYLES = {
-  CONFIGURING: 'bg-blue-500/20 text-blue-400',
-  ACTIVE: 'bg-emerald-500/20 text-emerald-400',
+  CONFIGURING: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]',
+  ACTIVE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
   COMPLETED: 'bg-az-border-bright/30 text-az-text-secondary',
   CANCELLED: 'bg-az-border-bright/30 text-az-text-secondary',
-  FROZEN_DISPUTE: 'bg-red-500/20 text-red-400',
+  FROZEN_DISPUTE: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
 };
 const CYCLE_STYLES = {
   PENDING: 'bg-az-border-bright/30 text-az-text-secondary',
-  COLLECTING: 'bg-amber-500/20 text-amber-400',
-  COLLECTING_GRACE: 'bg-red-500/20 text-red-400',
-  PAID_OUT: 'bg-emerald-500/20 text-emerald-400',
-  DEFAULTED: 'bg-red-500/20 text-red-400',
+  COLLECTING: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]',
+  COLLECTING_GRACE: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
+  PAID_OUT: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  DEFAULTED: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
 };
 const MEMBER_STYLES = {
   PENDING_VOUCH: 'bg-az-border-bright/30 text-az-text-secondary',
-  PENDING_CONTRACT: 'bg-amber-500/20 text-amber-400',
-  ACTIVE: 'bg-emerald-500/20 text-emerald-400',
-  DEFAULTED: 'bg-red-500/20 text-red-400',
+  PENDING_CONTRACT: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]',
+  ACTIVE: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
+  DEFAULTED: 'bg-[var(--az-red-soft)] text-[var(--az-red)]',
   REMOVED: 'bg-az-border-bright/30 text-az-text-muted',
 };
 
@@ -62,10 +62,10 @@ function ResolveDialog({ susu, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-az-surface border-az-border text-az-text-primary">
+      <DialogContent className="bg-[var(--az-surface-2)] border-az-border text-az-text-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Snowflake className="w-4 h-4 text-red-400" /> Resolve Frozen Susu
+            <Snowflake className="w-4 h-4 text-[var(--az-red)]" /> Resolve Frozen Susu
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
@@ -74,26 +74,26 @@ function ResolveDialog({ susu, open, onOpenChange }) {
           </p>
           <div className="grid grid-cols-2 gap-3">
             <button onClick={() => setAction('REFUND_AND_CLOSE')}
-              className={`p-3 rounded-lg border text-left transition-colors ${action === 'REFUND_AND_CLOSE' ? 'border-red-500 bg-red-500/10' : 'border-az-border hover:border-az-border-bright'}`}>
-              <RotateCcw className="w-4 h-4 text-red-400 mb-1.5" />
-              <p className="text-sm font-medium text-white">Refund & Close</p>
+              className={`p-3 rounded-lg border text-left transition-colors ${action === 'REFUND_AND_CLOSE' ? 'border-red-500 bg-[var(--az-red-soft)]' : 'border-az-border hover:border-az-border-bright'}`}>
+              <RotateCcw className="w-4 h-4 text-[var(--az-red)] mb-1.5" />
+              <p className="text-sm font-medium text-[var(--az-text-primary)]">Refund & Close</p>
               <p className="text-[11px] text-az-text-muted mt-0.5">Refund the open cycle's contributions, cancel the Susu.</p>
             </button>
             <button onClick={() => setAction('RESUME')}
-              className={`p-3 rounded-lg border text-left transition-colors ${action === 'RESUME' ? 'border-emerald-500 bg-emerald-500/10' : 'border-az-border hover:border-az-border-bright'}`}>
-              <Play className="w-4 h-4 text-emerald-400 mb-1.5" />
-              <p className="text-sm font-medium text-white">Resume</p>
+              className={`p-3 rounded-lg border text-left transition-colors ${action === 'RESUME' ? 'border-emerald-500 bg-[var(--az-emerald-soft)]' : 'border-az-border hover:border-az-border-bright'}`}>
+              <Play className="w-4 h-4 text-[var(--az-emerald)] mb-1.5" />
+              <p className="text-sm font-medium text-[var(--az-text-primary)]">Resume</p>
               <p className="text-[11px] text-az-text-muted mt-0.5">Lift the freeze and let cycles continue.</p>
             </button>
           </div>
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
             placeholder="Resolution notes (required, recorded against the incident)…"
-            className="bg-az-card border-az-border text-white text-sm resize-none" />
+            className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm resize-none" />
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-az-text-secondary">Cancel</Button>
           <Button onClick={submit} disabled={!notes.trim() || resolve.isPending}
-            className={action === 'RESUME' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}>
+            className={action === 'RESUME' ? 'bg-emerald-600 hover:bg-[var(--az-emerald)]' : 'bg-red-600 hover:bg-[var(--az-red)]'}>
             {action === 'RESUME' ? 'Resume Susu' : 'Refund & Close'}
           </Button>
         </DialogFooter>
@@ -107,10 +107,10 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-az-surface border-az-border text-az-text-primary max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--az-surface-2)] border-az-border text-az-text-primary max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PiggyBank className="w-4 h-4 text-emerald-400" />
+            <PiggyBank className="w-4 h-4 text-[var(--az-emerald)]" />
             {susu?.groupChat?.name || 'Susu'} detail
           </DialogTitle>
         </DialogHeader>
@@ -127,11 +127,11 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
             </div>
 
             {susu.status === 'FROZEN_DISPUTE' && (
-              <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+              <div className="flex items-center justify-between bg-[var(--az-red-soft)] border border-[var(--az-red-glow)] rounded-lg p-3">
                 <div className="flex items-center gap-2 text-sm text-red-300">
                   <Snowflake className="w-4 h-4" /> Frozen: {susu.frozenReason} · {fmtDate(susu.frozenAt)}
                 </div>
-                <Button size="sm" onClick={() => onResolve(susu)} className="bg-red-600 hover:bg-red-500 h-8">Resolve</Button>
+                <Button size="sm" onClick={() => onResolve(susu)} className="bg-red-600 hover:bg-[var(--az-red)] h-8">Resolve</Button>
               </div>
             )}
 
@@ -143,11 +143,11 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
               <div className="space-y-1.5">
                 {susu.members.map((m) => (
                   <button key={m.susuMemberId} onClick={() => onMember(m.userId)}
-                    className="w-full flex items-center justify-between bg-az-card/40 hover:bg-az-card rounded-lg px-3 py-2 text-sm transition-colors">
+                    className="w-full flex items-center justify-between bg-az-card/40 hover:bg-[var(--az-surface-3)] rounded-lg px-3 py-2 text-sm transition-colors">
                     <div className="flex items-center gap-2 min-w-0">
                       <Badge className="bg-az-border text-az-text-secondary border-0 text-[10px]">#{m.payoutSlot ?? '—'}</Badge>
                       <span className="text-az-text-primary truncate">{m.displayName}</span>
-                      {m.autoRetainNextCycle && <Badge className="bg-blue-500/20 text-blue-400 border-0 text-[10px]">auto-retain</Badge>}
+                      {m.autoRetainNextCycle && <Badge className="bg-[var(--az-blue-soft)] text-[var(--az-blue)] border-0 text-[10px]">auto-retain</Badge>}
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Badge className={`${MEMBER_STYLES[m.status]} border-0 text-[10px]`}>{m.status}</Badge>
@@ -195,10 +195,10 @@ function DetailDialog({ susuId, open, onOpenChange, onResolve, onMember }) {
                       <span className="text-az-text-secondary">{a.alertType.replace(/_/g, ' ')}</span>
                       <div className="flex items-center gap-2">
                         {a.resolution
-                          ? <Badge className="bg-emerald-500/20 text-emerald-400 border-0 text-[10px]">{a.resolution}</Badge>
+                          ? <Badge className="bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-0 text-[10px]">{a.resolution}</Badge>
                           : a.acknowledgedAt
-                            ? <Badge className="bg-amber-500/20 text-amber-400 border-0 text-[10px]">ACK</Badge>
-                            : <Badge className="bg-red-500/20 text-red-400 border-0 text-[10px]">OPEN</Badge>}
+                            ? <Badge className="bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-0 text-[10px]">ACK</Badge>
+                            : <Badge className="bg-[var(--az-red-soft)] text-[var(--az-red)] border-0 text-[10px]">OPEN</Badge>}
                         <span className="text-az-text-muted">{fmtDate(a.createdAt)}</span>
                       </div>
                     </div>
@@ -226,17 +226,17 @@ export default function SusuGroups() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-            <PiggyBank className="w-4 h-4 text-emerald-400" />
+          <div className="w-8 h-8 bg-[var(--az-emerald-soft)] rounded-lg flex items-center justify-center">
+            <PiggyBank className="w-4 h-4 text-[var(--az-emerald)]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">Susu Groups Monitor</h1>
+            <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Susu Groups Monitor</h1>
             <p className="text-sm text-az-text-secondary">
-              {susus.length} groups{frozenCount > 0 && <span className="text-red-400"> · {frozenCount} frozen</span>}
+              {susus.length} groups{frozenCount > 0 && <span className="text-[var(--az-red)]"> · {frozenCount} frozen</span>}
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-az-card">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
@@ -245,14 +245,14 @@ export default function SusuGroups() {
       <div className="flex gap-1.5 flex-wrap">
         {FILTERS.map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-az-border text-az-text-secondary hover:border-az-border-bright'}`}>
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${filter === f ? 'border-emerald-500 bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'border-az-border text-az-text-secondary hover:border-az-border-bright'}`}>
             {f.replace('_', ' ')}
           </button>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
         <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-az-border text-[11px] text-az-text-muted uppercase">
           <span className="col-span-3">Group</span>
           <span className="col-span-2">Status</span>
@@ -270,7 +270,7 @@ export default function SusuGroups() {
             </div>
             <div className="col-span-2 flex items-center gap-1.5">
               <Badge className={`${STATUS_STYLES[s.status]} border-0 text-xs`}>{s.status === 'FROZEN_DISPUTE' ? 'FROZEN' : s.status}</Badge>
-              {s.frozen && <Snowflake className="w-3.5 h-3.5 text-red-400" />}
+              {s.frozen && <Snowflake className="w-3.5 h-3.5 text-[var(--az-red)]" />}
             </div>
             <div className="col-span-2">
               <span className="text-az-text-secondary">${Number(s.contributionUsdc).toFixed(2)}</span>
@@ -278,16 +278,16 @@ export default function SusuGroups() {
             </div>
             <div className="col-span-2 text-az-text-secondary">
               {s.activeMembers}/{s.memberCount}
-              {s.defaultedMembers > 0 && <span className="text-red-400 text-xs"> · {s.defaultedMembers} def</span>}
+              {s.defaultedMembers > 0 && <span className="text-[var(--az-red)] text-xs"> · {s.defaultedMembers} def</span>}
             </div>
             <div className="col-span-2 text-xs text-az-text-secondary">
               {s.nextCycle
-                ? <>#{s.nextCycle.cycleNumber} · {fmtDate(s.nextCycle.collectionDate)}{s.nextCycle.status === 'COLLECTING_GRACE' && <span className="text-red-400"> (grace)</span>}</>
+                ? <>#{s.nextCycle.cycleNumber} · {fmtDate(s.nextCycle.collectionDate)}{s.nextCycle.status === 'COLLECTING_GRACE' && <span className="text-[var(--az-red)]"> (grace)</span>}</>
                 : '—'}
             </div>
             <div className="col-span-1 flex justify-end gap-1.5">
               {s.frozen && (
-                <Button size="sm" variant="ghost" onClick={() => setResolveSusu(s)} className="h-7 px-2 text-red-400 hover:bg-red-500/10">
+                <Button size="sm" variant="ghost" onClick={() => setResolveSusu(s)} className="h-7 px-2 text-[var(--az-red)] hover:bg-[var(--az-red-soft)]">
                   <Snowflake className="w-3.5 h-3.5" />
                 </Button>
               )}

@@ -274,7 +274,7 @@ export default function QrForge() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-xl font-bold text-[var(--az-text-primary)] flex items-center gap-2">
             <QrCode className="w-5 h-5 text-yellow-400" />
             QR Forge
           </h1>
@@ -282,9 +282,9 @@ export default function QrForge() {
             Generate high-resolution, print-ready QR codes. Reprogram the destination any time — no reprinting needed.
           </p>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] rounded-lg">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-medium text-emerald-400">Live redirect active</span>
+          <span className="text-xs font-medium text-[var(--az-emerald)]">Live redirect active</span>
         </div>
       </div>
 
@@ -294,17 +294,17 @@ export default function QrForge() {
         <div className="space-y-5">
 
           {/* Permanent URL */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-4">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Link2 className="w-4 h-4 text-yellow-400" />
               <span className="text-sm font-semibold text-az-text-primary">Permanent QR URL</span>
-              <span className="text-xs text-az-text-muted bg-az-card px-2 py-0.5 rounded-full">baked into every printed code</span>
+              <span className="text-xs text-az-text-muted bg-[var(--az-surface-3)] px-2 py-0.5 rounded-full">baked into every printed code</span>
             </div>
             <div className="flex items-center gap-2 bg-az-black border border-az-border rounded-lg px-3 py-2.5">
               <code className="text-xs text-yellow-300 flex-1 truncate font-mono">{PERMANENT_QR_URL}</code>
               <button
                 onClick={() => { navigator.clipboard.writeText(PERMANENT_QR_URL); toast.success('Copied!'); }}
-                className="text-az-text-muted hover:text-white transition-colors text-xs px-2 py-0.5 rounded"
+                className="text-az-text-muted hover:text-[var(--az-text-primary)] transition-colors text-xs px-2 py-0.5 rounded"
               >
                 Copy
               </button>
@@ -315,9 +315,9 @@ export default function QrForge() {
           </div>
 
           {/* Destination editor */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-400" />
+              <Globe className="w-4 h-4 text-[var(--az-blue)]" />
               <span className="text-sm font-semibold text-az-text-primary">Current Destination</span>
               {destLoading && <Loader2 className="w-3.5 h-3.5 text-az-text-muted animate-spin" />}
             </div>
@@ -327,7 +327,7 @@ export default function QrForge() {
                 href={currentDest}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-400 hover:text-blue-300 flex-1 truncate flex items-center gap-1.5 transition-colors"
+                className="text-sm text-[var(--az-blue)] hover:text-blue-300 flex-1 truncate flex items-center gap-1.5 transition-colors"
               >
                 {currentLabel}
                 <ExternalLink className="w-3 h-3 shrink-0" />
@@ -341,7 +341,7 @@ export default function QrForge() {
                 <Input
                   value={editUrl}
                   onChange={(e) => setEditUrl(e.target.value)}
-                  className="bg-az-card border-az-border text-white font-mono text-sm"
+                  className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] font-mono text-sm"
                   placeholder="https://..."
                 />
               </div>
@@ -350,7 +350,7 @@ export default function QrForge() {
                 <Input
                   value={editLabel}
                   onChange={(e) => setEditLabel(e.target.value)}
-                  className="bg-az-card border-az-border text-white text-sm"
+                  className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
                   placeholder="e.g. Moolre Vote Page"
                 />
               </div>
@@ -372,21 +372,21 @@ export default function QrForge() {
                   <div className="relative">
                     <button
                       onClick={() => setShowHistory((v) => !v)}
-                      className="flex items-center gap-1 text-xs text-az-text-secondary hover:text-white transition-colors px-3 py-2 rounded-lg border border-az-border hover:border-az-border-bright"
+                      className="flex items-center gap-1 text-xs text-az-text-secondary hover:text-[var(--az-text-primary)] transition-colors px-3 py-2 rounded-lg border border-az-border hover:border-az-border-bright"
                     >
                       <Clock className="w-3 h-3" />
                       History
                       <ChevronDown className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} />
                     </button>
                     {showHistory && (
-                      <div className="absolute top-full mt-1 left-0 w-80 bg-az-card border border-az-border rounded-xl shadow-2xl z-50 overflow-hidden">
+                      <div className="absolute top-full mt-1 left-0 w-80 bg-[var(--az-surface-3)] border border-az-border rounded-xl shadow-2xl z-50 overflow-hidden">
                         {history.map((h, i) => (
                           <button
                             key={i}
                             onClick={() => { setEditUrl(h.url); setEditLabel(h.label || ''); setShowHistory(false); }}
                             className="w-full text-left px-4 py-3 hover:bg-az-border transition-colors border-b border-az-border/50 last:border-0"
                           >
-                            <p className="text-sm text-white font-medium truncate">{h.label || 'Unlabelled'}</p>
+                            <p className="text-sm text-[var(--az-text-primary)] font-medium truncate">{h.label || 'Unlabelled'}</p>
                             <p className="text-xs text-az-text-secondary truncate mt-0.5">{h.url}</p>
                           </button>
                         ))}
@@ -399,10 +399,10 @@ export default function QrForge() {
           </div>
 
           {/* Download panel */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Download className="w-4 h-4 text-emerald-400" />
+                <Download className="w-4 h-4 text-[var(--az-emerald)]" />
                 <span className="text-sm font-semibold text-az-text-primary">Download Sizes</span>
               </div>
               <div className="flex gap-1.5 flex-wrap">
@@ -414,7 +414,7 @@ export default function QrForge() {
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                       schemeKey === s.key
                         ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
-                        : 'border-az-border bg-az-card text-az-text-secondary hover:border-az-border-bright'
+                        : 'border-az-border bg-[var(--az-surface-3)] text-az-text-secondary hover:border-az-border-bright'
                     }`}
                   >
                     {/* Mini swatch */}
@@ -447,7 +447,7 @@ export default function QrForge() {
                     key={key}
                     onClick={() => handleDownload(key)}
                     disabled={!!downloading}
-                    className="flex items-center gap-3 p-3.5 bg-az-card hover:bg-az-border border border-az-border hover:border-az-border-bright rounded-xl transition-all group disabled:opacity-60 text-left"
+                    className="flex items-center gap-3 p-3.5 bg-[var(--az-surface-3)] hover:bg-az-border border border-az-border hover:border-az-border-bright rounded-xl transition-all group disabled:opacity-60 text-left"
                   >
                     <div className="w-8 h-8 rounded-lg bg-az-border group-hover:bg-az-border-bright flex items-center justify-center shrink-0 transition-colors">
                       {isDownloading
@@ -455,7 +455,7 @@ export default function QrForge() {
                         : <Icon className="w-4 h-4 text-yellow-400" />}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{label}</p>
+                      <p className="text-sm font-medium text-[var(--az-text-primary)]">{label}</p>
                       <p className="text-xs text-az-text-muted">{sub}</p>
                     </div>
                     <Download className="w-3.5 h-3.5 text-az-text-muted group-hover:text-az-text-secondary ml-auto transition-colors" />
@@ -477,7 +477,7 @@ export default function QrForge() {
         <div className="space-y-4">
 
           {/* QR canvas */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-5">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
             <p className="text-xs font-medium text-az-text-secondary mb-3 text-center">
               Preview — scan to test the redirect
             </p>
@@ -496,28 +496,28 @@ export default function QrForge() {
           </div>
 
           {/* Destination preview */}
-          <div className="bg-az-surface border border-az-border rounded-xl overflow-hidden">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-az-border flex items-center gap-2">
               <Monitor className="w-3.5 h-3.5 text-az-text-muted" />
               <span className="text-xs text-az-text-secondary font-medium">Destination Preview</span>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2 bg-az-card rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 bg-[var(--az-surface-3)] rounded-lg px-3 py-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-red-500/60" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--az-red)]/60" />
                   <span className="w-2 h-2 rounded-full bg-yellow-500/60" />
-                  <span className="w-2 h-2 rounded-full bg-emerald-500/60" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--az-emerald)]/60" />
                 </div>
                 <span className="text-xs text-az-text-secondary truncate flex-1 font-mono">{currentDest}</span>
               </div>
 
-              <div className="bg-az-card rounded-xl overflow-hidden border border-az-border">
+              <div className="bg-[var(--az-surface-3)] rounded-xl overflow-hidden border border-az-border">
                 <div className="h-2 bg-gradient-to-r from-yellow-500 via-yellow-400 to-orange-500" />
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-black text-az-black">A</div>
                     <div>
-                      <p className="text-sm font-bold text-white">Azaman</p>
+                      <p className="text-sm font-bold text-[var(--az-text-primary)]">Azaman</p>
                       <p className="text-xs text-az-text-secondary">Moolre Startup Leaderboard</p>
                     </div>
                   </div>
@@ -539,8 +539,8 @@ export default function QrForge() {
           </div>
 
           {/* Info callout */}
-          <div className="flex items-start gap-2.5 p-3.5 bg-blue-500/8 border border-blue-500/20 rounded-xl">
-            <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2.5 p-3.5 bg-[var(--az-blue)]/8 border border-[var(--az-blue-glow)] rounded-xl">
+            <AlertCircle className="w-4 h-4 text-[var(--az-blue)] shrink-0 mt-0.5" />
             <p className="text-xs text-az-text-secondary leading-relaxed">
               <strong className="text-blue-300">No reprinting ever needed.</strong> When you change the destination above, every already-printed QR code updates instantly via the permanent relay URL.
             </p>
@@ -552,7 +552,7 @@ export default function QrForge() {
       <div className="space-y-6 pt-4 border-t border-az-border">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg font-bold text-[var(--az-text-primary)] flex items-center gap-2">
               <Activity className="w-5 h-5 text-yellow-400" />
               QR Scan Analytics
             </h2>
@@ -566,48 +566,48 @@ export default function QrForge() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Stat Card 1: Total Scans */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
               <span>Total Scans</span>
               <BarChart3 className="w-4 h-4 text-yellow-400" />
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.totalScans ?? 0)}
             </div>
             <p className="text-xs text-az-text-muted">All-time redirects</p>
           </div>
 
           {/* Stat Card 2: Recent Scans */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
               <span>Recent Scans (30d)</span>
-              <Activity className="w-4 h-4 text-emerald-400" />
+              <Activity className="w-4 h-4 text-[var(--az-emerald)]" />
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.recentScans ?? 0)}
             </div>
             <p className="text-xs text-az-text-muted">Last 30 days active</p>
           </div>
 
           {/* Stat Card 3: Unique Visitors */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
               <span>Unique Visitors</span>
-              <Users className="w-4 h-4 text-blue-400" />
+              <Users className="w-4 h-4 text-[var(--az-blue)]" />
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.uniqueVisitors ?? 0)}
             </div>
             <p className="text-xs text-az-text-muted">Unique IPs (30d)</p>
           </div>
 
           {/* Stat Card 4: Avg/Day */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-4 space-y-2">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
             <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
               <span>Avg/Day</span>
-              <Clock className="w-4 h-4 text-purple-400" />
+              <Clock className="w-4 h-4 text-[var(--az-violet)]" />
             </div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : analytics ? (analytics.recentScans / 30).toFixed(1) : '0.0'}
             </div>
             <p className="text-xs text-az-text-muted">Scans per day average</p>
@@ -617,9 +617,9 @@ export default function QrForge() {
         {/* Charts & Tables Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily activity chart */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-[var(--az-text-primary)] flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-yellow-400" />
                 Daily Scan Activity (Last 30 Days)
               </h3>
@@ -653,7 +653,7 @@ export default function QrForge() {
                       >
                         {/* Tooltip */}
                         <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-30">
-                          <div className="bg-az-black text-white text-[10px] font-semibold py-1 px-2 rounded border border-az-border shadow-xl whitespace-nowrap">
+                          <div className="bg-az-black text-[var(--az-text-primary)] text-[10px] font-semibold py-1 px-2 rounded border border-az-border shadow-xl whitespace-nowrap">
                             <span className="text-yellow-400">{d.count} scans</span> • {formattedDate}
                           </div>
                           <div className="w-1.5 h-1.5 bg-az-black border-r border-b border-az-border transform rotate-45 -mt-1" />
@@ -679,17 +679,17 @@ export default function QrForge() {
           </div>
 
           {/* Recent Scans Table */}
-          <div className="bg-az-surface border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-semibold text-[var(--az-text-primary)] flex items-center gap-2">
+                <Activity className="w-4 h-4 text-[var(--az-emerald)]" />
                 Recent QR Scans (Last 10)
               </h3>
             </div>
 
             {analyticsLoading ? (
               <div className="h-48 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+                <Loader2 className="w-6 h-6 text-[var(--az-emerald)] animate-spin" />
               </div>
             ) : !analytics?.lastScans || analytics.lastScans.length === 0 ? (
               <div className="h-48 border border-dashed border-az-border rounded-lg flex flex-col items-center justify-center text-az-text-muted">
@@ -717,13 +717,13 @@ export default function QrForge() {
                       });
                       return (
                         <tr key={scan.id} className="hover:bg-az-card/40 transition-colors">
-                          <td className="py-2.5 px-3 text-white whitespace-nowrap font-mono">{dateStr}</td>
+                          <td className="py-2.5 px-3 text-[var(--az-text-primary)] whitespace-nowrap font-mono">{dateStr}</td>
                           <td className="py-2.5 px-3 font-mono text-az-text-primary">{scan.ipAddress || 'Unknown'}</td>
                           <td className="py-2.5 px-3 truncate max-w-[200px]" title={scan.userAgent}>
                             {scan.userAgent ? (scan.userAgent.length > 40 ? scan.userAgent.slice(0, 40) + '...' : scan.userAgent) : 'Unknown'}
                           </td>
                           <td className="py-2.5 px-3 truncate max-w-[150px]" title={scan.referrer}>
-                            <span className={scan.referrer ? 'text-blue-400 font-mono' : 'text-az-text-muted italic'}>
+                            <span className={scan.referrer ? 'text-[var(--az-blue)] font-mono' : 'text-az-text-muted italic'}>
                               {scan.referrer || 'Direct'}
                             </span>
                           </td>
@@ -739,11 +739,11 @@ export default function QrForge() {
       </div>
 
         {/* ── Campaign Management Section ────────────────────────────────────── */}
-        <div className="bg-az-surface border border-az-border rounded-xl p-5">
+        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-400" /> Multi-Campaign QR
+              <h3 className="text-sm font-bold text-[var(--az-text-primary)] flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[var(--az-emerald)]" /> Multi-Campaign QR
               </h3>
               <p className="text-xs text-az-text-muted mt-0.5">Create separate QR campaigns with unique slugs and individual analytics.</p>
             </div>
@@ -751,24 +751,24 @@ export default function QrForge() {
               setNewCampaignName('');
               setNewCampaignUrl('');
               setNewCampaignOpen(true);
-            }} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            }} className="bg-emerald-600 hover:bg-emerald-700 text-[var(--az-text-primary)]">
               <Plus className="w-3.5 h-3.5 mr-1" /> New Campaign
             </Button>
           </div>
 
           {campaignsLoading && <p className="text-az-text-muted text-sm py-4 text-center">Loading campaigns…</p>}
-          {campaignsError && <p className="text-red-400 text-sm py-4 text-center">Failed to load campaigns</p>}
+          {campaignsError && <p className="text-[var(--az-red)] text-sm py-4 text-center">Failed to load campaigns</p>}
           {campaignsData?.campaigns && campaignsData.campaigns.length === 0 && (
             <p className="text-az-text-muted text-sm py-4 text-center italic">No campaigns yet. Create one to get a unique QR slug.</p>
           )}
           {campaignsData?.campaigns && campaignsData.campaigns.length > 0 && (
             <div className="space-y-2">
               {campaignsData.campaigns.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg bg-az-card border border-az-border/50">
+                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--az-surface-3)] border border-az-border/50">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-white">{c.name}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${c.isActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-az-text-muted/20 text-az-text-muted'}`}>
+                      <span className="text-sm font-bold text-[var(--az-text-primary)]">{c.name}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${c.isActive ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-az-text-muted/20 text-az-text-muted'}`}>
                         {c.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -785,25 +785,25 @@ export default function QrForge() {
                     <Button variant="ghost" size="sm" onClick={() => {
                       navigator.clipboard.writeText(`${PERMANENT_QR_URL}/${c.slug}`);
                       toast.success('Campaign QR URL copied');
-                    }} className="text-az-text-muted hover:text-white">
+                    }} className="text-az-text-muted hover:text-[var(--az-text-primary)]">
                       <Copy className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       setEditCampaignId(c.id);
                       setEditUrlValue(c.destinationUrl);
                       setEditUrlOpen(true);
-                    }} className="text-az-text-muted hover:text-white">
+                    }} className="text-az-text-muted hover:text-[var(--az-text-primary)]">
                       <Link2 className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       updateCampaignMut.mutate({ id: c.id, data: { isActive: !c.isActive } });
-                    }} className={c.isActive ? 'text-amber-400 hover:text-amber-300' : 'text-emerald-400 hover:text-emerald-300'}>
+                    }} className={c.isActive ? 'text-[var(--az-amber)] hover:text-amber-300' : 'text-[var(--az-emerald)] hover:text-emerald-300'}>
                       {c.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       setDeleteCampaign(c);
                       setDeleteOpen(true);
-                    }} className="text-red-400 hover:text-red-300">
+                    }} className="text-[var(--az-red)] hover:text-red-300">
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>

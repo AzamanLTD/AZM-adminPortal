@@ -14,7 +14,7 @@ const SOURCE_COLORS = {
 const CustomTooltip = ({ active, payload, label, rate }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-az-card border border-az-border rounded-lg p-3 text-xs">
+    <div className="bg-[var(--az-surface-3)] border border-az-border rounded-lg p-3 text-xs">
       <p className="text-az-text-secondary mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="font-medium">
@@ -36,7 +36,7 @@ export default function Profits() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-white">Revenue Dashboard</h1>
+        <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Revenue Dashboard</h1>
         <p className="text-sm text-az-text-secondary mt-1">Last 30 days — all amounts in USD and GHS</p>
       </div>
 
@@ -49,7 +49,7 @@ export default function Profits() {
       </div>
 
       {/* PnL Chart */}
-      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
         <h2 className="text-sm font-semibold text-az-text-secondary mb-4">Daily PnL — 30 Days</h2>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={dailyPnL}>
@@ -57,13 +57,13 @@ export default function Profits() {
             <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} />
             <YAxis tick={{ fontSize: 10, fill: '#64748b' }} tickFormatter={(v) => `$${(v / 1000).toFixed(1)}k`} />
             <Tooltip content={<CustomTooltip rate={rate} />} />
-            <Line type="monotone" dataKey="usd" stroke="#10b981" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="usd" stroke="var(--az-emerald)" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* Revenue by source */}
-      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
         <h2 className="text-sm font-semibold text-az-text-secondary mb-5">Revenue by Source</h2>
         <div className="space-y-4">
           {bySource.map(({ source, usd, ghs }) => {
@@ -73,11 +73,11 @@ export default function Profits() {
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-az-text-secondary">{source.replace(/_/g, ' ')}</span>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-white">${usd.toLocaleString()}</span>
+                    <span className="text-xs font-bold text-[var(--az-text-primary)]">${usd.toLocaleString()}</span>
                     <span className="text-xs text-az-text-muted ml-2">₵{ghs.toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="w-full bg-az-card rounded-full h-2">
+                <div className="w-full bg-[var(--az-surface-3)] rounded-full h-2">
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{ width: `${pct}%`, backgroundColor: SOURCE_COLORS[source] || '#6366f1' }}
@@ -90,7 +90,7 @@ export default function Profits() {
       </div>
 
       {/* GHS Bar chart */}
-      <div className="bg-az-surface border border-az-border rounded-xl p-5">
+      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
         <h2 className="text-sm font-semibold text-az-text-secondary mb-4">Daily Revenue in GHS</h2>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={dailyPnL}>
