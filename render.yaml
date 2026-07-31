@@ -20,4 +20,4 @@ services:
     envVars:
       # Backend API URL — no trailing slash
       - key: VITE_API_URL
-        value: "https://azaman-backend-9d3u.onrender.com"
+        value: "https://azm-backend.onrender.com"

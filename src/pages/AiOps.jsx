@@ -31,7 +31,7 @@ export default function AiOps() {
 
   // CFO analysis trigger
   const cfoMut = useMutation({
-    mutationFn: () => fetch(`${import.meta.env.VITE_API_URL || 'https://azaman-backend-9d3u.onrender.com'}/api/ai/cfo/analyze`, {
+    mutationFn: () => fetch(`${import.meta.env.VITE_API_URL || 'https://azm-backend.onrender.com'}/api/ai/cfo/analyze`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

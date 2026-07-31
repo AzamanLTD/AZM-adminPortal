@@ -22,7 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
 import { X } from 'lucide-react';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'https://azaman-backend-9d3u.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://azm-backend.onrender.com';
 const MAX_ALERTS = 5;
 const AUTO_DISMISS_MS = 30_000;
 
