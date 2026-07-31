@@ -1,43 +1,77 @@
-import { useState } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   LayoutDashboard, Swords, Users, TrendingUp, Wallet,
-  Sliders, FileText, Shield, ChevronLeft, ChevronRight,
-  Bell, Settings, LogOut, Database, Zap, Bot,
-  PiggyBank, Siren, Home, Activity, Building2, Lock, FileCheck, QrCode,
-  Store,
-  Menu,
+  Sliders, FileText, Shield, Bell, Settings, LogOut,
+  Database, Zap, Bot, PiggyBank, Siren, Home, Building2,
+  Lock, FileCheck, QrCode, Store, ChevronRight, Menu, X,
+  Search, Sun, Moon, Activity, AlertTriangle, DollarSign,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStats } from '@/lib/useAdminData';
 import { useAdminNotifications } from '@/lib/useAdminNotifications';
+import { useAuth } from '@/lib/AuthContext';
 import AlertBanner from './AlertBanner';
 import NotificationCenter from './NotificationCenter';
+import CommandPalette from './CommandPalette';
+import { pageVariants, sidebarVariants, sidebarTransition, spring } from '@/lib/motion';
+import { AdminThemeToggle } from '@/components/ui/ThemeToggle';
 
-const NAV = [
-  { label: 'Command Center', icon: LayoutDashboard, to: '/' },
-  { label: 'War Room',        icon: Swords,          to: '/war-room',       badge: 'disputes' },
-  { label: 'Escrow Disputes', icon: Lock,            to: '/escrow-disputes', badge: 'escrow_disputes' },
-  { label: 'Susu Groups',     icon: PiggyBank,       to: '/susu' },
-  { label: 'Susu Incidents',  icon: Siren,           to: '/susu-incidents' },
-  { label: 'Residency Queue', icon: Home,            to: '/residency-queue' },
-  { label: 'Business KYB',    icon: FileCheck,       to: '/business-kyb',   badge: 'biz_kyb' },
-  { label: 'Notifications',   icon: Bell,            to: '/notifications' },
-  { label: 'Revenue',         icon: TrendingUp,      to: '/profits' },
-  { label: 'Pool Monitor',    icon: Database,        to: '/pools' },
-  { label: 'Users & KYC',     icon: Users,           to: '/users',          badge: 'kyc' },
-  { label: 'Businesses',      icon: Building2,       to: '/businesses' },
-  { label: 'Storefronts',    icon: Store,           to: '/storefronts' },
-  { label: 'Withdrawals',     icon: Wallet,          to: '/withdrawals',    badge: 'withdrawals' },
-  { label: 'Fee Engine',      icon: Sliders,         to: '/fee-engine' },
-  { label: 'Fee Profiles',    icon: Zap,             to: '/fee-profiles' },
-  { label: 'AI Operations',   icon: Bot,             to: '/ai-ops' },
-  { label: 'QR Forge',         icon: QrCode,          to: '/qr-forge' },
-  { label: 'Audit Log',       icon: FileText,        to: '/audit-log' },
-  { label: 'System Config',   icon: Settings,        to: '/config' },
+// ── Navigation groups (Sentry-style: grouped by function) ──────────
+const NAV_GROUPS = [
+  {
+    label: 'Operations',
+    items: [
+      { label: 'Command Center',   icon: LayoutDashboard, to: '/' },
+      { label: 'War Room',         icon: Swords,          to: '/war-room',        badge: 'disputes' },
+      { label: 'Escrow Disputes',  icon: Lock,            to: '/escrow-disputes', badge: 'escrow_disputes' },
+    ],
+  },
+  {
+    label: 'Compliance',
+    items: [
+      { label: 'Business KYB',     icon: FileCheck,       to: '/business-kyb',    badge: 'biz_kyb' },
+      { label: 'Users & KYC',      icon: Users,           to: '/users',           badge: 'kyc' },
+      { label: 'Residency Queue',  icon: Home,            to: '/residency-queue' },
+      { label: 'Notifications',    icon: Bell,            to: '/notifications' },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      { label: 'Revenue',          icon: TrendingUp,      to: '/profits' },
+      { label: 'Withdrawals',      icon: Wallet,          to: '/withdrawals',     badge: 'withdrawals' },
+      { label: 'Pool Monitor',     icon: Database,        to: '/pools' },
+      { label: 'Fee Engine',       icon: Sliders,         to: '/fee-engine' },
+      { label: 'Fee Profiles',     icon: Zap,             to: '/fee-profiles' },
+    ],
+  },
+  {
+    label: 'Susu',
+    items: [
+      { label: 'Susu Groups',      icon: PiggyBank,       to: '/susu' },
+      { label: 'Susu Incidents',   icon: Siren,           to: '/susu-incidents' },
+    ],
+  },
+  {
+    label: 'Merchants',
+    items: [
+      { label: 'Businesses',       icon: Building2,       to: '/businesses' },
+      { label: 'Storefronts',      icon: Store,           to: '/storefronts' },
+    ],
+  },
+  {
+    label: 'System',
+    items: [
+      { label: 'AI Operations',    icon: Bot,             to: '/ai-ops' },
+      { label: 'QR Forge',         icon: QrCode,          to: '/qr-forge' },
+      { label: 'Audit Log',        icon: FileText,        to: '/audit-log' },
+      { label: 'System Config',    icon: Settings,        to: '/config' },
+    ],
+  },
 ];
 
-/** Format a timestamp as "Xm ago" / "Xh ago" relative label */
 function relativeTime(ts) {
   if (!ts) return null;
   const diff = Date.now() - new Date(ts).getTime();
@@ -50,20 +84,41 @@ function relativeTime(ts) {
 }
 
 export default function AdminLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed]   = useState(() => JSON.parse(localStorage.getItem('az-admin-collapsed') ?? 'false'));
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [cmdOpen, setCmdOpen] = useState(false);
+  const [notifOpen, setNotifOpen]   = useState(false);
+  const [cmdOpen, setCmdOpen]       = useState(false);
+  const [theme, setTheme]           = useState(() => localStorage.getItem('az-admin-theme') ?? 'dark');
   const location = useLocation();
-
-  // Live notification feed — drives the bell badge + the slide-over panel.
-  const notifications = useAdminNotifications();
-
-  // Phase ADMIN-CONTROL-2: live GHS/USD rate from stats
+  const navigate = useNavigate();
+  const { logout } = useAuth?.() ?? {};
+  const notifications  = useAdminNotifications();
   const { data: stats = {} } = useStats();
 
-  // NAV badge counts — each NAV item's `badge` key maps to a stats field. A
-  // count of 0 (or missing) hides the badge.
+  // Persist collapse state
+  useEffect(() => {
+    localStorage.setItem('az-admin-collapsed', JSON.stringify(collapsed));
+  }, [collapsed]);
+
+  // Apply theme class to document
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark',  theme === 'dark');
+    document.documentElement.classList.toggle('light', theme === 'light');
+    localStorage.setItem('az-admin-theme', theme);
+  }, [theme]);
+
+  // Cmd+K command palette
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
   const badgeCounts = {
     disputes:        stats.activeDisputes,
     escrow_disputes: stats.disputedEscrows,
@@ -72,16 +127,24 @@ export default function AdminLayout() {
     withdrawals:     stats.pendingWithdrawals,
   };
 
-  const liveRate      = stats.ghsRate ?? stats.liveUsdToGhs ?? null;
-  const lastRateSync  = stats.lastRateSync ?? stats.rateUpdatedAt ?? null;
-  const rateDisplay   = liveRate !== null ? Number(liveRate).toFixed(2) : '…';
-  const rateAge       = relativeTime(lastRateSync);
+  const liveRate    = stats.ghsRate ?? stats.liveUsdToGhs ?? null;
+  const lastSync    = stats.lastRateSync ?? stats.rateUpdatedAt ?? null;
+  const rateDisplay = liveRate !== null ? Number(liveRate).toFixed(2) : '—';
+  const rateAge     = relativeTime(lastSync);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleLogout = useCallback(() => {
+    if (logout) { logout(); } else {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/login';
+    }
+  }, [logout]);
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--az-black)', color: 'var(--az-text-primary)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--az-bg)', color: 'var(--az-text-primary)' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-black/60 z-40 md:hidden"
@@ -89,103 +152,212 @@ export default function AdminLayout() {
         />
       )}
 
-      <aside className={cn(
-        'flex flex-col border-r transition-all duration-300 flex-shrink-0',
-        'border-[var(--az-border)]',
-        collapsed ? 'w-16' : 'w-60',
-        // Mobile: slide-in drawer
-        'fixed md:fixed inset-y-0 left-0 z-50 md:z-auto',
-        mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-        'md:relative'
-      )} style={{ background: 'var(--az-surface)' }}>
-
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 h-16 border-b border-[var(--az-border)]">
-          <div className="w-8 h-8 rounded-xl bg-[var(--az-emerald)22] border border-[var(--az-emerald)40] flex items-center justify-center flex-shrink-0 az-glow-emerald">
-            <Shield className="w-4 h-4 text-[var(--az-emerald)]" />
-    </div>
-          {!collapsed && (
-            <div>
-              <p className="text-sm font-bold text-[var(--az-text-primary)] leading-none tracking-tight">AZAMAN</p>
-              <p className="text-xs text-[var(--az-emerald)] mt-0.5 font-medium">Control Center</p>
-    </div>
+      <motion.aside
+        animate={collapsed ? 'collapsed' : 'expanded'}
+        variants={sidebarVariants}
+        transition={sidebarTransition}
+        className={cn(
+          'az-sidebar flex-shrink-0',
+          'fixed md:fixed inset-y-0 left-0 z-50 md:z-auto',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
+          'md:relative'
+        )}
+        style={{ width: collapsed ? 64 : 240 }}
+      >
+        {/* ── Brand ── */}
+        <div className="flex items-center justify-between px-3 py-4 border-b" style={{ borderColor: 'var(--az-border)' }}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img
+              src="/azaman-logo.png"
+              alt="Azaman"
+              className="w-8 h-8 flex-shrink-0 rounded-lg object-contain"
+              style={{ filter: 'drop-shadow(0 0 6px rgba(0,217,126,0.3))' }}
+            />
+            <AnimatePresence initial={false}>
+              {(!collapsed || mobileOpen) && (
+                <motion.div
+                  key="brand-text"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.18 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-sm font-semibold leading-tight whitespace-nowrap" style={{ color: 'var(--az-text-primary)' }}>Azaman</p>
+                  <p className="text-[10px] font-medium tracking-widest uppercase leading-tight" style={{ color: 'var(--az-text-muted)' }}>Admin</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {!mobileOpen && (
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              className="az-btn az-btn-ghost p-1.5 rounded-lg"
+              aria-label="Toggle sidebar"
+            >
+              <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={spring.snappy}>
+                <ChevronRight className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
+              </motion.div>
+            </button>
           )}
-    </div>
+        </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-3 overflow-y-auto space-y-0.5">
-          {NAV.map(({ label, icon: Icon, to, badge }) => {
-            const active = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
-            const count = badge ? Number(badgeCounts[badge]) || 0 : 0;
-            return (
-              <Link
-                key={to}
-                to={to}
-                onClick={() => setMobileOpen(false)}
-                title={collapsed ? label : undefined}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 mx-2 rounded-xl transition-all duration-150 relative group text-sm',
-                  active
-                    ? 'bg-[var(--az-emerald)15] text-[var(--az-emerald)] font-semibold'
-                    : 'text-[var(--az-text-muted)] hover:bg-[var(--az-surface-2)] hover:text-[var(--az-text-secondary)]'
-                )}
-              >
-                <Icon className={cn('w-4 h-4 flex-shrink-0', active && 'text-[var(--az-emerald)]')} />
-                {!collapsed && <span className="flex-1">{label}</span>}
-                {/* Badge count — expanded sidebar */}
-                {!collapsed && count > 0 && (
-                  <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-[var(--az-red)] text-[var(--az-text-primary)] rounded-full">
-                    {count > 99 ? '99+' : count}
-                  </span>
-                )}
-                {/* Badge dot — collapsed sidebar */}
-                {collapsed && count > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--az-red)] rounded-full" />
-                )}
-                {/* Left accent bar */}
-                {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[var(--az-emerald)] rounded-r-full" />
-                )}
-                {/* Tooltip when collapsed */}
-                {collapsed && (
-                  <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-lg text-xs whitespace-nowrap text-[var(--az-text-primary)] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
-                    {label}
-    </div>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Collapse toggle */}
-        <div className="border-t border-[var(--az-border)] p-3">
+        {/* ── Search shortcut ── */}
+        <div className="px-3 py-2">
           <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-[var(--az-surface-2)] text-[var(--az-text-muted)] hover:text-[var(--az-text-secondary)] transition-colors"
+            onClick={() => setCmdOpen(true)}
+            className={cn(
+              'w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs transition-all duration-150',
+              collapsed && !mobileOpen ? 'justify-center' : ''
+            )}
+            style={{
+              background: 'var(--az-surface-3)',
+              border: '1px solid var(--az-border)',
+              color: 'var(--az-text-muted)',
+            }}
           >
-            {collapsed
-              ? <ChevronRight className="w-4 h-4" />
-              : <><ChevronLeft className="w-4 h-4" /><span className="text-xs">Collapse</span></>
-            }
+            <Search className="w-3.5 h-3.5 flex-shrink-0" />
+            <AnimatePresence initial={false}>
+              {(!collapsed || mobileOpen) && (
+                <motion.span
+                  key="search-text"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: 'auto' }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="overflow-hidden whitespace-nowrap flex-1 text-left"
+                >
+                  Search...
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <AnimatePresence>
+              {(!collapsed || mobileOpen) && (
+                <motion.kbd
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-[10px] px-1 py-0.5 rounded font-mono"
+                  style={{ background: 'var(--az-surface-5)' }}
+                >
+                  ⌘K
+                </motion.kbd>
+              )}
+            </AnimatePresence>
           </button>
-    </div>
-      </aside>
+        </div>
+
+        {/* ── Nav groups ── */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-1 space-y-0.5" style={{ scrollbarWidth: 'none' }}>
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label} className="mb-1">
+              <AnimatePresence initial={false}>
+                {(!collapsed || mobileOpen) && (
+                  <motion.p
+                    key={`label-${group.label}`}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="az-nav-section-label overflow-hidden"
+                  >
+                    {group.label}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+              {group.items.map((item) => {
+                const isActive = location.pathname === item.to ||
+                  (item.to !== '/' && location.pathname.startsWith(item.to));
+                const count = item.badge ? (badgeCounts[item.badge] ?? 0) : 0;
+
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    title={collapsed && !mobileOpen ? item.label : undefined}
+                    className={cn(
+                      'az-nav-item group relative',
+                      isActive && 'active',
+                    )}
+                  >
+                    <item.icon className={cn('w-4 h-4 flex-shrink-0')} />
+                    <AnimatePresence initial={false}>
+                      {(!collapsed || mobileOpen) && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: 'auto' }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.15 }}
+                          className="overflow-hidden whitespace-nowrap flex-1"
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    {(!collapsed || mobileOpen) && count > 0 && (
+                      <motion.span
+                        key={`badge-${item.to}`}
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={spring.bouncy ? { type: 'spring', stiffness: 500, damping: 20, mass: 0.8 } : { duration: 0.2 }}
+                        className="az-badge"
+                      >
+                        {count > 99 ? '99+' : count}
+                      </motion.span>
+                    )}
+                    {collapsed && !mobileOpen && count > 0 && (
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: 'var(--az-red)' }} />
+                    )}
+                    {collapsed && !mobileOpen && (
+                      <div className="absolute left-full ml-3 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl"
+                        style={{
+                          background: 'var(--az-surface-3)',
+                          border: '1px solid var(--az-border-bright)',
+                          color: 'var(--az-text-primary)',
+                        }}>
+                        {item.label}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="border-t px-3 py-2" style={{ borderColor: 'var(--az-border)' }}>
+          <button
+            onClick={() => setCollapsed(c => !c)}
+            className="w-full az-btn az-btn-ghost py-2 rounded-lg"
+          >
+            <AnimatePresence initial={false}>
+              {(!collapsed || mobileOpen) && (
+                <motion.span
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="text-xs"
+                >
+                  Collapse
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={spring.snappy}>
+              <ChevronRight className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
+            </motion.div>
+          </button>
+        </div>
+      </motion.aside>
 
       {/* ── Main area ───────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
 
-        {/* A-02: real-time critical-event alerts, above all content */}
         <AlertBanner />
 
         {/* Topbar */}
-        <header
-          className="h-16 border-b border-[var(--az-border)] flex items-center justify-between px-6 flex-shrink-0"
-          style={{ background: 'var(--az-surface)' }}
-        >
+        <header className="az-header" style={{ height: 'var(--header-height)' }}>
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2 rounded-xl hover:bg-[var(--az-surface-2)] text-[var(--az-text-secondary)] transition-colors"
+            className="md:hidden az-btn az-btn-ghost p-2 rounded-lg"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -193,88 +365,116 @@ export default function AdminLayout() {
           {/* Left: system status */}
           <div className="hidden md:flex items-center gap-2.5">
             <div className="relative">
-              <div className="w-2 h-2 rounded-full bg-[var(--az-emerald)]" />
-              <div className="absolute inset-0 w-2 h-2 rounded-full bg-[var(--az-emerald)] az-pulse" />
-    </div>
-            <span className="text-xs text-[var(--az-text-muted)] font-medium">System Online</span>
-    </div>
+              <div className="w-2 h-2 rounded-full" style={{ background: 'var(--az-emerald)' }} />
+              <div className="absolute inset-0 w-2 h-2 rounded-full az-pulse" style={{ background: 'var(--az-emerald)' }} />
+            </div>
+            <span className="text-xs font-medium" style={{ color: 'var(--az-text-muted)' }}>System Online</span>
+          </div>
 
-          {/* Right: rate + notifications + user */}
-          <div className="flex items-center gap-2">
+          {/* Right: theme + rate + notifications + user */}
+          <div className="flex items-center gap-2 ml-auto">
+            {/* Theme toggle */}
+            <AdminThemeToggle theme={theme} setTheme={setTheme} />
 
             {/* Command palette trigger */}
             <button
               onClick={() => setCmdOpen(true)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[var(--az-surface-2)] border border-[var(--az-border)] text-xs text-[var(--az-text-muted)] hover:text-[var(--az-text-secondary)] hover:border-[var(--az-border-bright)] transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors"
+              style={{
+                background: 'var(--az-surface-3)',
+                border: '1px solid var(--az-border)',
+                color: 'var(--az-text-muted)',
+              }}
               title="Command palette (⌘K)"
             >
-              <span>⌘K</span>
+              <Search className="w-3 h-3" />
+              <span className="hidden sm:inline">⌘K</span>
             </button>
 
-            {/* Live GHS/USD rate — Phase ADMIN-CONTROL-2 FIX B */}
+            {/* Live GHS/USD rate */}
             <div
-              className="flex items-center gap-2.5 bg-[var(--az-surface-2)] border border-[var(--az-border)] rounded-xl px-3 py-1.5 group relative cursor-default"
-              title={lastRateSync ? `Last synced: ${new Date(lastRateSync).toLocaleTimeString()}` : 'Rate from oracle'}
+              className="hidden sm:flex items-center gap-2.5 rounded-lg px-3 py-1.5 group relative cursor-default"
+              style={{
+                background: 'var(--az-surface-3)',
+                border: '1px solid var(--az-border)',
+              }}
+              title={lastSync ? `Last synced: ${new Date(lastSync).toLocaleTimeString()}` : 'Rate from oracle'}
             >
-              <Activity className="w-3 h-3 text-[var(--az-text-muted)]" />
-              <span className="text-xs text-[var(--az-text-muted)] az-mono">GHS/USD</span>
-              <span className="text-sm font-bold text-[var(--az-emerald)] az-mono">{rateDisplay}</span>
-              {/* Last-sync tooltip */}
+              <Activity className="w-3 h-3" style={{ color: 'var(--az-text-muted)' }} />
+              <span className="text-xs az-mono" style={{ color: 'var(--az-text-muted)' }}>GHS/USD</span>
+              <span className="text-sm font-bold az-mono" style={{ color: 'var(--az-emerald)' }}>{rateDisplay}</span>
               {rateAge && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-lg text-xs whitespace-nowrap text-[var(--az-text-secondary)] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl"
+                  style={{
+                    background: 'var(--az-surface-3)',
+                    border: '1px solid var(--az-border-bright)',
+                    color: 'var(--az-text-secondary)',
+                  }}>
                   Updated {rateAge}
-    </div>
+                </div>
               )}
-    </div>
+            </div>
 
-            {/* Bell — opens the notification center; badge = unread open items */}
+            {/* Bell */}
             <button
               onClick={() => setNotifOpen(true)}
-              className="relative p-2 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors"
+              className="relative az-btn az-btn-ghost p-2 rounded-lg"
               title="Notifications"
-              aria-label={notifications.unreadCount > 0 ? `Notifications, ${notifications.unreadCount} unread` : 'Notifications'}
+              aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
             >
-              <Bell className="w-4 h-4 text-[var(--az-text-muted)]" />
-              {notifications.unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-bold bg-[var(--az-red)] text-[var(--az-text-primary)] rounded-full">
-                  {notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="az-badge absolute -top-0.5 -right-0.5">
+                  {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
             </button>
 
             {/* User pill */}
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors border border-transparent hover:border-[var(--az-border)]">
-              <div className="w-6 h-6 rounded-lg bg-[var(--az-emerald)22] border border-[var(--az-emerald)40] flex items-center justify-center">
-                <span className="text-xs text-[var(--az-emerald)] font-bold">A</span>
-    </div>
-              {!collapsed && <span className="text-sm text-[var(--az-text-secondary)] font-medium">Admin</span>}
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors"
+              style={{ border: '1px solid transparent' }}>
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center"
+                style={{ background: 'var(--az-emerald-soft)', border: '1px solid var(--az-emerald-glow)' }}>
+                <span className="text-xs font-bold" style={{ color: 'var(--az-emerald)' }}>A</span>
+              </div>
+              <span className="text-sm font-medium hidden sm:inline" style={{ color: 'var(--az-text-secondary)' }}>Admin</span>
             </button>
 
             {/* Logout */}
             <button
-              onClick={() => { localStorage.removeItem('admin_token'); window.location.href = '/login'; }}
-              className="p-2 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors"
+              onClick={handleLogout}
+              className="az-btn az-btn-ghost p-2 rounded-lg"
               title="Sign out"
             >
-              <LogOut className="w-4 h-4 text-[var(--az-text-muted)] hover:text-[var(--az-red)] transition-colors" />
+              <LogOut className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
             </button>
-    </div>
+          </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: 'var(--az-black)' }}>
-          <Outlet />
+        {/* Page content with animated transitions */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: 'var(--az-bg)' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
 
-      {/* Notification center slide-over (driven by the topbar bell) */}
+      {/* Notification center slide-over */}
       <NotificationCenter
         open={notifOpen}
         onOpenChange={setNotifOpen}
         notifications={notifications}
       />
 
-      {/* Command palette (⌘K / Ctrl+K) */}
+      {/* Command palette */}
       <CommandPalette open={cmdOpen} onOpenChange={setCmdOpen} />
     </div>
   );
