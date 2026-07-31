@@ -91,7 +91,7 @@ export default function AdminLayout() {
 
       <aside className={cn(
         'flex flex-col border-r transition-all duration-300 flex-shrink-0',
-        'border-[#1e1e2e]',
+        'border-[var(--az-border)]',
         collapsed ? 'w-16' : 'w-60',
         // Mobile: slide-in drawer
         'fixed md:fixed inset-y-0 left-0 z-50 md:z-auto',
@@ -100,14 +100,14 @@ export default function AdminLayout() {
       )} style={{ background: 'var(--az-surface)' }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 h-16 border-b border-[#1e1e2e]">
-          <div className="w-8 h-8 rounded-xl bg-[#00d97e22] border border-[#00d97e40] flex items-center justify-center flex-shrink-0 az-glow-emerald">
-            <Shield className="w-4 h-4 text-[#00d97e]" />
+        <div className="flex items-center gap-3 px-4 h-16 border-b border-[var(--az-border)]">
+          <div className="w-8 h-8 rounded-xl bg-[var(--az-emerald)22] border border-[var(--az-emerald)40] flex items-center justify-center flex-shrink-0 az-glow-emerald">
+            <Shield className="w-4 h-4 text-[var(--az-emerald)]" />
     </div>
           {!collapsed && (
             <div>
-              <p className="text-sm font-bold text-[#e8e8f0] leading-none tracking-tight">AZAMAN</p>
-              <p className="text-xs text-[#00d97e] mt-0.5 font-medium">Control Center</p>
+              <p className="text-sm font-bold text-[var(--az-text-primary)] leading-none tracking-tight">AZAMAN</p>
+              <p className="text-xs text-[var(--az-emerald)] mt-0.5 font-medium">Control Center</p>
     </div>
           )}
     </div>
@@ -126,29 +126,29 @@ export default function AdminLayout() {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 mx-2 rounded-xl transition-all duration-150 relative group text-sm',
                   active
-                    ? 'bg-[#00d97e15] text-[#00d97e] font-semibold'
-                    : 'text-[#4a4a6a] hover:bg-[#13131e] hover:text-[#7b7b9a]'
+                    ? 'bg-[var(--az-emerald)15] text-[var(--az-emerald)] font-semibold'
+                    : 'text-[var(--az-text-muted)] hover:bg-[var(--az-surface-2)] hover:text-[var(--az-text-secondary)]'
                 )}
               >
-                <Icon className={cn('w-4 h-4 flex-shrink-0', active && 'text-[#00d97e]')} />
+                <Icon className={cn('w-4 h-4 flex-shrink-0', active && 'text-[var(--az-emerald)]')} />
                 {!collapsed && <span className="flex-1">{label}</span>}
                 {/* Badge count — expanded sidebar */}
                 {!collapsed && count > 0 && (
-                  <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-[#f43f5e] text-white rounded-full">
+                  <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-[var(--az-red)] text-[var(--az-text-primary)] rounded-full">
                     {count > 99 ? '99+' : count}
                   </span>
                 )}
                 {/* Badge dot — collapsed sidebar */}
                 {collapsed && count > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#f43f5e] rounded-full" />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[var(--az-red)] rounded-full" />
                 )}
                 {/* Left accent bar */}
                 {active && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#00d97e] rounded-r-full" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[var(--az-emerald)] rounded-r-full" />
                 )}
                 {/* Tooltip when collapsed */}
                 {collapsed && (
-                  <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[#13131e] border border-[#2a2a3e] rounded-lg text-xs whitespace-nowrap text-[#e8e8f0] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
+                  <div className="absolute left-full ml-3 px-2.5 py-1.5 bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-lg text-xs whitespace-nowrap text-[var(--az-text-primary)] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
                     {label}
     </div>
                 )}
@@ -158,10 +158,10 @@ export default function AdminLayout() {
         </nav>
 
         {/* Collapse toggle */}
-        <div className="border-t border-[#1e1e2e] p-3">
+        <div className="border-t border-[var(--az-border)] p-3">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-[#13131e] text-[#4a4a6a] hover:text-[#7b7b9a] transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-2 rounded-xl hover:bg-[var(--az-surface-2)] text-[var(--az-text-muted)] hover:text-[var(--az-text-secondary)] transition-colors"
           >
             {collapsed
               ? <ChevronRight className="w-4 h-4" />
@@ -179,13 +179,13 @@ export default function AdminLayout() {
 
         {/* Topbar */}
         <header
-          className="h-16 border-b border-[#1e1e2e] flex items-center justify-between px-6 flex-shrink-0"
+          className="h-16 border-b border-[var(--az-border)] flex items-center justify-between px-6 flex-shrink-0"
           style={{ background: 'var(--az-surface)' }}
         >
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden p-2 rounded-xl hover:bg-[#13131e] text-[#7b7b9a] transition-colors"
+            className="md:hidden p-2 rounded-xl hover:bg-[var(--az-surface-2)] text-[var(--az-text-secondary)] transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -193,10 +193,10 @@ export default function AdminLayout() {
           {/* Left: system status */}
           <div className="hidden md:flex items-center gap-2.5">
             <div className="relative">
-              <div className="w-2 h-2 rounded-full bg-[#00d97e]" />
-              <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#00d97e] az-pulse" />
+              <div className="w-2 h-2 rounded-full bg-[var(--az-emerald)]" />
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-[var(--az-emerald)] az-pulse" />
     </div>
-            <span className="text-xs text-[#4a4a6a] font-medium">System Online</span>
+            <span className="text-xs text-[var(--az-text-muted)] font-medium">System Online</span>
     </div>
 
           {/* Right: rate + notifications + user */}
@@ -205,7 +205,7 @@ export default function AdminLayout() {
             {/* Command palette trigger */}
             <button
               onClick={() => setCmdOpen(true)}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#13131e] border border-[#1e1e2e] text-xs text-[#4a4a6a] hover:text-[#7b7b9a] hover:border-[#2a2a3e] transition-colors"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[var(--az-surface-2)] border border-[var(--az-border)] text-xs text-[var(--az-text-muted)] hover:text-[var(--az-text-secondary)] hover:border-[var(--az-border-bright)] transition-colors"
               title="Command palette (⌘K)"
             >
               <span>⌘K</span>
@@ -213,15 +213,15 @@ export default function AdminLayout() {
 
             {/* Live GHS/USD rate — Phase ADMIN-CONTROL-2 FIX B */}
             <div
-              className="flex items-center gap-2.5 bg-[#13131e] border border-[#1e1e2e] rounded-xl px-3 py-1.5 group relative cursor-default"
+              className="flex items-center gap-2.5 bg-[var(--az-surface-2)] border border-[var(--az-border)] rounded-xl px-3 py-1.5 group relative cursor-default"
               title={lastRateSync ? `Last synced: ${new Date(lastRateSync).toLocaleTimeString()}` : 'Rate from oracle'}
             >
-              <Activity className="w-3 h-3 text-[#4a4a6a]" />
-              <span className="text-xs text-[#4a4a6a] az-mono">GHS/USD</span>
-              <span className="text-sm font-bold text-[#00d97e] az-mono">{rateDisplay}</span>
+              <Activity className="w-3 h-3 text-[var(--az-text-muted)]" />
+              <span className="text-xs text-[var(--az-text-muted)] az-mono">GHS/USD</span>
+              <span className="text-sm font-bold text-[var(--az-emerald)] az-mono">{rateDisplay}</span>
               {/* Last-sync tooltip */}
               {rateAge && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-[#13131e] border border-[#2a2a3e] rounded-lg text-xs whitespace-nowrap text-[#7b7b9a] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2.5 py-1.5 bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-lg text-xs whitespace-nowrap text-[var(--az-text-secondary)] opacity-0 group-hover:opacity-100 pointer-events-none z-50 shadow-xl">
                   Updated {rateAge}
     </div>
               )}
@@ -230,33 +230,33 @@ export default function AdminLayout() {
             {/* Bell — opens the notification center; badge = unread open items */}
             <button
               onClick={() => setNotifOpen(true)}
-              className="relative p-2 rounded-xl hover:bg-[#13131e] transition-colors"
+              className="relative p-2 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors"
               title="Notifications"
               aria-label={notifications.unreadCount > 0 ? `Notifications, ${notifications.unreadCount} unread` : 'Notifications'}
             >
-              <Bell className="w-4 h-4 text-[#4a4a6a]" />
+              <Bell className="w-4 h-4 text-[var(--az-text-muted)]" />
               {notifications.unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-bold bg-[#f43f5e] text-white rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 flex items-center justify-center text-[9px] font-bold bg-[var(--az-red)] text-[var(--az-text-primary)] rounded-full">
                   {notifications.unreadCount > 99 ? '99+' : notifications.unreadCount}
                 </span>
               )}
             </button>
 
             {/* User pill */}
-            <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-[#13131e] transition-colors border border-transparent hover:border-[#1e1e2e]">
-              <div className="w-6 h-6 rounded-lg bg-[#00d97e22] border border-[#00d97e40] flex items-center justify-center">
-                <span className="text-xs text-[#00d97e] font-bold">A</span>
+            <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors border border-transparent hover:border-[var(--az-border)]">
+              <div className="w-6 h-6 rounded-lg bg-[var(--az-emerald)22] border border-[var(--az-emerald)40] flex items-center justify-center">
+                <span className="text-xs text-[var(--az-emerald)] font-bold">A</span>
     </div>
-              {!collapsed && <span className="text-sm text-[#7b7b9a] font-medium">Admin</span>}
+              {!collapsed && <span className="text-sm text-[var(--az-text-secondary)] font-medium">Admin</span>}
             </button>
 
             {/* Logout */}
             <button
               onClick={() => { localStorage.removeItem('admin_token'); window.location.href = '/login'; }}
-              className="p-2 rounded-xl hover:bg-[#13131e] transition-colors"
+              className="p-2 rounded-xl hover:bg-[var(--az-surface-2)] transition-colors"
               title="Sign out"
             >
-              <LogOut className="w-4 h-4 text-[#4a4a6a] hover:text-[#f43f5e] transition-colors" />
+              <LogOut className="w-4 h-4 text-[var(--az-text-muted)] hover:text-[var(--az-red)] transition-colors" />
             </button>
     </div>
         </header>

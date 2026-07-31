@@ -16,10 +16,10 @@ const RULINGS = [
 ];
 
 const DISPUTE_STATUS_STYLE = {
-  PENDING:      'bg-[#f43f5e22] text-[#f43f5e] border-[#f43f5e40]',
-  ASSIGNED:     'bg-[#f59e0b22] text-[#f59e0b] border-[#f59e0b40]',
-  UNDER_REVIEW: 'bg-[#f59e0b22] text-[#f59e0b] border-[#f59e0b40]',
-  RESOLVED:     'bg-[#00d97e22] text-[#00d97e] border-[#00d97e40]',
+  PENDING:      'bg-[var(--az-red)22] text-[var(--az-red)] border-[var(--az-red)40]',
+  ASSIGNED:     'bg-[var(--az-amber)22] text-[var(--az-amber)] border-[var(--az-amber)40]',
+  UNDER_REVIEW: 'bg-[var(--az-amber)22] text-[var(--az-amber)] border-[var(--az-amber)40]',
+  RESOLVED:     'bg-[var(--az-emerald)22] text-[var(--az-emerald)] border-[var(--az-emerald)40]',
 };
 
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
@@ -34,28 +34,28 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 animate-fade-in">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#f59e0b22] flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-[#f59e0b]" />
+          <div className="w-10 h-10 rounded-xl bg-[var(--az-amber)22] flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-[var(--az-amber)]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[#f59e0b]">⚠ Extreme Ruling</h2>
-            <p className="text-xs text-[#7b7b9a] mt-0.5">This split is outside the normal 5–95% range</p>
+            <h2 className="text-base font-bold text-[var(--az-amber)]">⚠ Extreme Ruling</h2>
+            <p className="text-xs text-[var(--az-text-secondary)] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
-        <div className="bg-[#0f0f17] border border-[#2a2a3e] rounded-xl p-4 space-y-2">
+        <div className="bg-[var(--az-surface-1)] border border-[var(--az-border-bright)] rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[#7b7b9a]">Payer (Buyer) receives</span>
-            <span className="font-bold text-[#e8e8f0] az-mono">{payerPct}%</span>
+            <span className="text-[var(--az-text-secondary)]">Payer (Buyer) receives</span>
+            <span className="font-bold text-[var(--az-text-primary)] az-mono">{payerPct}%</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[#7b7b9a]">Payee (Seller) receives</span>
-            <span className="font-bold text-[#e8e8f0] az-mono">{payeePct}%</span>
+            <span className="text-[var(--az-text-secondary)]">Payee (Seller) receives</span>
+            <span className="font-bold text-[var(--az-text-primary)] az-mono">{payeePct}%</span>
           </div>
         </div>
-        <p className="text-sm text-[#7b7b9a] leading-relaxed">This is an unusual split. Are you absolutely certain?</p>
+        <p className="text-sm text-[var(--az-text-secondary)] leading-relaxed">This is an unusual split. Are you absolutely certain?</p>
         <div className="flex gap-3 pt-1">
-          <Button variant="ghost" className="flex-1 border border-[#2a2a3e] text-[#7b7b9a] hover:text-[#e8e8f0] hover:bg-[#1e1e2e]" onClick={onCancel}>Cancel</Button>
-          <Button className="flex-1 border border-[#f43f5e] bg-transparent text-[#f43f5e] hover:bg-[#f43f5e15] font-semibold" onClick={onConfirm}>
+          <Button variant="ghost" className="flex-1 border border-[var(--az-border-bright)] text-[var(--az-text-secondary)] hover:text-[var(--az-text-primary)] hover:bg-[var(--az-border)]" onClick={onCancel}>Cancel</Button>
+          <Button className="flex-1 border border-[var(--az-red)] bg-transparent text-[var(--az-red)] hover:bg-[var(--az-red)15] font-semibold" onClick={onConfirm}>
             <ShieldAlert className="w-4 h-4 mr-2" /> Confirm Extreme Ruling
           </Button>
         </div>
@@ -105,70 +105,70 @@ function EscrowDisputeCard({ dispute }) {
 
       <div className="az-card overflow-hidden transition-all duration-200">
         {/* Collapsed header */}
-        <div className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[#0f0f17] transition-colors" onClick={() => setExpanded(!expanded)}>
+        <div className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[var(--az-surface-1)] transition-colors" onClick={() => setExpanded(!expanded)}>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs az-mono text-[#7b7b9a] truncate">#{String(dispute.escrowId).slice(0, 8)}</span>
-              <Badge className={`text-xs border font-medium ${DISPUTE_STATUS_STYLE[dispute.status] || 'bg-[#1e1e2e] text-[#7b7b9a] border-[#2a2a3e]'}`}>{dispute.status}</Badge>
-              <span className="text-sm font-bold text-[#e8e8f0]">{usdc(amount)}</span>
+              <span className="text-xs az-mono text-[var(--az-text-secondary)] truncate">#{String(dispute.escrowId).slice(0, 8)}</span>
+              <Badge className={`text-xs border font-medium ${DISPUTE_STATUS_STYLE[dispute.status] || 'bg-[var(--az-border)] text-[var(--az-text-secondary)] border-[var(--az-border-bright)]'}`}>{dispute.status}</Badge>
+              <span className="text-sm font-bold text-[var(--az-text-primary)]">{usdc(amount)}</span>
             </div>
-            <div className="flex items-center gap-2 mt-2 text-xs text-[#4a4a6a]">
-              <span className="text-[#7b7b9a]">{e.payer?.username || '—'}</span>
+            <div className="flex items-center gap-2 mt-2 text-xs text-[var(--az-text-muted)]">
+              <span className="text-[var(--az-text-secondary)]">{e.payer?.username || '—'}</span>
               <ArrowRight className="w-3 h-3" />
-              <span className="text-[#7b7b9a]">{e.payee?.username || '—'}</span>
+              <span className="text-[var(--az-text-secondary)]">{e.payee?.username || '—'}</span>
             </div>
           </div>
-          <span className="text-xs text-[#4a4a6a] flex-shrink-0 mt-1">{expanded ? '▲ Collapse' : '▼ Review'}</span>
+          <span className="text-xs text-[var(--az-text-muted)] flex-shrink-0 mt-1">{expanded ? '▲ Collapse' : '▼ Review'}</span>
         </div>
 
         {expanded && (
-          <div className="border-t border-[#1e1e2e] p-4 space-y-4">
+          <div className="border-t border-[var(--az-border)] p-4 space-y-4">
             {/* Escrow details */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-[#0f0f17] border border-[#1e1e2e] rounded-xl p-3">
-                <p className="text-[#4a4a6a]">Amount</p>
-                <p className="text-[#e8e8f0] font-bold az-mono mt-0.5">{usdc(amount)}</p>
+              <div className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-xl p-3">
+                <p className="text-[var(--az-text-muted)]">Amount</p>
+                <p className="text-[var(--az-text-primary)] font-bold az-mono mt-0.5">{usdc(amount)}</p>
               </div>
-              <div className="bg-[#0f0f17] border border-[#1e1e2e] rounded-xl p-3">
-                <p className="text-[#4a4a6a]">Fee</p>
-                <p className="text-[#e8e8f0] font-bold az-mono mt-0.5">{usdc(e.feeUsdc)}</p>
+              <div className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-xl p-3">
+                <p className="text-[var(--az-text-muted)]">Fee</p>
+                <p className="text-[var(--az-text-primary)] font-bold az-mono mt-0.5">{usdc(e.feeUsdc)}</p>
               </div>
-              <div className="bg-[#0f0f17] border border-[#1e1e2e] rounded-xl p-3">
-                <p className="text-[#4a4a6a]">Payer (Buyer)</p>
-                <p className="text-[#e8e8f0] mt-0.5">{e.payer?.username || '—'}</p>
+              <div className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-xl p-3">
+                <p className="text-[var(--az-text-muted)]">Payer (Buyer)</p>
+                <p className="text-[var(--az-text-primary)] mt-0.5">{e.payer?.username || '—'}</p>
               </div>
-              <div className="bg-[#0f0f17] border border-[#1e1e2e] rounded-xl p-3">
-                <p className="text-[#4a4a6a]">Payee (Seller)</p>
-                <p className="text-[#e8e8f0] mt-0.5">{e.payee?.username || '—'}</p>
+              <div className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-xl p-3">
+                <p className="text-[var(--az-text-muted)]">Payee (Seller)</p>
+                <p className="text-[var(--az-text-primary)] mt-0.5">{e.payee?.username || '—'}</p>
               </div>
             </div>
 
-            <div className="text-xs text-[#4a4a6a] space-y-1">
-              <p>Funded: <span className="text-[#7b7b9a]">{e.fundedAt ? new Date(e.fundedAt).toLocaleString() : '—'}</span></p>
-              <p>Raised: <span className="text-[#7b7b9a]">{dispute.createdAt ? new Date(dispute.createdAt).toLocaleString() : '—'}</span> by <span className="text-[#7b7b9a]">{dispute.raisedBy?.username || '—'}</span></p>
-              {e.ticket?.id && <p>Ticket: <span className="text-[#4f8ef7] az-mono">{e.ticket.name || e.ticket.id}</span></p>}
+            <div className="text-xs text-[var(--az-text-muted)] space-y-1">
+              <p>Funded: <span className="text-[var(--az-text-secondary)]">{e.fundedAt ? new Date(e.fundedAt).toLocaleString() : '—'}</span></p>
+              <p>Raised: <span className="text-[var(--az-text-secondary)]">{dispute.createdAt ? new Date(dispute.createdAt).toLocaleString() : '—'}</span> by <span className="text-[var(--az-text-secondary)]">{dispute.raisedBy?.username || '—'}</span></p>
+              {e.ticket?.id && <p>Ticket: <span className="text-[var(--az-blue)] az-mono">{e.ticket.name || e.ticket.id}</span></p>}
             </div>
 
             {/* Dispute reason */}
-            <div className="bg-[#0f0f17] border border-[#1e1e2e] rounded-xl p-3">
-              <p className="text-xs text-[#4a4a6a] mb-1">Dispute reason</p>
-              <p className="text-sm text-[#e8e8f0]">{dispute.reason || '—'}</p>
+            <div className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-xl p-3">
+              <p className="text-xs text-[var(--az-text-muted)] mb-1">Dispute reason</p>
+              <p className="text-sm text-[var(--az-text-primary)]">{dispute.reason || '—'}</p>
             </div>
 
             {isResolved ? (
-              <div className="bg-[#00d97e10] border border-[#00d97e30] rounded-xl p-3 space-y-1">
-                <p className="text-xs text-[#00d97e] font-semibold flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Resolved — {dispute.ruling}</p>
-                {dispute.ruling === 'SPLIT' && <p className="text-xs text-[#7b7b9a]">Payer {num(dispute.payerPct)}% · Payee {num(dispute.payeePct)}%</p>}
-                {dispute.rulingNotes && <p className="text-xs text-[#7b7b9a]">{dispute.rulingNotes}</p>}
+              <div className="bg-[var(--az-emerald)10] border border-[var(--az-emerald)30] rounded-xl p-3 space-y-1">
+                <p className="text-xs text-[var(--az-emerald)] font-semibold flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Resolved — {dispute.ruling}</p>
+                {dispute.ruling === 'SPLIT' && <p className="text-xs text-[var(--az-text-secondary)]">Payer {num(dispute.payerPct)}% · Payee {num(dispute.payeePct)}%</p>}
+                {dispute.rulingNotes && <p className="text-xs text-[var(--az-text-secondary)]">{dispute.rulingNotes}</p>}
               </div>
             ) : (<>
               {/* Ruling selector */}
               <div>
-                <p className="text-xs font-semibold text-[#4a4a6a] uppercase tracking-wider mb-2 flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Ruling</p>
+                <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2 flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Ruling</p>
                 <div className="grid grid-cols-3 gap-2">
                   {RULINGS.map((r) => (
                     <button key={r.value} onClick={() => setRuling(r.value)}
-                            className={`text-left p-3 rounded-xl border transition-all ${ruling === r.value ? `${r.active} ${r.color}` : 'border-[#1e1e2e] text-[#4a4a6a] hover:border-[#2a2a3e] hover:text-[#7b7b9a]'}`}>
+                            className={`text-left p-3 rounded-xl border transition-all ${ruling === r.value ? `${r.active} ${r.color}` : 'border-[var(--az-border)] text-[var(--az-text-muted)] hover:border-[var(--az-border-bright)] hover:text-[var(--az-text-secondary)]'}`}>
                       <p className="text-xs font-semibold">{r.label}</p>
                       <p className="text-[10px] mt-0.5 opacity-80">{r.desc}</p>
                     </button>
@@ -181,29 +181,29 @@ function EscrowDisputeCard({ dispute }) {
                 <div className="space-y-2">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-[#7b7b9a] block mb-1">Payer %</label>
+                      <label className="text-xs text-[var(--az-text-secondary)] block mb-1">Payer %</label>
                       <Input type="number" min={0} max={100} value={payerPct}
                              onChange={(ev) => setPayerPct(Math.min(100, Math.max(0, parseInt(ev.target.value, 10) || 0)))}
-                             className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] az-mono" />
+                             className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] az-mono" />
                     </div>
                     <div>
-                      <label className="text-xs text-[#7b7b9a] block mb-1">Payee %</label>
+                      <label className="text-xs text-[var(--az-text-secondary)] block mb-1">Payee %</label>
                       <Input type="number" value={payeePct} readOnly
-                             className="bg-[#0a0a0f] border-[#2a2a3e] text-[#7b7b9a] az-mono" />
+                             className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-secondary)] az-mono" />
                     </div>
                   </div>
                   <div className="flex rounded-lg overflow-hidden h-2">
-                    <div className="bg-[#4f8ef7] transition-all" style={{ width: `${Math.min(100, Math.max(0, parseInt(payerPct, 10) || 0))}%` }} />
-                    <div className="flex-1 bg-[#00d97e]" />
+                    <div className="bg-[var(--az-blue)] transition-all" style={{ width: `${Math.min(100, Math.max(0, parseInt(payerPct, 10) || 0))}%` }} />
+                    <div className="flex-1 bg-[var(--az-emerald)]" />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[#4f8ef7]">Payer gets {usdc(amount * ((parseInt(payerPct, 10) || 0) / 100))}</span>
-                    <span className="text-[#00d97e]">Payee gets {usdc(amount * (payeePct / 100))}</span>
+                    <span className="text-[var(--az-blue)]">Payer gets {usdc(amount * ((parseInt(payerPct, 10) || 0) / 100))}</span>
+                    <span className="text-[var(--az-emerald)]">Payee gets {usdc(amount * (payeePct / 100))}</span>
                   </div>
                   {(parseInt(payerPct, 10) < 5 || parseInt(payerPct, 10) > 95) && (
-                    <div className="flex items-center gap-2 bg-[#f59e0b15] border border-[#f59e0b40] rounded-xl px-3 py-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-[#f59e0b] flex-shrink-0" />
-                      <span className="text-xs text-[#f59e0b]">Extreme ruling — will require confirmation</span>
+                    <div className="flex items-center gap-2 bg-[var(--az-amber)15] border border-[var(--az-amber)40] rounded-xl px-3 py-2">
+                      <AlertTriangle className="w-3.5 h-3.5 text-[var(--az-amber)] flex-shrink-0" />
+                      <span className="text-xs text-[var(--az-amber)]">Extreme ruling — will require confirmation</span>
                     </div>
                   )}
                 </div>
@@ -211,10 +211,10 @@ function EscrowDisputeCard({ dispute }) {
 
               <Textarea value={notes} onChange={(ev) => setNotes(ev.target.value)}
                         placeholder="Ruling notes (recorded in audit log)..."
-                        className="bg-[#0a0a0f] border-[#2a2a3e] text-[#e8e8f0] text-xs resize-none placeholder:text-[#4a4a6a]" rows={2} />
+                        className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-xs resize-none placeholder:text-[var(--az-text-muted)]" rows={2} />
 
               <Button onClick={() => submit(false)} disabled={!ruling || !notes.trim() || resolveMutation.isPending}
-                      className="w-full bg-[#00d97e] hover:bg-[#00bf6f] text-[#0a0a0f] font-semibold text-sm disabled:opacity-40">
+                      className="w-full bg-[var(--az-emerald)] hover:bg-[#00bf6f] text-[var(--az-bg)] font-semibold text-sm disabled:opacity-40">
                 <DollarSign className="w-3.5 h-3.5 mr-2" />
                 {resolveMutation.isPending ? 'Issuing…' : 'Issue Ruling'}
               </Button>
@@ -245,12 +245,12 @@ export default function EscrowDisputes() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 bg-[#f43f5e22] rounded-xl flex items-center justify-center az-glow-red">
-          <Lock className="w-4 h-4 text-[#f43f5e]" />
+        <div className="w-9 h-9 bg-[var(--az-red)22] rounded-xl flex items-center justify-center az-glow-red">
+          <Lock className="w-4 h-4 text-[var(--az-red)]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[#e8e8f0]">Escrow Dispute Queue</h1>
-          <p className="text-xs text-[#4a4a6a]"><span className="text-[#f43f5e] font-semibold">{openDisputes.length}</span> open disputes</p>
+          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Escrow Dispute Queue</h1>
+          <p className="text-xs text-[var(--az-text-muted)]"><span className="text-[var(--az-red)] font-semibold">{openDisputes.length}</span> open disputes</p>
         </div>
       </div>
 
@@ -266,16 +266,16 @@ export default function EscrowDisputes() {
 
       {/* List */}
       <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-[#4a4a6a] uppercase tracking-widest">Disputes</h2>
+        <h2 className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-widest">Disputes</h2>
         {isLoading && <div className="space-y-3">{[1, 2].map((i) => <div key={i} className="az-card h-20 az-shimmer" />)}</div>}
         {disputes.map((d) => <EscrowDisputeCard key={d.id} dispute={d} />)}
         {!isLoading && disputes.length === 0 && (
           <div className="text-center py-12 az-card">
-            <div className="w-10 h-10 bg-[#00d97e22] rounded-xl flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-5 h-5 text-[#00d97e]" />
+            <div className="w-10 h-10 bg-[var(--az-emerald)22] rounded-xl flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-5 h-5 text-[var(--az-emerald)]" />
             </div>
-            <p className="text-sm font-medium text-[#7b7b9a]">No escrow disputes</p>
-            <p className="text-xs text-[#4a4a6a] mt-1">All escrows are healthy ✓</p>
+            <p className="text-sm font-medium text-[var(--az-text-secondary)]">No escrow disputes</p>
+            <p className="text-xs text-[var(--az-text-muted)] mt-1">All escrows are healthy ✓</p>
           </div>
         )}
       </div>

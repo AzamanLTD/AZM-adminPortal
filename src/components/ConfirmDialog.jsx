@@ -29,7 +29,7 @@ export default function ConfirmDialog({
 
   const confirmColorClass =
     variant === 'destructive'
-      ? 'bg-red-600 hover:bg-red-500 text-white'
+      ? 'bg-red-600 hover:bg-red-500 text-[var(--az-text-primary)]'
       : 'bg-az-border-bright hover:bg-az-border text-az-text-primary';
 
   return (
@@ -51,7 +51,7 @@ export default function ConfirmDialog({
         <div className="flex gap-3">
           <Button
             variant="ghost"
-            className="flex-1 border border-az-border text-az-text-secondary hover:text-white hover:bg-az-card"
+            className="flex-1 border border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-card"
             onClick={onCancel}
           >
             Cancel

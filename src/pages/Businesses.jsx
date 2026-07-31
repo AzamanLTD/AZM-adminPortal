@@ -30,26 +30,26 @@ function BusinessDetailDialog({ bizId, onClose }) {
 
   return (
     <Dialog open={!!bizId} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-lg bg-[#13131e] border-[#2a2a3e] text-[#e8e8f0]">
+      <DialogContent className="max-w-lg bg-[var(--az-surface-2)] border-[var(--az-border-bright)] text-[var(--az-text-primary)]">
         <DialogHeader>
-          <DialogTitle className="text-[#e8e8f0]">Business Details</DialogTitle>
+          <DialogTitle className="text-[var(--az-text-primary)]">Business Details</DialogTitle>
         </DialogHeader>
         {isLoading ? (
-          <p className="text-sm text-[#7b7b9a] py-6 text-center">Loading…</p>
+          <p className="text-sm text-[var(--az-text-secondary)] py-6 text-center">Loading…</p>
         ) : !biz ? (
-          <p className="text-sm text-[#4a4a6a] py-6 text-center">Business not found</p>
+          <p className="text-sm text-[var(--az-text-muted)] py-6 text-center">Business not found</p>
         ) : (
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-3">
               {biz.logoUrl
                 ? <img src={biz.logoUrl} alt={biz.businessName} className="w-12 h-12 rounded-xl object-cover" />
-                : <div className="w-12 h-12 rounded-xl bg-[#1e1e2e] flex items-center justify-center"><Building2 className="w-5 h-5 text-[#4a4a6a]" /></div>}
+                : <div className="w-12 h-12 rounded-xl bg-[var(--az-border)] flex items-center justify-center"><Building2 className="w-5 h-5 text-[var(--az-text-muted)]" /></div>}
               <div>
-                <p className="font-bold text-[#e8e8f0]">{biz.businessName}</p>
-                <p className="text-xs text-[#4a4a6a] az-mono">{biz.bizId}</p>
+                <p className="font-bold text-[var(--az-text-primary)]">{biz.businessName}</p>
+                <p className="text-xs text-[var(--az-text-muted)] az-mono">{biz.bizId}</p>
               </div>
             </div>
-            {biz.description && <p className="text-xs text-[#7b7b9a]">{biz.description}</p>}
+            {biz.description && <p className="text-xs text-[var(--az-text-secondary)]">{biz.description}</p>}
             <div className="grid grid-cols-2 gap-2 text-xs">
               {[
                 ['Category', biz.category],
@@ -61,9 +61,9 @@ function BusinessDetailDialog({ bizId, onClose }) {
                 ['Total Volume', `${num(biz.totalVolume).toLocaleString()} USDC`],
                 ['Rating', num(biz.averageRating).toFixed(2)],
               ].map(([k, v]) => (
-                <div key={k} className="bg-[#0f0f17] border border-[#1e1e2e] rounded-lg p-2.5">
-                  <p className="text-[#4a4a6a]">{k}</p>
-                  <p className="text-[#e8e8f0] mt-0.5 truncate">{v}</p>
+                <div key={k} className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-lg p-2.5">
+                  <p className="text-[var(--az-text-muted)]">{k}</p>
+                  <p className="text-[var(--az-text-primary)] mt-0.5 truncate">{v}</p>
                 </div>
               ))}
             </div>
@@ -217,16 +217,16 @@ export default function Businesses() {
 
       {/* Suspend confirmation */}
       <Dialog open={!!suspendTarget} onOpenChange={(o) => { if (!o) { setSuspendTarget(null); setSuspendReason(''); } }}>
-        <DialogContent className="max-w-md bg-[#13131e] border-[#2a2a3e] text-[#e8e8f0]">
+        <DialogContent className="max-w-md bg-[var(--az-surface-2)] border-[var(--az-border-bright)] text-[var(--az-text-primary)]">
           <DialogHeader>
-            <DialogTitle className="text-[#e8e8f0]">Suspend {suspendTarget?.businessName}</DialogTitle>
+            <DialogTitle className="text-[var(--az-text-primary)]">Suspend {suspendTarget?.businessName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-[#7b7b9a]">This hides the business from new activity until unsuspended. Provide a reason.</p>
+            <p className="text-sm text-[var(--az-text-secondary)]">This hides the business from new activity until unsuspended. Provide a reason.</p>
             <Textarea placeholder="Reason for suspension (required)…" value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)}
-                      className="bg-[#0a0a12] border-[#2a2a3e] text-[#e8e8f0] text-sm" />
+                      className="bg-[#0a0a12] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-sm" />
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => { setSuspendTarget(null); setSuspendReason(''); }} className="text-[#7b7b9a]">Cancel</Button>
+              <Button variant="ghost" onClick={() => { setSuspendTarget(null); setSuspendReason(''); }} className="text-[var(--az-text-secondary)]">Cancel</Button>
               <Button onClick={() => suspendMutation.mutate({ bizId: suspendTarget.bizId, reason: suspendReason })}
                       disabled={!suspendReason.trim() || suspendMutation.isPending}
                       className="bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)]">

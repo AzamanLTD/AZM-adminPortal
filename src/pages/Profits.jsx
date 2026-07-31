@@ -7,7 +7,7 @@ import { TrendingUp, DollarSign, Hash } from 'lucide-react';
 const SOURCE_COLORS = {
   P2P_MARGIN: '#10b981',
   EXIT_FEE: '#6366f1',
-  GAS_FEE_REVENUE: '#f59e0b',
+  GAS_FEE_REVENUE: 'var(--az-amber)',
   ARBITRAGE_SPREAD: '#ec4899',
 };
 

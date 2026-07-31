@@ -45,7 +45,7 @@ function StatTile({ label, value, icon: Icon, color }) {
         {Icon && <Icon className={`w-3.5 h-3.5 ${color || 'text-az-text-muted'}`} />}
         <span className="text-[10px] uppercase tracking-wide text-az-text-muted">{label}</span>
       </div>
-      <p className="text-sm font-semibold text-white">{value}</p>
+      <p className="text-sm font-semibold text-[var(--az-text-primary)]">{value}</p>
     </div>
   );
 }
@@ -54,7 +54,7 @@ function ListRow({ left, right, status, statusColor }) {
   return (
     <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-az-card/30 transition-colors">
       <div className="min-w-0 flex-1">
-        <p className="text-sm text-white truncate">{left}</p>
+        <p className="text-sm text-[var(--az-text-primary)] truncate">{left}</p>
       </div>
       <div className="flex items-center gap-2 ml-2 shrink-0">
         {right && <span className="text-xs text-az-text-secondary font-mono">{right}</span>}
@@ -83,7 +83,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
 
   const avatar = user.profilePictureUrl
     ? <img src={user.profilePictureUrl} alt="" className="w-full h-full rounded-full object-cover" />
-    : <div className="w-full h-full rounded-full bg-az-border flex items-center justify-center text-xl font-bold text-white">{(user.username || '?')[0]?.toUpperCase()}</div>;
+    : <div className="w-full h-full rounded-full bg-az-border flex items-center justify-center text-xl font-bold text-[var(--az-text-primary)]">{(user.username || '?')[0]?.toUpperCase()}</div>;
 
   const online = user.isOnline;
 
@@ -102,7 +102,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
                 {online && <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-az-surface" />}
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">{user.displayName || user.username}</h2>
+                <h2 className="text-lg font-bold text-[var(--az-text-primary)]">{user.displayName || user.username}</h2>
                 <div className="flex items-center gap-2 mt-0.5">
                   {user.azamanId && <span className="text-xs text-az-text-muted font-mono">{user.azamanId}</span>}
                   <Badge className={`${KYC_COLORS[user.kycStatus] || KYC_COLORS.NONE} border-0 text-[10px]`}>{user.kycStatus || 'NONE'}</Badge>
@@ -110,13 +110,13 @@ export default function UserDetailDrawer({ userId, onClose }) {
                 </div>
               </div>
             </div>
-            <button onClick={onClose} className="text-az-text-muted hover:text-white p-1 rounded-lg hover:bg-az-card/50">
+            <button onClick={onClose} className="text-az-text-muted hover:text-[var(--az-text-primary)] p-1 rounded-lg hover:bg-az-card/50">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="flex gap-2 mt-3 flex-wrap">
-            <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-white h-7 text-xs">
+            <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] h-7 text-xs">
               <Mail className="w-3 h-3 mr-1" /> {user.email}
             </Button>
             {user.phoneNumber && (
@@ -144,7 +144,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
               key={t.id}
               onClick={() => setTab(t.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                tab === t.id ? 'bg-az-border text-white' : 'text-az-text-secondary hover:text-white'
+                tab === t.id ? 'bg-az-border text-[var(--az-text-primary)]' : 'text-az-text-secondary hover:text-[var(--az-text-primary)]'
               }`}
             >
               {t.label}
@@ -268,7 +268,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
                       <div key={tx.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-az-card/30 transition-colors">
                         <div className="flex items-center gap-2 min-w-0">
                           <Icon className="w-3.5 h-3.5 text-az-text-muted shrink-0" />
-                          <span className="text-sm text-white truncate">{tx.type.replace(/_/g, ' ')}</span>
+                          <span className="text-sm text-[var(--az-text-primary)] truncate">{tx.type.replace(/_/g, ' ')}</span>
                         </div>
                         <div className="flex items-center gap-2 ml-2 shrink-0">
                           <span className="text-xs text-az-text-secondary font-mono">{fmtUSD(tx.amountUsdc)}</span>
@@ -296,11 +296,11 @@ export default function UserDetailDrawer({ userId, onClose }) {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">Strikes</span>
-                    <span className={`text-sm font-bold ${user.strikeCount > 2 ? 'text-red-400' : 'text-white'}`}>{user.strikeCount || 0}</span>
+                    <span className={`text-sm font-bold ${user.strikeCount > 2 ? 'text-red-400' : 'text-[var(--az-text-primary)]'}`}>{user.strikeCount || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">Cancellation Abuse</span>
-                    <span className={`text-sm font-bold ${user.cancellationAbuseCount > 3 ? 'text-amber-400' : 'text-white'}`}>{user.cancellationAbuseCount || 0}</span>
+                    <span className={`text-sm font-bold ${user.cancellationAbuseCount > 3 ? 'text-amber-400' : 'text-[var(--az-text-primary)]'}`}>{user.cancellationAbuseCount || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">Completion Rate</span>
@@ -323,7 +323,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
                   {disputes.map(d => (
                     <div key={d.id} className="bg-az-card rounded-lg p-3">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-white">Dispute #{d.id} (Trade #{d.tradeId})</span>
+                        <span className="text-sm text-[var(--az-text-primary)]">Dispute #{d.id} (Trade #{d.tradeId})</span>
                         <Badge className={`${d.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'} border-0 text-[10px]`}>
                           {d.status}
                         </Badge>
@@ -341,15 +341,15 @@ export default function UserDetailDrawer({ userId, onClose }) {
                 <div className="bg-az-card rounded-xl p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">Legal Name</span>
-                    <span className="text-sm text-white">{user.legalName || 'Not provided'}</span>
+                    <span className="text-sm text-[var(--az-text-primary)]">{user.legalName || 'Not provided'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">ID Type</span>
-                    <span className="text-sm text-white">{user.idType || '—'}</span>
+                    <span className="text-sm text-[var(--az-text-primary)]">{user.idType || '—'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">ID Number</span>
-                    <span className="text-sm text-white font-mono">{user.idNumber ? `****${user.idNumber.slice(-4)}` : '—'}</span>
+                    <span className="text-sm text-[var(--az-text-primary)] font-mono">{user.idNumber ? `****${user.idNumber.slice(-4)}` : '—'}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-az-text-secondary">Phone Verified</span>
@@ -363,11 +363,11 @@ export default function UserDetailDrawer({ userId, onClose }) {
               <div>
                 <h3 className="text-xs uppercase tracking-wide text-az-text-muted mb-2">Quick Actions</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-white h-8 text-xs"
+                  <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] h-8 text-xs"
                     onClick={() => { navigator.clipboard?.writeText(String(user.id)); toast.success('User ID copied'); }}>
                     Copy User ID
                   </Button>
-                  <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-white h-8 text-xs"
+                  <Button size="sm" variant="outline" className="border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] h-8 text-xs"
                     onClick={() => { navigator.clipboard?.writeText(user.azamanId || ''); toast.success('Azaman ID copied'); }}>
                     Copy Azaman ID
                   </Button>
@@ -383,7 +383,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
                 {actions.map(a => (
                   <div key={a.id} className="bg-az-card rounded-lg p-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-white">{a.action.replace(/_/g, ' ')}</span>
+                      <span className="text-sm font-medium text-[var(--az-text-primary)]">{a.action.replace(/_/g, ' ')}</span>
                       <span className="text-[10px] text-az-text-muted">{timeAgo(a.createdAt)}</span>
                     </div>
                     <p className="text-xs text-az-text-secondary mt-1">By {a.adminName}</p>

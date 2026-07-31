@@ -58,7 +58,7 @@ export default function ActionDialog({
 
   const confirmColorClass =
     variant === 'destructive'
-      ? 'bg-red-600 hover:bg-red-500 text-white'
+      ? 'bg-red-600 hover:bg-red-500 text-[var(--az-text-primary)]'
       : 'bg-az-border-bright hover:bg-az-border text-az-text-primary';
 
   return (
@@ -81,14 +81,14 @@ export default function ActionDialog({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={placeholder}
-              className="bg-az-black border-az-border text-white min-h-[80px]"
+              className="bg-az-black border-az-border text-[var(--az-text-primary)] min-h-[80px]"
               autoFocus
             />
           ) : inputType === 'select' ? (
             <select
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="w-full bg-az-black border border-az-border rounded-lg px-3 py-2 text-sm text-white"
+              className="w-full bg-az-black border border-az-border rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]"
               autoFocus
             >
               <option value="">Select…</option>
@@ -101,7 +101,7 @@ export default function ActionDialog({
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={placeholder}
-              className="bg-az-black border-az-border text-white"
+              className="bg-az-black border-az-border text-[var(--az-text-primary)]"
               autoFocus
               onKeyDown={(e) => { if (e.key === 'Enter' && value.trim()) handleConfirm(); }}
             />
@@ -111,7 +111,7 @@ export default function ActionDialog({
         <div className="flex gap-3">
           <Button
             variant="ghost"
-            className="flex-1 border border-az-border text-az-text-secondary hover:text-white hover:bg-az-card"
+            className="flex-1 border border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-card"
             onClick={handleCancel}
           >
             Cancel

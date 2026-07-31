@@ -30,9 +30,9 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-7 h-7 text-white" />
+            <Shield className="w-7 h-7 text-[var(--az-text-primary)]" />
           </div>
-          <h1 className="text-xl font-bold text-white">Azaman Admin</h1>
+          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Azaman Admin</h1>
           <p className="text-sm text-az-text-secondary mt-1">Control Center Access</p>
         </div>
 
@@ -53,7 +53,7 @@ export default function Login() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="admin@azaman.app"
               required
-              className="bg-az-surface border-az-border text-white placeholder:text-az-text-muted"
+              className="bg-az-surface border-az-border text-[var(--az-text-primary)] placeholder:text-az-text-muted"
             />
           </div>
 
@@ -66,7 +66,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="bg-az-surface border-az-border text-white placeholder:text-az-text-muted pr-10"
+                className="bg-az-surface border-az-border text-[var(--az-text-primary)] placeholder:text-az-text-muted pr-10"
               />
               <button
                 type="button"
@@ -81,7 +81,7 @@ export default function Login() {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-[var(--az-text-primary)] font-medium"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
