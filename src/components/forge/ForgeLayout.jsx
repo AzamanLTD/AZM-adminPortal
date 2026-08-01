@@ -3,40 +3,28 @@ import { useMemo } from 'react';
 import { Shell, CommandPalette, TooltipProvider, ToastProvider as ForgeToast } from '@/components/forge';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
-import { useAuth } from '@/lib/AuthContext';
-import { usePermission } from '@/hooks/usePermission';
-import { useBizNotifications } from '@/hooks/useBizNotifications';
+import { useStats } from '@/lib/useAdminData';
+import { useAdminNotifications } from '@/lib/useAdminNotifications';
 
 export function ForgeLayout() {
-  const { bizProfile, isOwner, user } = useAuth();
-  const { hasPermission } = usePermission();
-  const { data: notifData } = useBizNotifications();
+  const { data: stats = {} } = useStats();
 
   const navProps = useMemo(() => ({
-    businessType: bizProfile?.business_type || 'GENERAL',
-    hasPermission,
-    isOwner,
     counts: {
-      notifications: notifData?.unreadCount,
-      reservationsPending: notifData?.reservationsPending,
-      ordersOpen: notifData?.ordersOpen,
-      arrivalsToday: notifData?.arrivalsToday,
-      roomsDirty: notifData?.roomsDirty,
-      ticketsOpen: notifData?.ticketsOpen,
-      tripsToday: notifData?.tripsToday,
-      payoutsPending: notifData?.payoutsPending,
-      disputes: notifData?.disputes,
-      timeOffPending: notifData?.timeOffPending,
-      kybAction: notifData?.kybAction,
+      disputes:        stats.activeDisputes    || 0,
+      escrow_disputes: stats.disputedEscrows   || 0,
+      kyc:             stats.pendingKyc        || 0,
+      withdrawals:     stats.pendingWithdrawals || 0,
+      biz_kyb:         stats.pendingBusinessKyb || 0,
     },
-  }), [bizProfile, hasPermission, isOwner, notifData]);
+  }), [stats]);
 
   return (
     <ThemeProvider>
       <CommandProvider>
         <TooltipProvider>
           <ForgeToast>
-            <Shell navProps={navProps}>
+            <Shell navProps={navProps} brandName="Azaman Admin" brandShort="AZ">
               <Outlet />
             </Shell>
             <CommandPalette navProps={navProps} />

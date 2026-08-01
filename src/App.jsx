@@ -4,7 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import AdminLayout from '@/components/admin/Layout';
+import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Login from '@/pages/Login';
 
@@ -64,7 +64,7 @@ const AuthenticatedApp = () => {
 
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      <Route element={<ForgeLayout />}>
         <Route path="/" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
         <Route path="/profits" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Profits /></Suspense></ErrorBoundary>} />
         <Route path="/pools" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Pools /></Suspense></ErrorBoundary>} />
