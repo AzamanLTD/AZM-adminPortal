@@ -1,10 +1,37 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { usePrefetch } from '@/lib/prefetch';
+import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Menu, Search, Bell, Sun, Moon, ChevronDown,
 } from 'lucide-react';
 import { resolveNav } from '@/lib/nav';
+
+// Route → primary query key for hover prefetch
+const ROUTE_QUERIES = {
+  '/':              ['admin', 'stats'],
+  '/war-room':      ['admin', 'disputes'],
+  '/escrow-disputes': ['admin', 'escrow_disputes'],
+  '/business-kyb':  ['admin', 'kyb'],
+  '/users':         ['admin', 'users'],
+  '/residency-queue': ['admin', 'residency'],
+  '/notifications': ['admin', 'notifications'],
+  '/profits':       ['admin', 'profits'],
+  '/withdrawals':   ['admin', 'withdrawals'],
+  '/pools':         ['admin', 'pools'],
+  '/fee-engine':    ['admin', 'fee-engine'],
+  '/fee-profiles':  ['admin', 'fee-profiles'],
+  '/susu':          ['admin', 'susu-groups'],
+  '/susu-incidents': ['admin', 'susu-incidents'],
+  '/businesses':    ['admin', 'businesses'],
+  '/storefronts':   ['admin', 'storefronts'],
+  '/ai-ops':        ['admin', 'ai-ops'],
+  '/qr-forge':      ['admin', 'qr-forge'],
+  '/audit-log':     ['admin', 'audit-log'],
+  '/config':        ['admin', 'config'],
+};
+
 import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
@@ -16,6 +43,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const nav = useMemo(() => resolveNav(navProps), [navProps]);
+  const qc = useQueryClient();
 
   // Close mobile drawer on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);

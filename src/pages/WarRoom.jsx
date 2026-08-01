@@ -191,25 +191,59 @@ function DisputeCard({ dispute, allDisputes }) {
 
   const forceRelease = useMutation({
     mutationFn: ({ id, reason }) => api.trades.forceRelease(id, reason),
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
+      const prev = qc.getQueryData(['admin', 'disputes']);
+      qc.setQueryData(['admin', 'disputes'], old => {
+        if (!Array.isArray(old)) return old;
+        return old.map(d => d.id === id ? { ...d, status: 'released', dispute_status: 'resolved' } : d);
+      });
+      return { prev };
+    },
     onSuccess: () => { toast.success('Escrow released to buyer'); qc.invalidateQueries({ queryKey: ['admin', 'disputes'] }); },
-    onError: (e) => toast.error(e.message || 'Force release failed'),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
+      toast.error(e.message || 'Force release failed');
+    },
   });
 
   const forceCancel = useMutation({
     mutationFn: ({ id, reason }) => api.trades.forceCancel(id, reason),
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
+      const prev = qc.getQueryData(['admin', 'disputes']);
+      qc.setQueryData(['admin', 'disputes'], old => {
+        if (!Array.isArray(old)) return old;
+        return old.map(d => d.id === id ? { ...d, status: 'cancelled', dispute_status: 'resolved' } : d);
+      });
+      return { prev };
+    },
     onSuccess: () => { toast.success('Trade cancelled, escrow returned to vendor'); qc.invalidateQueries({ queryKey: ['admin', 'disputes'] }); },
-    onError: (e) => toast.error(e.message || 'Force cancel failed'),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
+      toast.error(e.message || 'Force cancel failed');
+    },
   });
 
   const resolve = useMutation({
     mutationFn: ({ id, ruling, reason, buyerPercent, override }) =>
       api.trades.resolve(id, ruling, reason, buyerPercent, override),
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
+      const prev = qc.getQueryData(['admin', 'disputes']);
+      qc.setQueryData(['admin', 'disputes'], old => {
+        if (!Array.isArray(old)) return old;
+        return old.map(d => d.id === id ? { ...d, dispute_status: 'resolved' } : d);
+      });
+      return { prev };
+    },
     onSuccess: () => {
       toast.success('Dispute resolved');
       setExtremeRulingPending(null);
       qc.invalidateQueries({ queryKey: ['admin', 'disputes'] });
     },
-    onError: (err) => {
+    onError: (err, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
       const data = err?.response?.data || err?.data || {};
       if (data.code === 'EXTREME_RULING_REQUIRES_OVERRIDE') {
         setExtremeRulingPending({ tradeId: dispute.id, ruling, reason, buyerPercent: parseInt(buyerPct) });

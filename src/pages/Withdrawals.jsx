@@ -266,23 +266,47 @@ export default function Withdrawals() {
 
   const approve = useMutation({
     mutationFn: (id) => api.withdrawals.approve(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
+      const prev = qc.getQueryData(['admin', 'withdrawals']);
+      qc.setQueryData(['admin', 'withdrawals'], old => {
+        if (!Array.isArray(old)) return old;
+        return old.map(w => w.id === id ? { ...w, status: 'approved' } : w);
+      });
+      return { prev };
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
       toast.success('Withdrawal approved');
       setDetailTarget(null);
     },
-    onError: (e) => toast.error(e.message || 'Failed to approve withdrawal'),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['admin', 'withdrawals'], ctx.prev);
+      toast.error(e.message || 'Failed to approve withdrawal');
+    },
   });
 
   const reject = useMutation({
     mutationFn: ({ id, reason }) => api.withdrawals.reject(id, reason),
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
+      const prev = qc.getQueryData(['admin', 'withdrawals']);
+      qc.setQueryData(['admin', 'withdrawals'], old => {
+        if (!Array.isArray(old)) return old;
+        return old.map(w => w.id === id ? { ...w, status: 'rejected' } : w);
+      });
+      return { prev };
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
       toast.success('Withdrawal rejected');
       setRejectTarget(null);
       setDetailTarget(null);
     },
-    onError: (e) => toast.error(e.message || 'Failed to reject withdrawal'),
+    onError: (e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(['admin', 'withdrawals'], ctx.prev);
+      toast.error(e.message || 'Failed to reject withdrawal');
+    },
   });
 
   // Compute risk scores for all withdrawals
