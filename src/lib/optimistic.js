@@ -1,3 +1,5 @@
+// src/lib/optimistic.js
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { notify } from '@/components/forge/toast';
 
@@ -8,7 +10,7 @@ import { notify } from '@/components/forge/toast';
  */
 export function useOptimistic({
   queryKey, mutationFn, apply, entityId,
-  successMessage, undoFn, errorMessage = 'That didn\'t save',
+  successMessage, undoFn, errorMessage = "That didn't save",
 }) {
   const qc = useQueryClient();
   return useMutation({
@@ -31,4 +33,15 @@ export function useOptimistic({
     },
     onSettled: () => qc.invalidateQueries({ queryKey }),
   });
+}
+
+/** Pending indicators. Never show one before 400ms. */
+export function useDelayedFlag(active, delay = 400) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    if (!active) { setShow(false); return; }
+    const t = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(t);
+  }, [active, delay]);
+  return show;
 }
