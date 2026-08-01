@@ -120,7 +120,7 @@ export default function FeeProfiles() {
 
       {/* Form modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 f-scrim flex items-center justify-center p-4">
           <div className="bg-[var(--f-surface-raised)] border border-line rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-base font-bold text-[var(--f-text)] mb-4">{editing ? 'Edit Fee Profile' : 'New Fee Profile'}</h2>
             <form onSubmit={submit} className="space-y-4">

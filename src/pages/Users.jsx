@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useDeferredValue, useEffect } from 'react';
 import UserDetailDrawer from '@/components/UserDetailDrawer';
 import { useSearchParams } from 'react-router-dom';
 import { useUsers } from '@/lib/useAdminData';
@@ -62,11 +62,19 @@ function KYCPanel({ userId }) {
 export default function Users() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
   const [searchParams] = useSearchParams();
+
+  // Debounce network search at 350ms
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(deferredSearch), 350);
+    return () => clearTimeout(t);
+  }, [deferredSearch]);
   const VALID_TABS = ['users', 'kyc', 'vendors', 'trade-accounts'];
   const initialTab = VALID_TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'users';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const { data = {}, isLoading } = useUsers(page, search);
+  const { data = {}, isLoading } = useUsers(page, debouncedSearch);
   const { users = [], total = 0 } = data;
   const qc = useQueryClient();
 

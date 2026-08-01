@@ -11,7 +11,7 @@ import { useSequence } from '@/lib/keys';
 import { Tag } from './Tag';
 import { cn } from '@/lib/utils';
 
-export function Shell({ children, navProps, brandName = 'Azaman', brandShort = 'AZ' }) {
+export function Shell({ children, navProps, brandName = 'Azaman', brandShort = 'AZ', user, onLogout, onNavigateSettings }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -154,7 +154,7 @@ function Topbar({ onMenuClick, onCollapseToggle, collapsed, brandName }) {
           <Bell className="h-4 w-4" />
           <span className="f-dot f-dot--warn" aria-hidden />
         </button>
-        <UserMenu />
+        <ProfileMenu user={user} onLogout={onLogout} onNavigateSettings={onNavigateSettings} />
       </div>
     </header>
   );
@@ -179,39 +179,7 @@ function Breadcrumb() {
 }
 
 function UserMenu() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const on = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', on);
-    return () => document.removeEventListener('mousedown', on);
-  }, []);
-  return (
-    <div className="relative" ref={ref}>
-      <button className="f-avatar-btn" onClick={() => setOpen(o => !o)}>
-        <div className="f-avatar f-avatar--sm">A</div>
-        <ChevronDown className="h-3 w-3 text-ink-3" />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div className="f-pop f-pop--right"
-            initial={{ opacity:0, scale:0.97, y:-4 }} animate={{ opacity:1, scale:1, y:0 }}
-            exit={{ opacity:0, scale:0.98, y:-2 }}
-            transition={{ duration:0.12, ease:[0.16,1,0.3,1] }}>
-            <div className="f-pop__group">
-              <div className="px-3 py-2">
-                <div className="text-sm font-medium text-ink">Account</div>
-                <div className="text-xs text-ink-3">Signed in</div>
-              </div>
-            </div>
-            <div className="f-pop__group">
-              <button className="f-pop__item">Profile</button>
-              <button className="f-pop__item">Settings</button>
-              <button className="f-pop__item f-pop__item--danger">Sign out</button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+  // Portal-specific auth wired in App.jsx via ForgeLayout props
+  // Falls back to placeholder if no auth passed
+  return null;
 }

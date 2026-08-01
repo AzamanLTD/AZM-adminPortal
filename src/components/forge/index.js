@@ -26,3 +26,5 @@ export { Empty } from './EmptyState';
 export { Progress } from './Progress';
 export { Avatar } from './Avatar';
 export { Tabs } from './Tabs';
+export { ProfileMenu } from "./ProfileMenu";
+export { SlaTimer } from "./SlaTimer";

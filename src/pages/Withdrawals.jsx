@@ -105,7 +105,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 f-scrim" />
       <div
         className="relative w-full max-w-md h-full bg-[var(--f-surface-raised)] border-l border-line overflow-y-auto"
         onClick={e => e.stopPropagation()}
@@ -588,7 +588,7 @@ export default function Withdrawals() {
       {/* Batch confirm dialog */}
       {showBatchConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowBatchConfirm(false)} />
+          <div className="absolute inset-0 f-scrim" onClick={() => setShowBatchConfirm(false)} />
           <div className="relative bg-[var(--f-surface-raised)] border border-line rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-lg bg-[var(--f-ok-bg)] border border-[var(--f-ok)] flex items-center justify-center flex-shrink-0">

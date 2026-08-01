@@ -142,7 +142,7 @@ export default function CommandPalette({ open, onOpenChange }) {
       onClick={() => onOpenChange(false)}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 f-scrim" />
 
       {/* Panel */}
       <div

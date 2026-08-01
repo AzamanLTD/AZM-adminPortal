@@ -1,3 +1,5 @@
+import { getSLA, detectPatterns } from "@/lib/disputes";
+import { SlaTimer } from "@/components/forge/SlaTimer";
 import { useState, useMemo, useEffect } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -19,107 +21,7 @@ const RULINGS = [
   { value: 'SPLIT',       label: 'Split Funds', color: 'text-[var(--f-warn)]', active: 'border-[var(--f-warn)] bg-[var(--f-warn)10]' },
 ];
 
-/* ── SLA Timer ───────────────────────────────────────────────────────────── */
-function getSLA(createdAt) {
-  if (!createdAt) return { hours: 0, level: 'normal', label: '—' };
-  const diff = Date.now() - new Date(createdAt).getTime();
-  const hours = diff / 36e5;
-  let level, label;
-  if (hours < 1) {
-    level = 'normal'; label = `${Math.floor(diff / 60000)}m`;
-  } else if (hours < 4) {
-    level = 'warning'; label = `${hours.toFixed(1)}h`;
-  } else {
-    level = 'critical'; label = `${Math.floor(hours)}h`;
-  }
-  return { hours, level, label };
-}
 
-const SLA_STYLES = {
-  normal: { badge: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)] border-[var(--f-ok)]', dot: 'bg-ok' },
-  warning: { badge: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)] border-[var(--f-warn-bg)]', dot: 'bg-amber-400' },
-  critical: { badge: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-[var(--f-bad)]', dot: 'bg-red-400' },
-};
-
-function SLATimer({ createdAt }) {
-  const [, setTick] = useState(0);
-  // Re-render every 30s to keep the timer fresh
-  useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const sla = getSLA(createdAt);
-  const style = SLA_STYLES[sla.level];
-
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-xs font-medium ${style.badge}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${style.dot} ${sla.level === 'critical' ? 'animate-pulse' : ''}`} />
-      <Clock className="w-3 h-3" />
-      {sla.label}
-    </span>
-  );
-}
-
-/* ── Dispute pattern detection ────────────────────────────────────────────── */
-function detectPatterns(allDisputes, currentDispute) {
-  const patterns = [];
-
-  // Get the user/vendor IDs for the current dispute
-  const buyerId = currentDispute.user?.id || currentDispute.buyer?.id;
-  const vendorId = currentDispute.vendor?.id;
-  const buyerName = currentDispute.user?.username || currentDispute.buyer?.name || 'Buyer';
-  const vendorName = currentDispute.vendor?.username || currentDispute.vendor?.name || 'Vendor';
-
-  // Count how many other active disputes involve the same buyer or vendor
-  const sameBuyer = allDisputes.filter(d => d.id !== currentDispute.id && (d.user?.id || d.buyer?.id) === buyerId);
-  const sameVendor = allDisputes.filter(d => d.id !== currentDispute.id && d.vendor?.id === vendorId);
-
-  if (sameBuyer.length >= 2) {
-    patterns.push({
-      type: 'buyer_repeat',
-      level: 'high',
-      label: `${buyerName} has ${sameBuyer.length} other active disputes`,
-      icon: Users,
-    });
-  } else if (sameBuyer.length === 1) {
-    patterns.push({
-      type: 'buyer_repeat',
-      level: 'medium',
-      label: `${buyerName} has 1 other active dispute`,
-      icon: Users,
-    });
-  }
-
-  if (sameVendor.length >= 2) {
-    patterns.push({
-      type: 'vendor_repeat',
-      level: 'high',
-      label: `${vendorName} has ${sameVendor.length} other active disputes`,
-      icon: Users,
-    });
-  } else if (sameVendor.length === 1) {
-    patterns.push({
-      type: 'vendor_repeat',
-      level: 'medium',
-      label: `${vendorName} has 1 other active dispute`,
-      icon: Users,
-    });
-  }
-
-  // High-value dispute flag
-  const amount = Number(currentDispute.amount) || 0;
-  if (amount >= 5000) {
-    patterns.push({
-      type: 'high_value',
-      level: 'warning',
-      label: 'High-value dispute ($5K+)',
-      icon: Flame,
-    });
-  }
-
-  return patterns;
-}
 
 // ── Extreme Ruling Confirmation Modal ────────────────────────────────────────
 function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
@@ -130,16 +32,16 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-bg/70 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 ">
+      <div className="relative az-card  w-full max-w-md mx-4 p-6 space-y-5 ">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--f-warn)22] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-warn-bg flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-[var(--f-warn)]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[var(--f-warn)]">⚠ Extreme Ruling</h2>
+            <h2 className="text-base font-bold text-[var(--f-warn)]">Extreme Ruling</h2>
             <p className="text-xs text-[var(--f-text-2)] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
@@ -186,7 +88,7 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
+      <div className="absolute inset-0 bg-bg/70 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative az-card w-full max-w-md mx-4 p-6 space-y-4 ">
         <h2 className="text-base font-bold text-[var(--f-text)]">{title}</h2>
         <Textarea
@@ -387,7 +289,7 @@ function DisputeCard({ dispute, allDisputes }) {
                 {dispute.paymentMethod}
               </span>
               {/* SLA Timer */}
-              <SLATimer createdAt={dispute.createdAt} />
+              <SlaTimer createdAt={dispute.createdAt} />
             </div>
             <div className="flex gap-4 mt-2 text-xs text-[var(--f-text-3)]">
               <span>Buyer: <span className="text-[var(--f-text-2)]">{buyerName}</span></span>
@@ -637,7 +539,7 @@ export default function WarRoom() {
 
   const statusColors = {
     PAID:            'bg-[var(--f-ok)22] text-[var(--f-ok)] border-[var(--f-ok)40]',
-    PENDING_PAYMENT: 'bg-[var(--f-warn)22] text-[var(--f-warn)] border-[var(--f-warn)40]',
+    PENDING_PAYMENT: 'bg-warn-bg text-[var(--f-warn)] border-[var(--f-warn)40]',
     DISPUTED:        'bg-[var(--f-bad)22] text-[var(--f-bad)] border-[var(--f-bad)40]',
     COMPLETED:       'bg-[var(--f-info)22] text-[var(--f-info)] border-[var(--f-info)40]',
   };

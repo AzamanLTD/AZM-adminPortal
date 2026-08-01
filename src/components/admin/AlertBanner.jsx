@@ -20,7 +20,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io } from 'socket.io-client';
-import { X } from 'lucide-react';
+import { X, AlertOctagon, AlertTriangle, Bell, Info } from 'lucide-react';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://azm-backend.onrender.com';
 const MAX_ALERTS = 5;
@@ -28,10 +28,10 @@ const AUTO_DISMISS_MS = 30_000;
 
 // Severity → strip styling + where a click should take the operator.
 const SEVERITY_STYLE = {
-  CRITICAL: { bg: 'rgba(244,63,94,0.13)', border: 'var(--f-bad)', text: 'var(--f-bad)', emoji: '🚨' },
-  HIGH:     { bg: 'rgba(245,158,11,0.13)', border: 'var(--f-warn)', text: 'var(--f-warn)', emoji: '⚠️' },
-  MEDIUM:   { bg: 'rgba(79,142,247,0.13)', border: 'var(--f-info)', text: 'var(--f-info)', emoji: '🔔' },
-  LOW:      { bg: 'rgba(0,217,126,0.13)', border: 'var(--f-ok)', text: 'var(--f-ok)', emoji: 'ℹ️' },
+  CRITICAL: { bg: 'var(--f-bad-bg)', border: 'var(--f-bad)', text: 'var(--f-bad)', Icon: AlertOctagon },
+  HIGH:     { bg: 'var(--f-warn-bg)', border: 'var(--f-warn)', text: 'var(--f-warn)', Icon: AlertTriangle },
+  MEDIUM:   { bg: 'var(--f-info-bg)', border: 'var(--f-info)', text: 'var(--f-info)', Icon: Bell },
+  LOW:      { bg: 'var(--f-ok-bg)', border: 'var(--f-ok)', text: 'var(--f-ok)', Icon: Info },
 };
 
 // Map an alert to the most relevant admin page.
@@ -52,7 +52,7 @@ function routeForAlert(alert) {
     case 'SUSU_DEFAULTED':
       return '/susu';
     case 'ADMIN_LOGIN_NEW_LOCATION':
-      return '/settings';
+      return '/config';
     default:
       return null;
   }
@@ -225,7 +225,7 @@ export default function AlertBanner() {
               initial={{ opacity: 0, y: -20, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.95 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              transition={spring.toast}
               onClick={() => route && navigate(route)}
               className="flex items-center justify-between px-6 py-2.5 border-b text-sm pointer-events-auto"
               style={{
@@ -233,11 +233,11 @@ export default function AlertBanner() {
                 borderColor: s.border,
                 color: s.text,
                 cursor: route ? 'pointer' : 'default',
-                backdropFilter: 'blur(8px)',
+                
               }}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="flex-shrink-0 text-base">{s.emoji}</span>
+                <s.Icon className="w-4 h-4 flex-shrink-0" />
                 <span
                   className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide flex-shrink-0"
                   style={{ background: s.border, color: 'var(--f-bg)' }}
@@ -246,7 +246,7 @@ export default function AlertBanner() {
                 </span>
                 <span className="font-semibold flex-shrink-0">{a.title}</span>
                 {a.message && a.message !== a.title && (
-                  <span className="text-[#b8b8c8] truncate">— {a.message}</span>
+                  <span className="text-ink-3 truncate">— {a.message}</span>
                 )}
               </div>
               <button
@@ -254,7 +254,7 @@ export default function AlertBanner() {
                   e.stopPropagation();
                   dismiss(a._id);
                 }}
-                className="p-1 rounded hover:bg-black/20 flex-shrink-0 transition-colors"
+                className="p-1 rounded hover:bg-surface-sunken flex-shrink-0 transition-colors"
                 title="Dismiss"
               >
                 <X className="w-3.5 h-3.5" />

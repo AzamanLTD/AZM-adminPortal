@@ -89,7 +89,7 @@ export default function UserDetailDrawer({ userId, onClose }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
+      <div className="fixed inset-0 f-scrim z-40" onClick={onClose} />
       <div className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-surface border-l border-line z-50 overflow-y-auto flex flex-col">
         {/* Header */}
         <div className="sticky top-0 bg-surface border-b border-line px-6 py-4 z-10">

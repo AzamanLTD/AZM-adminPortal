@@ -34,7 +34,7 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
+      <div className="absolute inset-0 f-scrim" onClick={onCancel} />
       <div className="relative bg-surface border border-line rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
         <div className="flex items-start gap-3">
           {variant === 'destructive' && (

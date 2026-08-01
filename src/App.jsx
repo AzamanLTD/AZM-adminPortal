@@ -1,4 +1,3 @@
-import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -33,8 +32,14 @@ const Storefronts = lazy(() => import('@/pages/Storefronts'));
 // Lightweight loading fallback for lazy routes
 function RouteLoader() {
   return (
-    <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="w-6 h-6 border-3 border-line border-t-emerald-400 rounded-full animate-spin" />
+    <div className="p-6 space-y-4">
+      <div className="h-7 w-48 rounded-md bg-surface-sunken animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[0,1,2,3].map(i => (
+          <div key={i} className="h-24 rounded-lg bg-surface-sunken animate-pulse" />
+        ))}
+      </div>
+      <div className="h-64 rounded-lg bg-surface-sunken animate-pulse" />
     </div>
   );
 }
@@ -46,8 +51,8 @@ const AuthenticatedApp = () => {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-line border-t-emerald-400 rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm text-ink-2 mt-4">Verifying credentials...</p>
+          <div className="h-8 w-8 rounded-md bg-surface-sunken animate-pulse mx-auto" />
+          <p className="text-sm text-ink-3 mt-4">Verifying credentials</p>
         </div>
       </div>
     );
@@ -99,7 +104,6 @@ function App() {
         <Router>
           <AuthenticatedApp />
         </Router>
-        <Toaster richColors position="top-right" />
       </QueryClientProvider>
     </AuthProvider>
   )

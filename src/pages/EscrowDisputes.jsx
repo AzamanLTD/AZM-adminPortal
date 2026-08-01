@@ -31,7 +31,7 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
   const { payerPct, payeePct } = pending;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
+      <div className="absolute inset-0 f-scrim" onClick={onCancel} />
       <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 ">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-[var(--f-warn)22] flex items-center justify-center flex-shrink-0">
