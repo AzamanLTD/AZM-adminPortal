@@ -66,11 +66,11 @@ function ChartTooltip({ active, payload, label }) {
         background: 'var(--az-surface-3)',
         border: '1px solid var(--az-border-bright)',
       }}>
-      <p className="font-medium" style={{ color: 'var(--az-text-muted)' }}>{label}</p>
+      <p className="font-medium" style={{ color: 'var(--f-text-3)' }}>{label}</p>
       {payload.map((entry, i) => (
         <p key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full inline-block" style={{ background: entry.color || entry.fill }} />
-          <span style={{ color: 'var(--az-text-secondary)' }}>{entry.name}:</span>
+          <span style={{ color: 'var(--f-text-2)' }}>{entry.name}:</span>
           <span className="font-bold" style={{ color: 'var(--az-text-primary)' }}>{fmtUSD(entry.value)}</span>
         </p>
       ))}
@@ -80,10 +80,10 @@ function ChartTooltip({ active, payload, label }) {
 
 function QuickAction({ icon: Icon, label, onClick, color = 'blue' }) {
   const colorMap = {
-    blue:    { c: 'var(--az-blue)',    s: 'var(--az-blue-soft)' },
-    emerald: { c: 'var(--az-emerald)', s: 'var(--az-emerald-soft)' },
-    amber:   { c: 'var(--az-amber)',   s: 'var(--az-amber-soft)' },
-    red:     { c: 'var(--az-red)',     s: 'var(--az-red-soft)' },
+    blue:    { c: 'var(--f-info)',    s: 'var(--az-blue-soft)' },
+    emerald: { c: 'var(--f-ok)', s: 'var(--az-emerald-soft)' },
+    amber:   { c: 'var(--f-warn)',   s: 'var(--az-amber-soft)' },
+    red:     { c: 'var(--f-bad)',     s: 'var(--az-red-soft)' },
     violet:  { c: 'var(--az-violet)',  s: 'var(--az-violet-soft)' },
     purple:  { c: 'var(--az-violet)',  s: 'var(--az-violet-soft)' },
   };
@@ -95,11 +95,11 @@ function QuickAction({ icon: Icon, label, onClick, color = 'blue' }) {
       className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
       style={{
         background: 'var(--az-surface-2)',
-        border: '1px solid var(--az-border)',
+        border: '1px solid var(--f-line)',
         color: st.c,
       }}
       onMouseEnter={(e) => { e.currentTarget.style.background = st.s; e.currentTarget.style.borderColor = st.c + '40'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--az-surface-2)'; e.currentTarget.style.borderColor = 'var(--az-border)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--az-surface-2)'; e.currentTarget.style.borderColor = 'var(--f-line)'; }}
     >
       <Icon className="w-4 h-4 shrink-0" />
       <span className="flex-1 text-left" style={{ color: 'var(--az-text-primary)' }}>{label}</span>
@@ -110,10 +110,10 @@ function QuickAction({ icon: Icon, label, onClick, color = 'blue' }) {
 
 function ActivityItem({ icon: Icon, title, meta, time, color }) {
   const colorMap = {
-    emerald: 'var(--az-emerald)',
-    blue:    'var(--az-blue)',
-    red:     'var(--az-red)',
-    amber:   'var(--az-amber)',
+    emerald: 'var(--f-ok)',
+    blue:    'var(--f-info)',
+    red:     'var(--f-bad)',
+    amber:   'var(--f-warn)',
     violet:  'var(--az-violet)',
     purple:  'var(--az-violet)',
   };
@@ -122,7 +122,7 @@ function ActivityItem({ icon: Icon, title, meta, time, color }) {
     <motion.div
       variants={listItemVariants}
       className="flex items-center gap-3 py-2 px-1 border-b last:border-0"
-      style={{ borderColor: 'var(--az-border)' }}
+      style={{ borderColor: 'var(--f-line)' }}
     >
       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
         style={{ background: c + '15', color: c }}>
@@ -130,9 +130,9 @@ function ActivityItem({ icon: Icon, title, meta, time, color }) {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm truncate" style={{ color: 'var(--az-text-primary)' }}>{title}</p>
-        {meta && <p className="text-xs truncate" style={{ color: 'var(--az-text-muted)' }}>{meta}</p>}
+        {meta && <p className="text-xs truncate" style={{ color: 'var(--f-text-3)' }}>{meta}</p>}
       </div>
-      <span className="text-xs shrink-0" style={{ color: 'var(--az-text-muted)' }}>{time}</span>
+      <span className="text-xs shrink-0" style={{ color: 'var(--f-text-3)' }}>{time}</span>
     </motion.div>
   );
 }
@@ -147,8 +147,8 @@ function TimeRangeSelector({ value, onChange }) {
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
         style={{
           background: 'var(--az-surface-3)',
-          border: '1px solid var(--az-border)',
-          color: 'var(--az-text-secondary)',
+          border: '1px solid var(--f-line)',
+          color: 'var(--f-text-2)',
         }}
       >
         <Clock className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ function TimeRangeSelector({ value, onChange }) {
                 onClick={() => { onChange(r.key); setOpen(false); }}
                 className="w-full px-3 py-1.5 text-left text-sm transition-colors"
                 style={{
-                  color: r.key === value ? 'var(--az-emerald)' : 'var(--az-text-secondary)',
+                  color: r.key === value ? 'var(--f-ok)' : 'var(--f-text-2)',
                   fontWeight: r.key === value ? 600 : 400,
                 }}
               >
@@ -266,18 +266,18 @@ export default function Dashboard() {
       >
         <div>
           <h1 className="text-xl font-bold" style={{ color: 'var(--az-text-primary)' }}>Command Center</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--az-text-secondary)' }}>Real-time platform overview</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--f-text-2)' }}>Real-time platform overview</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full az-pulse" style={{ background: 'var(--az-emerald)' }} />
-            <span className="text-xs font-medium" style={{ color: 'var(--az-emerald)' }}>Live</span>
+            <div className="w-2 h-2 rounded-full az-pulse" style={{ background: 'var(--f-ok)' }} />
+            <span className="text-xs font-medium" style={{ color: 'var(--f-ok)' }}>Live</span>
           </div>
           <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
           <button
             onClick={() => { refetchStats(); refetchHealth(); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors"
-            style={{ background: 'var(--az-surface-3)', border: '1px solid var(--az-border)', color: 'var(--az-text-secondary)' }}
+            style={{ background: 'var(--az-surface-3)', border: '1px solid var(--f-line)', color: 'var(--f-text-2)' }}
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -317,25 +317,25 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-sm font-semibold" style={{ color: 'var(--az-text-primary)' }}>Revenue & Volume</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'var(--az-text-muted)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>
               {profitData?.totalProfitLast30Days ? `${fmtUSD(profitData.totalProfitLast30Days)} profit · ${profitData.totalTransactionsLast30Days || 0} transactions` : 'Loading…'}
             </p>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm" style={{ background: emeraldColor }} />
-              <span style={{ color: 'var(--az-text-secondary)' }}>Profit</span>
+              <span style={{ color: 'var(--f-text-2)' }}>Profit</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm" style={{ background: blueColor }} />
-              <span style={{ color: 'var(--az-text-secondary)' }}>Volume</span>
+              <span style={{ color: 'var(--f-text-2)' }}>Volume</span>
             </span>
           </div>
         </div>
 
-        {loadingProfit && <div className="h-[280px] flex items-center justify-center text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading chart…</div>}
+        {loadingProfit && <div className="h-[280px] flex items-center justify-center text-sm" style={{ color: 'var(--f-text-3)' }}>Loading chart…</div>}
         {!loadingProfit && chartData.length === 0 && (
-          <div className="h-[280px] flex items-center justify-center text-sm" style={{ color: 'var(--az-text-muted)' }}>
+          <div className="h-[280px] flex items-center justify-center text-sm" style={{ color: 'var(--f-text-3)' }}>
             No data yet — chart appears once profit logs exist
           </div>
         )}
@@ -377,15 +377,15 @@ export default function Dashboard() {
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold" style={{ color: 'var(--az-text-primary)' }}>Live Activity</h2>
               <div className="flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full az-pulse" style={{ background: 'var(--az-emerald)' }} />
-                <span className="text-xs" style={{ color: 'var(--az-emerald)' }}>Live</span>
+                <div className="w-1.5 h-1.5 rounded-full az-pulse" style={{ background: 'var(--f-ok)' }} />
+                <span className="text-xs" style={{ color: 'var(--f-ok)' }}>Live</span>
               </div>
             </div>
-            <span className="text-xs" style={{ color: 'var(--az-text-muted)' }}>{activityItems.length} events</span>
+            <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{activityItems.length} events</span>
           </div>
           <motion.div variants={listVariants} initial="hidden" animate="visible" className="space-y-0 max-h-[320px] overflow-y-auto">
             {activityItems.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-8" style={{ color: 'var(--az-text-muted)' }}>
+              <div className="flex flex-col items-center justify-center py-8" style={{ color: 'var(--f-text-3)' }}>
                 <Activity className="w-6 h-6 mb-2 opacity-50" />
                 <p className="text-sm">Waiting for activity…</p>
               </div>
@@ -413,7 +413,7 @@ export default function Dashboard() {
       {/* Pool Health + Oracle + Engine */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-secondary)' }}>Pool Health</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-2)' }}>Pool Health</h2>
           {healthError && <ErrorState message="Failed to load system health." onRetry={refetchHealth} compact />}
           <PoolBar label="Master Crypto (USDC)" balance={pools.masterCrypto?.balance || 0} currency="USDC" max={100000} />
           <PoolBar label="Hot Wallet (USDC)" balance={pools.hotWallet?.balance || 0} currency="USDC" max={20000} />
@@ -425,10 +425,10 @@ export default function Dashboard() {
           {/* Oracle */}
           <div className="az-card rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-secondary)' }}>Oracle Rates</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-2)' }}>Oracle Rates</h2>
               <span className="az-chip" style={{
                 background: oracle.source === 'LIVE' ? 'var(--az-emerald-soft)' : 'var(--az-amber-soft)',
-                color: oracle.source === 'LIVE' ? 'var(--az-emerald)' : 'var(--az-amber)',
+                color: oracle.source === 'LIVE' ? 'var(--f-ok)' : 'var(--f-warn)',
               }}>
                 {oracle.source || 'MOCK'}
               </span>
@@ -440,12 +440,12 @@ export default function Dashboard() {
                 { label: 'Corporate Rate', value: oracle.corporateRate || '–' },
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between items-center">
-                  <span className="text-xs" style={{ color: 'var(--az-text-muted)' }}>{label}</span>
-                  <span className="text-sm font-bold az-mono" style={{ color: 'var(--az-emerald)' }}>{value}</span>
+                  <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{label}</span>
+                  <span className="text-sm font-bold f-mono" style={{ color: 'var(--f-ok)' }}>{value}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>
+            <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>
               Last sync: {oracle.lastSync ? new Date(oracle.lastSync).toLocaleTimeString() : '–'}
             </p>
           </div>
@@ -453,10 +453,10 @@ export default function Dashboard() {
           {/* Engine */}
           <div className="az-card rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-secondary)' }}>Engine Status</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-2)' }}>Engine Status</h2>
               <div className="flex items-center gap-1.5">
-                <div className="w-2 h-2 rounded-full az-pulse" style={{ background: engine.online ? 'var(--az-emerald)' : 'var(--az-red)' }} />
-                <span className="text-xs" style={{ color: engine.online ? 'var(--az-emerald)' : 'var(--az-red)' }}>
+                <div className="w-2 h-2 rounded-full az-pulse" style={{ background: engine.online ? 'var(--f-ok)' : 'var(--f-bad)' }} />
+                <span className="text-xs" style={{ color: engine.online ? 'var(--f-ok)' : 'var(--f-bad)' }}>
                   {engine.online ? 'Online' : 'Offline'}
                 </span>
               </div>
@@ -468,10 +468,10 @@ export default function Dashboard() {
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-3.5 h-3.5" style={{ color: 'var(--az-text-muted)' }} />
-                  <span className="text-xs" style={{ color: 'var(--az-text-muted)' }}>{label}</span>
+                  <Icon className="w-3.5 h-3.5" style={{ color: 'var(--f-text-3)' }} />
+                  <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{label}</span>
                 </div>
-                <span className="text-xs font-medium" style={{ color: 'var(--az-text-secondary)' }}>{value}</span>
+                <span className="text-xs font-medium" style={{ color: 'var(--f-text-2)' }}>{value}</span>
               </div>
             ))}
           </div>
@@ -480,7 +480,7 @@ export default function Dashboard() {
 
       {/* Escrow & Business */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-secondary)' }}>Escrow & Business</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-2)' }}>Escrow & Business</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Active Escrows" value={stats.activeEscrows || 0} icon={Lock} color="blue" />
           <StatCard label="Disputed Escrows" value={stats.disputedEscrows || 0} icon={ShieldAlert} color="red" onClick={() => navigate('/escrow-disputes')} />

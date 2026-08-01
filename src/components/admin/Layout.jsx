@@ -87,7 +87,7 @@ function NavItem({ item, collapsed, badges }) {
       <item.icon
         className={cn(
           'flex-shrink-0',
-          isActive ? 'text-[var(--az-emerald)]' : 'text-[var(--az-text-muted)] group-hover:text-[var(--az-text)]'
+          isActive ? 'text-[var(--f-ok)]' : 'text-[var(--f-text-3)] group-hover:text-[var(--f-text)]'
         )}
         style={{ width: 15, height: 15 }}
       />
@@ -100,7 +100,7 @@ function NavItem({ item, collapsed, badges }) {
         </>
       )}
       {collapsed && count > 0 && (
-        <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--az-danger)]" />
+        <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--f-bad)]" />
       )}
     </Link>
   );
@@ -182,8 +182,8 @@ export default function AdminLayout() {
         />
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold tracking-tight text-[var(--az-text)] truncate">AZAMAN</p>
-            <p className="text-[10px] font-medium text-[var(--az-text-muted)]">Admin Portal</p>
+            <p className="text-sm font-bold tracking-tight text-[var(--f-text)] truncate">AZAMAN</p>
+            <p className="text-[10px] font-medium text-[var(--f-text-3)]">Admin Portal</p>
           </div>
         )}
       </div>
@@ -212,7 +212,7 @@ export default function AdminLayout() {
           onClick={() => logout?.()}
           className={cn('az-nav-item w-full text-left', collapsed && 'justify-center !px-0')}
         >
-          <LogOut style={{ width: 15, height: 15 }} className="text-[var(--az-text-muted)]" />
+          <LogOut style={{ width: 15, height: 15 }} className="text-[var(--f-text-3)]" />
           {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
@@ -220,7 +220,7 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--az-bg)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--f-bg)' }}>
 
       {/* ── Desktop sidebar ── */}
       <motion.aside
@@ -280,7 +280,7 @@ export default function AdminLayout() {
                 ? setMobileOpen(true)
                 : setCollapsed((c) => !c)
             }
-            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--az-text-muted)] transition-colors"
+            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
           >
             <Menu style={{ width: 16, height: 16 }} />
           </button>
@@ -290,9 +290,9 @@ export default function AdminLayout() {
             onClick={() => setCmdOpen(true)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm border transition-colors min-w-[160px] max-w-[260px]"
             style={{
-              border:     '1px solid var(--az-border)',
+              border:     '1px solid var(--f-line)',
               background: 'var(--az-surface-1)',
-              color:      'var(--az-text-muted)',
+              color:      'var(--f-text-3)',
             }}
           >
             <Search style={{ width: 13, height: 13 }} />
@@ -301,8 +301,8 @@ export default function AdminLayout() {
               className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
               style={{
                 background:  'var(--az-surface-2)',
-                borderColor: 'var(--az-border)',
-                color:       'var(--az-text-muted)',
+                borderColor: 'var(--f-line)',
+                color:       'var(--f-text-3)',
               }}
             >
               ⌘K
@@ -314,7 +314,7 @@ export default function AdminLayout() {
           {/* Theme toggle */}
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--az-text-muted)] transition-colors"
+            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
             title="Toggle theme"
           >
             {theme === 'dark'
@@ -325,14 +325,14 @@ export default function AdminLayout() {
           {/* Notifications bell */}
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="relative p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--az-text-muted)] transition-colors"
+            className="relative p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
           >
             <Bell style={{ width: 15, height: 15 }} />
             {unreadCount > 0 && (
               <span
                 className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border"
                 style={{
-                  background:  'var(--az-danger)',
+                  background:  'var(--f-bad)',
                   borderColor: 'var(--az-sidebar-bg)',
                 }}
               />
@@ -347,7 +347,7 @@ export default function AdminLayout() {
               borderColor: 'var(--az-emerald-border)',
             }}
           >
-            <Shield style={{ width: 13, height: 13, color: 'var(--az-emerald)' }} />
+            <Shield style={{ width: 13, height: 13, color: 'var(--f-ok)' }} />
           </div>
         </header>
 

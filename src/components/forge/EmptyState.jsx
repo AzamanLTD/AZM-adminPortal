@@ -19,3 +19,4 @@ export function EmptyState({ title, body, primary, secondary, art = true }) {
     </div>
   );
 }
+export const Empty = EmptyState;

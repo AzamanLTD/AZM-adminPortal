@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
 
 const TYPE_COLORS = {
-  FIAT: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]',
+  FIAT: 'bg-[var(--az-blue-soft)] text-[var(--f-info)]',
   CRYPTO: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]',
 };
 
@@ -92,9 +92,9 @@ function computeRiskScore(w) {
 }
 
 const RISK_STYLES = {
-  HIGH: { badge: 'bg-[var(--az-red-soft)] text-[var(--az-red)] border-[var(--az-red-glow)]', icon: ShieldAlert, label: 'High Risk' },
-  MEDIUM: { badge: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-amber-500/30', icon: AlertTriangle, label: 'Medium Risk' },
-  LOW: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]', icon: ShieldCheck, label: 'Low Risk' },
+  HIGH: { badge: 'bg-[var(--az-red-soft)] text-[var(--f-bad)] border-[var(--az-red-glow)]', icon: ShieldAlert, label: 'High Risk' },
+  MEDIUM: { badge: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)] border-amber-500/30', icon: AlertTriangle, label: 'Medium Risk' },
+  LOW: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-[var(--az-emerald-glow)]', icon: ShieldCheck, label: 'Low Risk' },
 };
 
 /* ── Detail drawer ──────────────────────────────────────────────────────── */
@@ -107,21 +107,21 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-md h-full bg-[var(--az-surface-2)] border-l border-az-border overflow-y-auto"
+        className="relative w-full max-w-md h-full bg-[var(--az-surface-2)] border-l border-line overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[var(--az-surface-2)] border-b border-az-border px-5 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[var(--az-surface-2)] border-b border-line px-5 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center border ${RISK_STYLES[risk.level].badge}`}>
               <RiskIcon className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-[var(--az-text-primary)]">Withdrawal Review</h2>
-              <p className="text-xs text-az-text-muted">Risk score: {risk.score}/100 · {RISK_STYLES[risk.level].label}</p>
+              <p className="text-xs text-ink-3">Risk score: {risk.score}/100 · {RISK_STYLES[risk.level].label}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--az-surface-3)] text-az-text-muted">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--az-surface-3)] text-ink-3">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -129,48 +129,48 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
         {/* Content */}
         <div className="p-5 space-y-5">
           {/* Amount */}
-          <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4">
-            <p className="text-xs text-az-text-muted uppercase tracking-wide mb-1">Amount</p>
-            <p className="text-2xl font-bold text-[var(--az-emerald)]">
+          <div className="bg-[var(--az-surface-3)] border border-line rounded-xl p-4">
+            <p className="text-xs text-ink-3 uppercase tracking-wide mb-1">Amount</p>
+            <p className="text-2xl font-bold text-[var(--f-ok)]">
               ${Number(withdrawal.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {withdrawal.currency}
             </p>
             {withdrawal.type === 'FIAT' && (
-              <p className="text-sm text-az-text-secondary mt-1">≈ ₵{(Number(withdrawal.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+              <p className="text-sm text-ink-2 mt-1">≈ ₵{(Number(withdrawal.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
             )}
           </div>
 
           {/* User info */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">User</h3>
-            <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4 space-y-2">
+            <h3 className="text-xs font-semibold text-ink-2 uppercase tracking-wide">User</h3>
+            <div className="bg-[var(--az-surface-3)] border border-line rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Username</span>
+                <span className="text-sm text-ink-3">Username</span>
                 <span className="text-sm font-medium text-[var(--az-text-primary)]">{u.username || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Email</span>
+                <span className="text-sm text-ink-3">Email</span>
                 <span className="text-sm font-medium text-[var(--az-text-primary)] truncate ml-2">{u.email || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">KYC Status</span>
-                <Badge className={`border-0 text-xs ${u.kycStatus === 'VERIFIED' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]'}`}>
+                <span className="text-sm text-ink-3">KYC Status</span>
+                <Tag className={`border-0 text-xs ${u.kycStatus === 'VERIFIED' ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' : 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]'}`}>
                   {u.kycStatus || 'UNVERIFIED'}
-                </Badge>
+                </Tag>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Ban Status</span>
-                <Badge className={`border-0 text-xs ${u.banStatus === 'ACTIVE' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-[var(--az-red-soft)] text-[var(--az-red)]'}`}>
+                <span className="text-sm text-ink-3">Ban Status</span>
+                <Tag className={`border-0 text-xs ${u.banStatus === 'ACTIVE' ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' : 'bg-[var(--az-red-soft)] text-[var(--f-bad)]'}`}>
                   {u.banStatus || 'ACTIVE'}
-                </Badge>
+                </Tag>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Strikes</span>
-                <span className={`text-sm font-medium ${u.strikeCount >= 3 ? 'text-[var(--az-red)]' : u.strikeCount >= 1 ? 'text-[var(--az-amber)]' : 'text-[var(--az-emerald)]'}`}>
+                <span className="text-sm text-ink-3">Strikes</span>
+                <span className={`text-sm font-medium ${u.strikeCount >= 3 ? 'text-[var(--f-bad)]' : u.strikeCount >= 1 ? 'text-[var(--f-warn)]' : 'text-[var(--f-ok)]'}`}>
                   {u.strikeCount || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Completed Trades</span>
+                <span className="text-sm text-ink-3">Completed Trades</span>
                 <span className="text-sm font-medium text-[var(--az-text-primary)]">{u.tradesCompleted || 0}</span>
               </div>
             </div>
@@ -178,25 +178,25 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
 
           {/* Risk factors */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Risk Factors</h3>
+            <h3 className="text-xs font-semibold text-ink-2 uppercase tracking-wide">Risk Factors</h3>
             <div className="space-y-2">
               {risk.factors.length === 0 && (
-                <div className="text-sm text-[var(--az-emerald)] flex items-center gap-2">
+                <div className="text-sm text-[var(--f-ok)] flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4" /> No risk factors detected
                 </div>
               )}
               {risk.factors.map((f, i) => (
                 <div key={i} className={`flex items-center justify-between p-3 rounded-lg border ${
-                  f.level === 'critical' ? 'bg-[var(--az-red)]/5 border-[var(--az-red-glow)]' :
-                  f.level === 'high' ? 'bg-[var(--az-red)]/5 border-red-500/15' :
-                  f.level === 'medium' ? 'bg-[var(--az-amber)]/5 border-amber-500/15' :
-                  'bg-[var(--az-blue)]/5 border-blue-500/15'
+                  f.level === 'critical' ? 'bg-[var(--f-bad)]/5 border-[var(--az-red-glow)]' :
+                  f.level === 'high' ? 'bg-[var(--f-bad)]/5 border-red-500/15' :
+                  f.level === 'medium' ? 'bg-[var(--f-warn)]/5 border-amber-500/15' :
+                  'bg-[var(--f-info)]/5 border-blue-500/15'
                 }`}>
                   <span className={`text-sm ${
-                    f.level === 'critical' || f.level === 'high' ? 'text-[var(--az-red)]' :
-                    f.level === 'medium' ? 'text-[var(--az-amber)]' : 'text-[var(--az-blue)]'
+                    f.level === 'critical' || f.level === 'high' ? 'text-[var(--f-bad)]' :
+                    f.level === 'medium' ? 'text-[var(--f-warn)]' : 'text-[var(--f-info)]'
                   }`}>{f.label}</span>
-                  <span className="text-xs font-mono text-az-text-muted">{f.weight > 0 ? '+' : ''}{f.weight}</span>
+                  <span className="text-xs font-mono text-ink-3">{f.weight > 0 ? '+' : ''}{f.weight}</span>
                 </div>
               ))}
             </div>
@@ -204,21 +204,21 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
 
           {/* Payment details */}
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-az-text-secondary uppercase tracking-wide">Payment Details</h3>
-            <div className="bg-[var(--az-surface-3)] border border-az-border rounded-xl p-4 space-y-2">
+            <h3 className="text-xs font-semibold text-ink-2 uppercase tracking-wide">Payment Details</h3>
+            <div className="bg-[var(--az-surface-3)] border border-line rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Type</span>
-                <Badge className={`border-0 text-xs ${TYPE_COLORS[withdrawal.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>
+                <span className="text-sm text-ink-3">Type</span>
+                <Tag className={`border-0 text-xs ${TYPE_COLORS[withdrawal.type] || 'bg-az-text-muted/20 text-ink-2'}`}>
                   {withdrawal.type}
-                </Badge>
+                </Tag>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Method</span>
+                <span className="text-sm text-ink-3">Method</span>
                 <span className="text-sm font-medium text-[var(--az-text-primary)]">{withdrawal.method || withdrawal.wallet || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-az-text-muted">Requested</span>
-                <span className="text-sm text-az-text-secondary">
+                <span className="text-sm text-ink-3">Requested</span>
+                <span className="text-sm text-ink-2">
                   {withdrawal.requestedAt ? new Date(withdrawal.requestedAt).toLocaleString() : '—'}
                 </span>
               </div>
@@ -228,7 +228,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <Button
-              className="flex-1 bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)]"
+              className="flex-1 bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]"
               disabled={approvePending}
               onClick={() => onApprove(withdrawal.id)}
             >
@@ -237,7 +237,7 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
             </Button>
             <Button
               variant="outline"
-              className="flex-1 border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)]"
+              className="flex-1 border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--az-red-soft)]"
               disabled={rejectPending}
               onClick={() => onReject(withdrawal)}
             >
@@ -365,13 +365,13 @@ export default function Withdrawals() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Pending Withdrawals</h1>
-          <p className="text-sm text-az-text-secondary mt-1">
+          <p className="text-sm text-ink-2 mt-1">
             {summary.total} pending · ${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} total value
-            {summary.highRisk > 0 && <span className="text-[var(--az-red)] ml-2">· {summary.highRisk} high-risk</span>}
+            {summary.highRisk > 0 && <span className="text-[var(--f-bad)] ml-2">· {summary.highRisk} high-risk</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
           </Button>
         </div>
@@ -379,33 +379,33 @@ export default function Withdrawals() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <Wallet className="w-3.5 h-3.5 text-[var(--az-blue)]" />
-            <span className="text-xs text-az-text-muted uppercase">Total Pending</span>
+            <Wallet className="w-3.5 h-3.5 text-[var(--f-info)]" />
+            <span className="text-xs text-ink-3 uppercase">Total Pending</span>
           </div>
           <p className="text-xl font-bold text-[var(--az-text-primary)]">{summary.total}</p>
         </div>
-        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-[var(--az-emerald)]" />
-            <span className="text-xs text-az-text-muted uppercase">Total Value</span>
+            <TrendingUp className="w-3.5 h-3.5 text-[var(--f-ok)]" />
+            <span className="text-xs text-ink-3 uppercase">Total Value</span>
           </div>
-          <p className="text-xl font-bold text-[var(--az-emerald)]">${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+          <p className="text-xl font-bold text-[var(--f-ok)]">${summary.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
         </div>
-        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
-            <ShieldAlert className="w-3.5 h-3.5 text-[var(--az-red)]" />
-            <span className="text-xs text-az-text-muted uppercase">High Risk</span>
+            <ShieldAlert className="w-3.5 h-3.5 text-[var(--f-bad)]" />
+            <span className="text-xs text-ink-3 uppercase">High Risk</span>
           </div>
-          <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-[var(--az-red)]' : 'text-[var(--az-emerald)]'}`}>{summary.highRisk}</p>
+          <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-ok)]'}`}>{summary.highRisk}</p>
         </div>
-        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-3">
+        <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-3">
           <div className="flex items-center gap-2 mb-1">
             <User className="w-3.5 h-3.5 text-[var(--az-violet)]" />
-            <span className="text-xs text-az-text-muted uppercase">FIAT / Crypto</span>
+            <span className="text-xs text-ink-3 uppercase">FIAT / Crypto</span>
           </div>
-          <p className="text-xl font-bold text-[var(--az-text-primary)]">{summary.fiatCount} <span className="text-az-text-muted text-sm">/</span> {summary.cryptoCount}</p>
+          <p className="text-xl font-bold text-[var(--az-text-primary)]">{summary.fiatCount} <span className="text-ink-3 text-sm">/</span> {summary.cryptoCount}</p>
         </div>
       </div>
 
@@ -413,13 +413,13 @@ export default function Withdrawals() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           {/* Type filter */}
-          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-az-border rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-line rounded-lg p-0.5">
             {['ALL', 'FIAT', 'CRYPTO'].map(type => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  filterType === type ? 'bg-[var(--az-surface-3)] text-[var(--az-text-primary)]' : 'text-az-text-muted hover:text-az-text-secondary'
+                  filterType === type ? 'bg-[var(--az-surface-3)] text-[var(--az-text-primary)]' : 'text-ink-3 hover:text-ink-2'
                 }`}
               >
                 {type}
@@ -427,18 +427,18 @@ export default function Withdrawals() {
             ))}
           </div>
           {/* Risk filter */}
-          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-az-border rounded-lg p-0.5">
+          <div className="flex items-center gap-1 bg-[var(--az-surface-2)] border border-line rounded-lg p-0.5">
             {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(risk => (
               <button
                 key={risk}
                 onClick={() => setFilterRisk(risk)}
                 className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                   filterRisk === risk
-                    ? risk === 'HIGH' ? 'bg-[var(--az-red-soft)] text-[var(--az-red)]'
-                      : risk === 'MEDIUM' ? 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]'
-                      : risk === 'LOW' ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'
+                    ? risk === 'HIGH' ? 'bg-[var(--az-red-soft)] text-[var(--f-bad)]'
+                      : risk === 'MEDIUM' ? 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]'
+                      : risk === 'LOW' ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'
                       : 'bg-[var(--az-surface-3)] text-[var(--az-text-primary)]'
-                    : 'text-az-text-muted hover:text-az-text-secondary'
+                    : 'text-ink-3 hover:text-ink-2'
                 }`}
               >
                 {risk}
@@ -450,12 +450,12 @@ export default function Withdrawals() {
         {/* Batch actions */}
         {selectedArray.length > 0 ? (
           <div className="flex items-center gap-2">
-            <span className="text-sm text-az-text-secondary">{selectedArray.length} selected</span>
-            <button onClick={clearSelection} className="text-xs text-az-text-muted hover:text-az-text-secondary">Clear</button>
+            <span className="text-sm text-ink-2">{selectedArray.length} selected</span>
+            <button onClick={clearSelection} className="text-xs text-ink-3 hover:text-ink-2">Clear</button>
             <Button
               size="sm"
               onClick={() => setShowBatchConfirm(true)}
-              className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8"
+              className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)] h-8"
             >
               <CheckSquare className="w-3.5 h-3.5 mr-1.5" />
               Batch Approve ({selectedArray.length})
@@ -464,7 +464,7 @@ export default function Withdrawals() {
         ) : (
           <button
             onClick={selectAllLowRisk}
-            className="text-xs text-az-text-muted hover:text-[var(--az-emerald)] transition-colors"
+            className="text-xs text-ink-3 hover:text-[var(--f-ok)] transition-colors"
           >
             Select all low-risk
           </button>
@@ -473,7 +473,7 @@ export default function Withdrawals() {
 
       {/* Withdrawal list */}
       <div className="space-y-2">
-        {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
+        {isLoading && <p className="text-ink-3 text-sm">Loading…</p>}
         {filtered.map((w) => {
           const riskStyle = RISK_STYLES[w.risk.level];
           const RiskIcon = riskStyle.icon;
@@ -483,7 +483,7 @@ export default function Withdrawals() {
             <div
               key={w.id}
               className={`bg-[var(--az-surface-2)] border rounded-xl p-4 flex items-center gap-3 transition-colors ${
-                isSelected ? 'border-emerald-500/40 bg-[var(--az-emerald)]/5' : 'border-az-border'
+                isSelected ? 'border-emerald-500/40 bg-[var(--f-ok)]/5' : 'border-line'
               }`}
             >
               {/* Checkbox */}
@@ -493,8 +493,8 @@ export default function Withdrawals() {
                 title={isSelected ? 'Deselect' : 'Select for batch'}
               >
                 {isSelected
-                  ? <CheckSquare className="w-4 h-4 text-[var(--az-emerald)]" />
-                  : <Square className="w-4 h-4 text-az-text-muted hover:text-az-text-secondary" />
+                  ? <CheckSquare className="w-4 h-4 text-[var(--f-ok)]" />
+                  : <Square className="w-4 h-4 text-ink-3 hover:text-ink-2" />
                 }
               </button>
 
@@ -510,12 +510,12 @@ export default function Withdrawals() {
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold text-[var(--az-text-primary)]">{w.userName || w.user?.username || 'Unknown'}</span>
-                  <Badge className={`border-0 text-xs ${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-az-text-secondary'}`}>{w.type}</Badge>
-                  <span className="text-sm font-bold text-[var(--az-emerald)]">
+                  <Tag className={`border-0 text-xs ${TYPE_COLORS[w.type] || 'bg-az-text-muted/20 text-ink-2'}`}>{w.type}</Tag>
+                  <span className="text-sm font-bold text-[var(--f-ok)]">
                     ${Number(w.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {w.currency}
                   </span>
                   {w.type === 'FIAT' && (
-                    <span className="text-xs text-az-text-muted">
+                    <span className="text-xs text-ink-3">
                       ₵{(Number(w.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </span>
                   )}
@@ -523,14 +523,14 @@ export default function Withdrawals() {
                     {w.risk.score}
                   </span>
                 </div>
-                <div className="flex gap-3 mt-1 text-xs text-az-text-muted">
+                <div className="flex gap-3 mt-1 text-xs text-ink-3">
                   <span>{w.method || w.wallet || '—'}</span>
                   <span>{w.requestedAt ? new Date(w.requestedAt).toLocaleString() : ''}</span>
                   {w.user?.kycStatus !== 'VERIFIED' && (
-                    <span className="text-[var(--az-amber)]">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
+                    <span className="text-[var(--f-warn)]">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
                   )}
                   {w.user?.strikeCount > 0 && (
-                    <span className="text-[var(--az-red)]">{w.user.strikeCount} strike{w.user.strikeCount > 1 ? 's' : ''}</span>
+                    <span className="text-[var(--f-bad)]">{w.user.strikeCount} strike{w.user.strikeCount > 1 ? 's' : ''}</span>
                   )}
                 </div>
               </div>
@@ -539,7 +539,7 @@ export default function Withdrawals() {
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => setDetailTarget(w)}
-                  className="p-2 rounded-lg hover:bg-[var(--az-surface-3)] text-az-text-muted hover:text-[var(--az-text-primary)] transition-colors"
+                  className="p-2 rounded-lg hover:bg-[var(--az-surface-3)] text-ink-3 hover:text-[var(--az-text-primary)] transition-colors"
                   title="View details"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -548,7 +548,7 @@ export default function Withdrawals() {
                   size="sm"
                   onClick={() => approve.mutate(w.id)}
                   disabled={approve.isPending}
-                  className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] h-8"
+                  className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)] h-8"
                 >
                   <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
                 </Button>
@@ -556,7 +556,7 @@ export default function Withdrawals() {
                   size="sm"
                   variant="outline"
                   onClick={() => setRejectTarget(w)}
-                  className="border-red-500/50 text-[var(--az-red)] hover:bg-[var(--az-red-soft)] h-8"
+                  className="border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--az-red-soft)] h-8"
                 >
                   <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
                 </Button>
@@ -565,7 +565,7 @@ export default function Withdrawals() {
           );
         })}
         {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-12 text-az-text-muted text-sm bg-[var(--az-surface-2)] border border-az-border rounded-xl">
+          <div className="text-center py-12 text-ink-3 text-sm bg-[var(--az-surface-2)] border border-line rounded-xl">
             {withdrawals.length === 0 ? 'No pending withdrawals — all clear' : 'No withdrawals match the current filters'}
           </div>
         )}
@@ -589,14 +589,14 @@ export default function Withdrawals() {
       {showBatchConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowBatchConfirm(false)} />
-          <div className="relative bg-[var(--az-surface-2)] border border-az-border rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
+          <div className="relative bg-[var(--az-surface-2)] border border-line rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
             <div className="flex items-start gap-3">
               <div className="w-9 h-9 rounded-lg bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] flex items-center justify-center flex-shrink-0">
-                <CheckSquare className="w-4 h-4 text-[var(--az-emerald)]" />
+                <CheckSquare className="w-4 h-4 text-[var(--f-ok)]" />
               </div>
               <div>
                 <h2 className="text-base font-semibold text-[var(--az-text-primary)]">Batch Approve {selectedArray.length} Withdrawals</h2>
-                <p className="text-sm text-az-text-muted mt-1">
+                <p className="text-sm text-ink-3 mt-1">
                   This will approve all selected withdrawals sequentially. Each will be processed by the payout worker.
                 </p>
               </div>
@@ -604,13 +604,13 @@ export default function Withdrawals() {
             <div className="flex gap-3">
               <Button
                 variant="ghost"
-                className="flex-1 border border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-[var(--az-surface-3)]"
+                className="flex-1 border border-line text-ink-2 hover:text-[var(--az-text-primary)] hover:bg-[var(--az-surface-3)]"
                 onClick={() => setShowBatchConfirm(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)]"
+                className="flex-1 bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]"
                 disabled={batchApprove.isPending}
                 onClick={() => batchApprove.mutate(selectedArray)}
               >

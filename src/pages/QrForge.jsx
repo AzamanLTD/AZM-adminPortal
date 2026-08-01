@@ -278,13 +278,13 @@ export default function QrForge() {
             <QrCode className="w-5 h-5 text-yellow-400" />
             QR Forge
           </h1>
-          <p className="text-sm text-az-text-secondary mt-0.5">
+          <p className="text-sm text-ink-2 mt-0.5">
             Generate high-resolution, print-ready QR codes. Reprogram the destination any time — no reprinting needed.
           </p>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] rounded-lg">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-medium text-[var(--az-emerald)]">Live redirect active</span>
+          <span className="text-xs font-medium text-[var(--f-ok)]">Live redirect active</span>
         </div>
       </div>
 
@@ -294,63 +294,63 @@ export default function QrForge() {
         <div className="space-y-5">
 
           {/* Permanent URL */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Link2 className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm font-semibold text-az-text-primary">Permanent QR URL</span>
-              <span className="text-xs text-az-text-muted bg-[var(--az-surface-3)] px-2 py-0.5 rounded-full">baked into every printed code</span>
+              <span className="text-sm font-semibold text-ink-primary">Permanent QR URL</span>
+              <span className="text-xs text-ink-3 bg-[var(--az-surface-3)] px-2 py-0.5 rounded-full">baked into every printed code</span>
             </div>
-            <div className="flex items-center gap-2 bg-az-black border border-az-border rounded-lg px-3 py-2.5">
+            <div className="flex items-center gap-2 bg-bg border border-line rounded-lg px-3 py-2.5">
               <code className="text-xs text-yellow-300 flex-1 truncate font-mono">{PERMANENT_QR_URL}</code>
               <button
                 onClick={() => { navigator.clipboard.writeText(PERMANENT_QR_URL); toast.success('Copied!'); }}
-                className="text-az-text-muted hover:text-[var(--az-text-primary)] transition-colors text-xs px-2 py-0.5 rounded"
+                className="text-ink-3 hover:text-[var(--az-text-primary)] transition-colors text-xs px-2 py-0.5 rounded"
               >
                 Copy
               </button>
             </div>
-            <p className="text-xs text-az-text-muted mt-2">
+            <p className="text-xs text-ink-3 mt-2">
               This URL never changes. It instantly redirects visitors to the destination below.
             </p>
           </div>
 
           {/* Destination editor */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-[var(--az-blue)]" />
-              <span className="text-sm font-semibold text-az-text-primary">Current Destination</span>
-              {destLoading && <Loader2 className="w-3.5 h-3.5 text-az-text-muted animate-spin" />}
+              <Globe className="w-4 h-4 text-[var(--f-info)]" />
+              <span className="text-sm font-semibold text-ink-primary">Current Destination</span>
+              {destLoading && <Loader2 className="w-3.5 h-3.5 text-ink-3 animate-spin" />}
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-az-card/60 border border-az-border rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-surface/60 border border-line rounded-lg">
               <a
                 href={currentDest}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-[var(--az-blue)] hover:text-blue-300 flex-1 truncate flex items-center gap-1.5 transition-colors"
+                className="text-sm text-[var(--f-info)] hover:text-blue-300 flex-1 truncate flex items-center gap-1.5 transition-colors"
               >
                 {currentLabel}
                 <ExternalLink className="w-3 h-3 shrink-0" />
               </a>
-              <span className="text-xs text-az-text-muted truncate max-w-[200px] hidden sm:block">{currentDest}</span>
+              <span className="text-xs text-ink-3 truncate max-w-[200px] hidden sm:block">{currentDest}</span>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-xs text-az-text-secondary mb-1.5 block">New Destination URL</label>
+                <label className="text-xs text-ink-2 mb-1.5 block">New Destination URL</label>
                 <Input
                   value={editUrl}
                   onChange={(e) => setEditUrl(e.target.value)}
-                  className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] font-mono text-sm"
+                  className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] font-mono text-sm"
                   placeholder="https://..."
                 />
               </div>
               <div>
-                <label className="text-xs text-az-text-secondary mb-1.5 block">Label (for your records)</label>
+                <label className="text-xs text-ink-2 mb-1.5 block">Label (for your records)</label>
                 <Input
                   value={editLabel}
                   onChange={(e) => setEditLabel(e.target.value)}
-                  className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                  className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                   placeholder="e.g. Moolre Vote Page"
                 />
               </div>
@@ -358,7 +358,7 @@ export default function QrForge() {
                 <Button
                   onClick={() => update.mutate({ url: editUrl, label: editLabel })}
                   disabled={update.isPending || !editUrl || editUrl === currentDest}
-                  className="bg-yellow-500 hover:bg-yellow-400 text-az-black font-semibold gap-1.5"
+                  className="bg-yellow-500 hover:bg-yellow-400 text-ink font-semibold gap-1.5"
                 >
                   {update.isPending
                     ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -372,22 +372,22 @@ export default function QrForge() {
                   <div className="relative">
                     <button
                       onClick={() => setShowHistory((v) => !v)}
-                      className="flex items-center gap-1 text-xs text-az-text-secondary hover:text-[var(--az-text-primary)] transition-colors px-3 py-2 rounded-lg border border-az-border hover:border-az-border-bright"
+                      className="flex items-center gap-1 text-xs text-ink-2 hover:text-[var(--az-text-primary)] transition-colors px-3 py-2 rounded-lg border border-line hover:border-line-bright"
                     >
                       <Clock className="w-3 h-3" />
                       History
                       <ChevronDown className={`w-3 h-3 transition-transform ${showHistory ? 'rotate-180' : ''}`} />
                     </button>
                     {showHistory && (
-                      <div className="absolute top-full mt-1 left-0 w-80 bg-[var(--az-surface-3)] border border-az-border rounded-xl shadow-2xl z-50 overflow-hidden">
+                      <div className="absolute top-full mt-1 left-0 w-80 bg-[var(--az-surface-3)] border border-line rounded-xl shadow-2xl z-50 overflow-hidden">
                         {history.map((h, i) => (
                           <button
                             key={i}
                             onClick={() => { setEditUrl(h.url); setEditLabel(h.label || ''); setShowHistory(false); }}
-                            className="w-full text-left px-4 py-3 hover:bg-az-border transition-colors border-b border-az-border/50 last:border-0"
+                            className="w-full text-left px-4 py-3 hover:bg-line transition-colors border-b border-line/50 last:border-0"
                           >
                             <p className="text-sm text-[var(--az-text-primary)] font-medium truncate">{h.label || 'Unlabelled'}</p>
-                            <p className="text-xs text-az-text-secondary truncate mt-0.5">{h.url}</p>
+                            <p className="text-xs text-ink-2 truncate mt-0.5">{h.url}</p>
                           </button>
                         ))}
                       </div>
@@ -399,11 +399,11 @@ export default function QrForge() {
           </div>
 
           {/* Download panel */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Download className="w-4 h-4 text-[var(--az-emerald)]" />
-                <span className="text-sm font-semibold text-az-text-primary">Download Sizes</span>
+                <Download className="w-4 h-4 text-[var(--f-ok)]" />
+                <span className="text-sm font-semibold text-ink-primary">Download Sizes</span>
               </div>
               <div className="flex gap-1.5 flex-wrap">
                 {SCHEMES.map((s) => (
@@ -414,24 +414,24 @@ export default function QrForge() {
                     className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
                       schemeKey === s.key
                         ? 'border-yellow-500/60 bg-yellow-500/10 text-yellow-300'
-                        : 'border-az-border bg-[var(--az-surface-3)] text-az-text-secondary hover:border-az-border-bright'
+                        : 'border-line bg-[var(--az-surface-3)] text-ink-2 hover:border-line-bright'
                     }`}
                   >
                     {/* Mini swatch */}
                     <span
-                      className="w-3.5 h-3.5 rounded-sm border border-az-border-bright shrink-0 flex items-center justify-center"
+                      className="w-3.5 h-3.5 rounded-sm border border-line-bright shrink-0 flex items-center justify-center"
                       style={{ backgroundColor: s.previewBg || 'transparent', backgroundImage: s.previewBg ? 'none' : 'repeating-conic-gradient(#475569 0% 25%, #1e293b 0% 50%)', backgroundSize: '6px 6px' }}
                     >
                       <span className="w-1.5 h-1.5 rounded-[1px]" style={{ backgroundColor: s.previewDot }} />
                     </span>
                     <span>{s.label}</span>
-                    <span className="text-az-text-muted">{s.sub}</span>
+                    <span className="text-ink-3">{s.sub}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <p className="text-xs text-az-text-muted">
+            <p className="text-xs text-ink-3">
               {scheme.light === '#00000000'
                 ? `${scheme.label} QR on transparent background — ideal for garments, merch, and dark/coloured surfaces.`
                 : scheme.dark === '#ffffff'
@@ -447,18 +447,18 @@ export default function QrForge() {
                     key={key}
                     onClick={() => handleDownload(key)}
                     disabled={!!downloading}
-                    className="flex items-center gap-3 p-3.5 bg-[var(--az-surface-3)] hover:bg-az-border border border-az-border hover:border-az-border-bright rounded-xl transition-all group disabled:opacity-60 text-left"
+                    className="flex items-center gap-3 p-3.5 bg-[var(--az-surface-3)] hover:bg-line border border-line hover:border-line-bright rounded-xl transition-all group disabled:opacity-60 text-left"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-az-border group-hover:bg-az-border-bright flex items-center justify-center shrink-0 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-line group-hover:bg-line-bright flex items-center justify-center shrink-0 transition-colors">
                       {isDownloading
                         ? <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
                         : <Icon className="w-4 h-4 text-yellow-400" />}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[var(--az-text-primary)]">{label}</p>
-                      <p className="text-xs text-az-text-muted">{sub}</p>
+                      <p className="text-xs text-ink-3">{sub}</p>
                     </div>
-                    <Download className="w-3.5 h-3.5 text-az-text-muted group-hover:text-az-text-secondary ml-auto transition-colors" />
+                    <Download className="w-3.5 h-3.5 text-ink-3 group-hover:text-ink-2 ml-auto transition-colors" />
                   </button>
                 );
               })}
@@ -466,8 +466,8 @@ export default function QrForge() {
 
             <div className="flex items-start gap-2 p-3 bg-yellow-500/5 border border-yellow-500/15 rounded-lg">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-az-text-secondary">
-                All exports use <strong className="text-az-text-primary">Error Correction Level H</strong> — the QR scans even if 30% is covered by a logo or worn. For large print jobs use <strong className="text-az-text-primary">Ultra HD (5000px)</strong>.
+              <p className="text-xs text-ink-2">
+                All exports use <strong className="text-ink-primary">Error Correction Level H</strong> — the QR scans even if 30% is covered by a logo or worn. For large print jobs use <strong className="text-ink-primary">Ultra HD (5000px)</strong>.
               </p>
             </div>
           </div>
@@ -477,8 +477,8 @@ export default function QrForge() {
         <div className="space-y-4">
 
           {/* QR canvas */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
-            <p className="text-xs font-medium text-az-text-secondary mb-3 text-center">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+            <p className="text-xs font-medium text-ink-2 mb-3 text-center">
               Preview — scan to test the redirect
             </p>
             <div
@@ -491,37 +491,37 @@ export default function QrForge() {
               <canvas ref={canvasRef} className="rounded-lg max-w-full block" />
             </div>
             {scheme.light === '#00000000' && (
-              <p className="text-center text-xs text-az-text-muted mt-2">Checkerboard = transparent pixels</p>
+              <p className="text-center text-xs text-ink-3 mt-2">Checkerboard = transparent pixels</p>
             )}
           </div>
 
           {/* Destination preview */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-az-border flex items-center gap-2">
-              <Monitor className="w-3.5 h-3.5 text-az-text-muted" />
-              <span className="text-xs text-az-text-secondary font-medium">Destination Preview</span>
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-line flex items-center gap-2">
+              <Monitor className="w-3.5 h-3.5 text-ink-3" />
+              <span className="text-xs text-ink-2 font-medium">Destination Preview</span>
             </div>
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-2 bg-[var(--az-surface-3)] rounded-lg px-3 py-2">
                 <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-[var(--az-red)]/60" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--f-bad)]/60" />
                   <span className="w-2 h-2 rounded-full bg-yellow-500/60" />
-                  <span className="w-2 h-2 rounded-full bg-[var(--az-emerald)]/60" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--f-ok)]/60" />
                 </div>
-                <span className="text-xs text-az-text-secondary truncate flex-1 font-mono">{currentDest}</span>
+                <span className="text-xs text-ink-2 truncate flex-1 font-mono">{currentDest}</span>
               </div>
 
-              <div className="bg-[var(--az-surface-3)] rounded-xl overflow-hidden border border-az-border">
+              <div className="bg-[var(--az-surface-3)] rounded-xl overflow-hidden border border-line">
                 <div className="h-2 bg-gradient-to-r from-yellow-500 via-yellow-400 to-orange-500" />
                 <div className="p-4 space-y-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-black text-az-black">A</div>
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xs font-black text-ink">A</div>
                     <div>
                       <p className="text-sm font-bold text-[var(--az-text-primary)]">Azaman</p>
-                      <p className="text-xs text-az-text-secondary">Moolre Startup Leaderboard</p>
+                      <p className="text-xs text-ink-2">Moolre Startup Leaderboard</p>
                     </div>
                   </div>
-                  <p className="text-xs text-az-text-secondary leading-relaxed">
+                  <p className="text-xs text-ink-2 leading-relaxed">
                     Scan this QR to vote for Azaman on the Moolre leaderboard. Every vote counts toward startup funding.
                   </p>
                   <a
@@ -539,9 +539,9 @@ export default function QrForge() {
           </div>
 
           {/* Info callout */}
-          <div className="flex items-start gap-2.5 p-3.5 bg-[var(--az-blue)]/8 border border-[var(--az-blue-glow)] rounded-xl">
-            <AlertCircle className="w-4 h-4 text-[var(--az-blue)] shrink-0 mt-0.5" />
-            <p className="text-xs text-az-text-secondary leading-relaxed">
+          <div className="flex items-start gap-2.5 p-3.5 bg-[var(--f-info)]/8 border border-[var(--az-blue-glow)] rounded-xl">
+            <AlertCircle className="w-4 h-4 text-[var(--f-info)] shrink-0 mt-0.5" />
+            <p className="text-xs text-ink-2 leading-relaxed">
               <strong className="text-blue-300">No reprinting ever needed.</strong> When you change the destination above, every already-printed QR code updates instantly via the permanent relay URL.
             </p>
           </div>
@@ -549,14 +549,14 @@ export default function QrForge() {
       </div>
 
       {/* QR Analytics Section */}
-      <div className="space-y-6 pt-4 border-t border-az-border">
+      <div className="space-y-6 pt-4 border-t border-line">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-[var(--az-text-primary)] flex items-center gap-2">
               <Activity className="w-5 h-5 text-yellow-400" />
               QR Scan Analytics
             </h2>
-            <p className="text-xs text-az-text-secondary mt-0.5">
+            <p className="text-xs text-ink-2 mt-0.5">
               Real-time tracking and metrics for visitors scanning your QR codes.
             </p>
           </div>
@@ -566,64 +566,64 @@ export default function QrForge() {
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Stat Card 1: Total Scans */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-ink-2 text-xs font-semibold">
               <span>Total Scans</span>
               <BarChart3 className="w-4 h-4 text-yellow-400" />
             </div>
             <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.totalScans ?? 0)}
             </div>
-            <p className="text-xs text-az-text-muted">All-time redirects</p>
+            <p className="text-xs text-ink-3">All-time redirects</p>
           </div>
 
           {/* Stat Card 2: Recent Scans */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-ink-2 text-xs font-semibold">
               <span>Recent Scans (30d)</span>
-              <Activity className="w-4 h-4 text-[var(--az-emerald)]" />
+              <Activity className="w-4 h-4 text-[var(--f-ok)]" />
             </div>
             <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.recentScans ?? 0)}
             </div>
-            <p className="text-xs text-az-text-muted">Last 30 days active</p>
+            <p className="text-xs text-ink-3">Last 30 days active</p>
           </div>
 
           {/* Stat Card 3: Unique Visitors */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-ink-2 text-xs font-semibold">
               <span>Unique Visitors</span>
-              <Users className="w-4 h-4 text-[var(--az-blue)]" />
+              <Users className="w-4 h-4 text-[var(--f-info)]" />
             </div>
             <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : (analytics?.uniqueVisitors ?? 0)}
             </div>
-            <p className="text-xs text-az-text-muted">Unique IPs (30d)</p>
+            <p className="text-xs text-ink-3">Unique IPs (30d)</p>
           </div>
 
           {/* Stat Card 4: Avg/Day */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-4 space-y-2">
-            <div className="flex items-center justify-between text-az-text-secondary text-xs font-semibold">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 space-y-2">
+            <div className="flex items-center justify-between text-ink-2 text-xs font-semibold">
               <span>Avg/Day</span>
               <Clock className="w-4 h-4 text-[var(--az-violet)]" />
             </div>
             <div className="text-2xl font-bold text-[var(--az-text-primary)]">
               {analyticsLoading ? '...' : analytics ? (analytics.recentScans / 30).toFixed(1) : '0.0'}
             </div>
-            <p className="text-xs text-az-text-muted">Scans per day average</p>
+            <p className="text-xs text-ink-3">Scans per day average</p>
           </div>
         </div>
 
         {/* Charts & Tables Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Daily activity chart */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[var(--az-text-primary)] flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-yellow-400" />
                 Daily Scan Activity (Last 30 Days)
               </h3>
-              <span className="text-xs text-az-text-muted">
+              <span className="text-xs text-ink-3">
                 {analytics?.daily?.length || 0} active days
               </span>
             </div>
@@ -633,8 +633,8 @@ export default function QrForge() {
                 <Loader2 className="w-6 h-6 text-yellow-400 animate-spin" />
               </div>
             ) : !analytics?.daily || analytics.daily.length === 0 ? (
-              <div className="h-48 border border-dashed border-az-border rounded-lg flex flex-col items-center justify-center text-az-text-muted">
-                <Activity className="w-8 h-8 text-az-text-muted/40 mb-2 animate-pulse" />
+              <div className="h-48 border border-dashed border-line rounded-lg flex flex-col items-center justify-center text-ink-3">
+                <Activity className="w-8 h-8 text-ink-3/40 mb-2 animate-pulse" />
                 <span className="text-xs">No scan activity recorded yet.</span>
               </div>
             ) : (
@@ -653,10 +653,10 @@ export default function QrForge() {
                       >
                         {/* Tooltip */}
                         <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-30">
-                          <div className="bg-az-black text-[var(--az-text-primary)] text-[10px] font-semibold py-1 px-2 rounded border border-az-border shadow-xl whitespace-nowrap">
+                          <div className="bg-bg text-[var(--az-text-primary)] text-[10px] font-semibold py-1 px-2 rounded border border-line shadow-xl whitespace-nowrap">
                             <span className="text-yellow-400">{d.count} scans</span> • {formattedDate}
                           </div>
-                          <div className="w-1.5 h-1.5 bg-az-black border-r border-b border-az-border transform rotate-45 -mt-1" />
+                          <div className="w-1.5 h-1.5 bg-bg border-r border-b border-line transform rotate-45 -mt-1" />
                         </div>
 
                         {/* Bar */}
@@ -670,7 +670,7 @@ export default function QrForge() {
                 </div>
 
                 {/* X-Axis labels: show first and last dates */}
-                <div className="flex justify-between text-[10px] text-az-text-muted px-2 font-mono">
+                <div className="flex justify-between text-[10px] text-ink-3 px-2 font-mono">
                   <span>{new Date(analytics.daily[0].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}</span>
                   <span>Today</span>
                 </div>
@@ -679,34 +679,34 @@ export default function QrForge() {
           </div>
 
           {/* Recent Scans Table */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[var(--az-text-primary)] flex items-center gap-2">
-                <Activity className="w-4 h-4 text-[var(--az-emerald)]" />
+                <Activity className="w-4 h-4 text-[var(--f-ok)]" />
                 Recent QR Scans (Last 10)
               </h3>
             </div>
 
             {analyticsLoading ? (
               <div className="h-48 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 text-[var(--az-emerald)] animate-spin" />
+                <Loader2 className="w-6 h-6 text-[var(--f-ok)] animate-spin" />
               </div>
             ) : !analytics?.lastScans || analytics.lastScans.length === 0 ? (
-              <div className="h-48 border border-dashed border-az-border rounded-lg flex flex-col items-center justify-center text-az-text-muted">
+              <div className="h-48 border border-dashed border-line rounded-lg flex flex-col items-center justify-center text-ink-3">
                 <span className="text-xs">No scan history available.</span>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b border-az-border text-az-text-secondary font-medium">
+                    <tr className="border-b border-line text-ink-2 font-medium">
                       <th className="py-2.5 px-3">Date/Time</th>
                       <th className="py-2.5 px-3">IP Address</th>
                       <th className="py-2.5 px-3">User Agent</th>
                       <th className="py-2.5 px-3">Referrer</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-az-border/40 text-az-text-secondary">
+                  <tbody className="divide-y divide-az-border/40 text-ink-2">
                     {analytics.lastScans.map((scan) => {
                       const dateStr = new Date(scan.createdAt).toLocaleString('en-US', {
                         month: 'short',
@@ -716,14 +716,14 @@ export default function QrForge() {
                         second: '2-digit',
                       });
                       return (
-                        <tr key={scan.id} className="hover:bg-az-card/40 transition-colors">
+                        <tr key={scan.id} className="hover:bg-surface/40 transition-colors">
                           <td className="py-2.5 px-3 text-[var(--az-text-primary)] whitespace-nowrap font-mono">{dateStr}</td>
-                          <td className="py-2.5 px-3 font-mono text-az-text-primary">{scan.ipAddress || 'Unknown'}</td>
+                          <td className="py-2.5 px-3 font-mono text-ink-primary">{scan.ipAddress || 'Unknown'}</td>
                           <td className="py-2.5 px-3 truncate max-w-[200px]" title={scan.userAgent}>
                             {scan.userAgent ? (scan.userAgent.length > 40 ? scan.userAgent.slice(0, 40) + '...' : scan.userAgent) : 'Unknown'}
                           </td>
                           <td className="py-2.5 px-3 truncate max-w-[150px]" title={scan.referrer}>
-                            <span className={scan.referrer ? 'text-[var(--az-blue)] font-mono' : 'text-az-text-muted italic'}>
+                            <span className={scan.referrer ? 'text-[var(--f-info)] font-mono' : 'text-ink-3 italic'}>
                               {scan.referrer || 'Direct'}
                             </span>
                           </td>
@@ -739,13 +739,13 @@ export default function QrForge() {
       </div>
 
         {/* ── Campaign Management Section ────────────────────────────────────── */}
-        <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
+        <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-[var(--az-text-primary)] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[var(--az-emerald)]" /> Multi-Campaign QR
+                <Sparkles className="w-4 h-4 text-[var(--f-ok)]" /> Multi-Campaign QR
               </h3>
-              <p className="text-xs text-az-text-muted mt-0.5">Create separate QR campaigns with unique slugs and individual analytics.</p>
+              <p className="text-xs text-ink-3 mt-0.5">Create separate QR campaigns with unique slugs and individual analytics.</p>
             </div>
             <Button size="sm" onClick={() => {
               setNewCampaignName('');
@@ -756,28 +756,28 @@ export default function QrForge() {
             </Button>
           </div>
 
-          {campaignsLoading && <p className="text-az-text-muted text-sm py-4 text-center">Loading campaigns…</p>}
-          {campaignsError && <p className="text-[var(--az-red)] text-sm py-4 text-center">Failed to load campaigns</p>}
+          {campaignsLoading && <p className="text-ink-3 text-sm py-4 text-center">Loading campaigns…</p>}
+          {campaignsError && <p className="text-[var(--f-bad)] text-sm py-4 text-center">Failed to load campaigns</p>}
           {campaignsData?.campaigns && campaignsData.campaigns.length === 0 && (
-            <p className="text-az-text-muted text-sm py-4 text-center italic">No campaigns yet. Create one to get a unique QR slug.</p>
+            <p className="text-ink-3 text-sm py-4 text-center italic">No campaigns yet. Create one to get a unique QR slug.</p>
           )}
           {campaignsData?.campaigns && campaignsData.campaigns.length > 0 && (
             <div className="space-y-2">
               {campaignsData.campaigns.map((c) => (
-                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--az-surface-3)] border border-az-border/50">
+                <div key={c.id} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--az-surface-3)] border border-line/50">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-[var(--az-text-primary)]">{c.name}</span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${c.isActive ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' : 'bg-az-text-muted/20 text-az-text-muted'}`}>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${c.isActive ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' : 'bg-az-text-muted/20 text-ink-3'}`}>
                         {c.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-az-text-muted">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-ink-3">
                       <span className="font-mono">/{c.slug}</span>
                       <span className="truncate max-w-[200px]" title={c.destinationUrl}>{c.destinationUrl}</span>
                       <span>{c.totalScans} scans</span>
                     </div>
-                    <div className="text-[10px] text-az-text-muted mt-0.5 font-mono">
+                    <div className="text-[10px] text-ink-3 mt-0.5 font-mono">
                       QR URL: {PERMANENT_QR_URL}/{c.slug}
                     </div>
                   </div>
@@ -785,25 +785,25 @@ export default function QrForge() {
                     <Button variant="ghost" size="sm" onClick={() => {
                       navigator.clipboard.writeText(`${PERMANENT_QR_URL}/${c.slug}`);
                       toast.success('Campaign QR URL copied');
-                    }} className="text-az-text-muted hover:text-[var(--az-text-primary)]">
+                    }} className="text-ink-3 hover:text-[var(--az-text-primary)]">
                       <Copy className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       setEditCampaignId(c.id);
                       setEditUrlValue(c.destinationUrl);
                       setEditUrlOpen(true);
-                    }} className="text-az-text-muted hover:text-[var(--az-text-primary)]">
+                    }} className="text-ink-3 hover:text-[var(--az-text-primary)]">
                       <Link2 className="w-3.5 h-3.5" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       updateCampaignMut.mutate({ id: c.id, data: { isActive: !c.isActive } });
-                    }} className={c.isActive ? 'text-[var(--az-amber)] hover:text-amber-300' : 'text-[var(--az-emerald)] hover:text-emerald-300'}>
+                    }} className={c.isActive ? 'text-[var(--f-warn)] hover:text-amber-300' : 'text-[var(--f-ok)] hover:text-emerald-300'}>
                       {c.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
                       setDeleteCampaign(c);
                       setDeleteOpen(true);
-                    }} className="text-[var(--az-red)] hover:text-red-300">
+                    }} className="text-[var(--f-bad)] hover:text-red-300">
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>

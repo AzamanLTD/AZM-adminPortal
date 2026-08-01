@@ -28,10 +28,10 @@ const AUTO_DISMISS_MS = 30_000;
 
 // Severity → strip styling + where a click should take the operator.
 const SEVERITY_STYLE = {
-  CRITICAL: { bg: 'rgba(244,63,94,0.13)', border: 'var(--az-red)', text: 'var(--az-red)', emoji: '🚨' },
-  HIGH:     { bg: 'rgba(245,158,11,0.13)', border: 'var(--az-amber)', text: 'var(--az-amber)', emoji: '⚠️' },
-  MEDIUM:   { bg: 'rgba(79,142,247,0.13)', border: 'var(--az-blue)', text: 'var(--az-blue)', emoji: '🔔' },
-  LOW:      { bg: 'rgba(0,217,126,0.13)', border: 'var(--az-emerald)', text: 'var(--az-emerald)', emoji: 'ℹ️' },
+  CRITICAL: { bg: 'rgba(244,63,94,0.13)', border: 'var(--f-bad)', text: 'var(--f-bad)', emoji: '🚨' },
+  HIGH:     { bg: 'rgba(245,158,11,0.13)', border: 'var(--f-warn)', text: 'var(--f-warn)', emoji: '⚠️' },
+  MEDIUM:   { bg: 'rgba(79,142,247,0.13)', border: 'var(--f-info)', text: 'var(--f-info)', emoji: '🔔' },
+  LOW:      { bg: 'rgba(0,217,126,0.13)', border: 'var(--f-ok)', text: 'var(--f-ok)', emoji: 'ℹ️' },
 };
 
 // Map an alert to the most relevant admin page.
@@ -240,7 +240,7 @@ export default function AlertBanner() {
                 <span className="flex-shrink-0 text-base">{s.emoji}</span>
                 <span
                   className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide flex-shrink-0"
-                  style={{ background: s.border, color: 'var(--az-bg)' }}
+                  style={{ background: s.border, color: 'var(--f-bg)' }}
                 >
                   {a.severity}
                 </span>

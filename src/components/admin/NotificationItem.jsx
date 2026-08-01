@@ -13,20 +13,20 @@ import {
 } from 'lucide-react';
 
 const SOURCE_META = {
-  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]' },
-  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-[var(--az-red-soft)] text-[var(--az-red)]' },
-  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)]' },
-  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' },
+  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--az-blue-soft)] text-[var(--f-info)]' },
+  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' },
+  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]' },
+  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' },
   VENDOR:     { label: 'Vendor',     icon: Store,       color: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]' },
-  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]' },
-  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-[var(--az-red-soft)] text-[var(--az-red)]' },
+  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' },
+  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' },
 };
 
 const SEV_DOT = {
-  CRITICAL: 'text-[var(--az-red)]',
-  HIGH: 'text-[var(--az-amber)]',
-  MEDIUM: 'text-[var(--az-blue)]',
-  LOW: 'text-az-text-muted',
+  CRITICAL: 'text-[var(--f-bad)]',
+  HIGH: 'text-[var(--f-warn)]',
+  MEDIUM: 'text-[var(--f-info)]',
+  LOW: 'text-ink-3',
 };
 
 function fmtTime(d) {
@@ -49,7 +49,7 @@ function RawDetails({ raw }) {
   );
   if (entries.length === 0) {
     return (
-      <pre className="text-[11px] text-az-text-muted whitespace-pre-wrap break-words">
+      <pre className="text-[11px] text-ink-3 whitespace-pre-wrap break-words">
         {JSON.stringify(raw, null, 2)}
       </pre>
     );
@@ -58,8 +58,8 @@ function RawDetails({ raw }) {
     <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
       {entries.map(([k, v]) => (
         <div key={k} className="contents">
-          <span className="text-[11px] text-az-text-muted">{k}</span>
-          <span className="text-[11px] text-az-text-secondary break-words font-mono">{String(v)}</span>
+          <span className="text-[11px] text-ink-3">{k}</span>
+          <span className="text-[11px] text-ink-2 break-words font-mono">{String(v)}</span>
         </div>
       ))}
     </div>
@@ -68,7 +68,7 @@ function RawDetails({ raw }) {
 
 export default function NotificationItem({ n, onNavigate, onRead }) {
   const [expanded, setExpanded] = useState(false);
-  const meta = SOURCE_META[n.source] || { label: n.source, icon: Circle, color: 'bg-az-border-bright/30 text-az-text-secondary' };
+  const meta = SOURCE_META[n.source] || { label: n.source, icon: Circle, color: 'bg-line-bright/30 text-ink-2' };
   const Icon = meta.icon;
   const resolved = n.status === 'resolved';
 
@@ -81,14 +81,14 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
   return (
     <div
       className={`rounded-xl border transition-colors ${
-        resolved ? 'border-az-border bg-az-surface/60' : 'border-az-border bg-[var(--az-surface-2)]'
+        resolved ? 'border-line bg-surface/60' : 'border-line bg-[var(--az-surface-2)]'
       } ${!n.read && !resolved ? 'ring-1 ring-emerald-500/20' : ''}`}
     >
       <button
         onClick={toggle}
         aria-expanded={expanded}
         aria-label={`${n.title}${n.read ? '' : ', unread'}`}
-        className="w-full text-left p-3 flex items-start gap-3 hover:bg-az-card/40 rounded-xl transition-colors"
+        className="w-full text-left p-3 flex items-start gap-3 hover:bg-surface/40 rounded-xl transition-colors"
       >
         {/* unread dot + source icon */}
         <div className="relative flex-shrink-0">
@@ -102,33 +102,33 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <Circle className={`w-2 h-2 fill-current ${SEV_DOT[n.severity] || 'text-az-text-muted'}`} />
+            <Circle className={`w-2 h-2 fill-current ${SEV_DOT[n.severity] || 'text-ink-3'}`} />
             <span className="text-sm font-medium text-[var(--az-text-primary)] truncate">{n.title}</span>
           </div>
           {n.description && (
-            <p className="text-xs text-az-text-secondary mt-0.5 truncate">{n.description}</p>
+            <p className="text-xs text-ink-2 mt-0.5 truncate">{n.description}</p>
           )}
           <div className="flex items-center gap-2 mt-1">
-            <Badge className={`${meta.color} border-0 text-[10px]`}>{meta.label}</Badge>
+            <Tag className={`${meta.color} border-0 text-[10px]`}>{meta.label}</Tag>
             {resolved && (
-              <Badge className="bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-0 text-[10px]">RESOLVED</Badge>
+              <Tag className="bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-0 text-[10px]">RESOLVED</Tag>
             )}
-            <span className="text-[10px] text-az-text-muted">{fmtTime(n.createdAt)}</span>
+            <span className="text-[10px] text-ink-3">{fmtTime(n.createdAt)}</span>
           </div>
         </div>
 
-        <span className="text-az-text-muted flex-shrink-0 mt-1">
+        <span className="text-ink-3 flex-shrink-0 mt-1">
           {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </span>
       </button>
 
       {expanded && (
-        <div className="border-t border-az-border p-3 space-y-3">
+        <div className="border-t border-line p-3 space-y-3">
           <RawDetails raw={n.raw} />
           {n.route && (
             <button
               onClick={() => onNavigate?.(n.route)}
-              className="inline-flex items-center gap-1.5 text-xs text-[var(--az-emerald)] hover:text-emerald-300 font-medium"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--f-ok)] hover:text-emerald-300 font-medium"
             >
               View details <ExternalLink className="w-3 h-3" />
             </button>

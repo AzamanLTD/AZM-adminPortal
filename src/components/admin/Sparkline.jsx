@@ -6,7 +6,7 @@ import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts';
 
 export default function Sparkline({ data = [], color = '#10b981', height = 36 }) {
   if (!data.length) {
-    return <div style={{ height }} className="flex items-center justify-center text-az-text-muted text-xs">—</div>;
+    return <div style={{ height }} className="flex items-center justify-center text-ink-3 text-xs">—</div>;
   }
 
   const chartData = data.map((v, i) => ({ i, v: Number(v) || 0 }));

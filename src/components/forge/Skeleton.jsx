@@ -22,3 +22,5 @@ export const KpiSkeleton = () => (
     <div className="mt-3"><Skel w="60%" h={22}/></div>
     <div className="mt-3"><Skel w="30%" h={8}/></div></div>
 );
+export const Skeleton = Skel;
+export const Spinner = Skel;

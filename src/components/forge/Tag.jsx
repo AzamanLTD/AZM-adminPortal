@@ -49,3 +49,4 @@ export function Tag({ status, tone, children, dot = true, className }) {
     </span>
   );
 }
+export const Badge = Tag;
