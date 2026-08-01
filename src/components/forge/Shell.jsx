@@ -36,6 +36,7 @@ import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
 import { Tag } from './Tag';
+import { ProfileMenu } from './ProfileMenu';
 import { cn } from '@/lib/utils';
 
 export function Shell({ children, navProps, brandName = 'Azaman', brandShort = 'AZ', user, onLogout, onNavigateSettings }) {
@@ -106,7 +107,8 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
       {/* ── Main column ── */}
       <div className="f-main">
         <Topbar onMenuClick={() => setMobileOpen(true)} onCollapseToggle={() => setCollapsed(c => !c)}
-                collapsed={collapsed} brandName={brandName} />
+                collapsed={collapsed} brandName={brandName}
+                user={user} onLogout={onLogout} onNavigateSettings={onNavigateSettings} />
         <main className="f-content">
           {children}
         </main>
@@ -151,7 +153,7 @@ function MobileNav({ nav, brandName, brandShort, onNavigate }) {
   );
 }
 
-function Topbar({ onMenuClick, onCollapseToggle, collapsed, brandName }) {
+function Topbar({ onMenuClick, onCollapseToggle, collapsed, brandName, user, onLogout, onNavigateSettings }) {
   const { theme, toggle } = useTheme();
   const { open } = useCommandPalette();
 
