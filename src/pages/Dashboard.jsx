@@ -63,15 +63,15 @@ function ChartTooltip({ active, payload, label }) {
   return (
     <div className="rounded-lg p-3 shadow-xl text-xs space-y-1"
       style={{
-        background: 'var(--az-surface-3)',
-        border: '1px solid var(--az-border-bright)',
+        background: 'var(--f-surface-sunken)',
+        border: '1px solid var(--f-line-strong)',
       }}>
       <p className="font-medium" style={{ color: 'var(--f-text-3)' }}>{label}</p>
       {payload.map((entry, i) => (
         <p key={i} className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full inline-block" style={{ background: entry.color || entry.fill }} />
           <span style={{ color: 'var(--f-text-2)' }}>{entry.name}:</span>
-          <span className="font-bold" style={{ color: 'var(--az-text-primary)' }}>{fmtUSD(entry.value)}</span>
+          <span className="font-bold" style={{ color: 'var(--f-text)' }}>{fmtUSD(entry.value)}</span>
         </p>
       ))}
     </div>
@@ -80,12 +80,12 @@ function ChartTooltip({ active, payload, label }) {
 
 function QuickAction({ icon: Icon, label, onClick, color = 'blue' }) {
   const colorMap = {
-    blue:    { c: 'var(--f-info)',    s: 'var(--az-blue-soft)' },
-    emerald: { c: 'var(--f-ok)', s: 'var(--az-emerald-soft)' },
-    amber:   { c: 'var(--f-warn)',   s: 'var(--az-amber-soft)' },
-    red:     { c: 'var(--f-bad)',     s: 'var(--az-red-soft)' },
-    violet:  { c: 'var(--az-violet)',  s: 'var(--az-violet-soft)' },
-    purple:  { c: 'var(--az-violet)',  s: 'var(--az-violet-soft)' },
+    blue:    { c: 'var(--f-info)',    s: 'var(--f-info-bg)' },
+    emerald: { c: 'var(--f-ok)', s: 'var(--f-ok-bg)' },
+    amber:   { c: 'var(--f-warn)',   s: 'var(--f-warn-bg)' },
+    red:     { c: 'var(--f-bad)',     s: 'var(--f-bad-bg)' },
+    violet:  { c: 'var(--f-tint-color)',  s: 'var(--f-surface-sunken)' },
+    purple:  { c: 'var(--f-tint-color)',  s: 'var(--f-surface-sunken)' },
   };
   const st = colorMap[color] || colorMap.blue;
   return (
@@ -94,15 +94,13 @@ function QuickAction({ icon: Icon, label, onClick, color = 'blue' }) {
       onClick={onClick}
       className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
       style={{
-        background: 'var(--az-surface-2)',
+        background: 'var(--f-surface-raised)',
         border: '1px solid var(--f-line)',
         color: st.c,
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = st.s; e.currentTarget.style.borderColor = st.c + '40'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--az-surface-2)'; e.currentTarget.style.borderColor = 'var(--f-line)'; }}
     >
       <Icon className="w-4 h-4 shrink-0" />
-      <span className="flex-1 text-left" style={{ color: 'var(--az-text-primary)' }}>{label}</span>
+      <span className="flex-1 text-left" style={{ color: 'var(--f-text)' }}>{label}</span>
       <ArrowRight className="w-3.5 h-3.5 opacity-50" />
     </motion.button>
   );
@@ -114,8 +112,8 @@ function ActivityItem({ icon: Icon, title, meta, time, color }) {
     blue:    'var(--f-info)',
     red:     'var(--f-bad)',
     amber:   'var(--f-warn)',
-    violet:  'var(--az-violet)',
-    purple:  'var(--az-violet)',
+    violet:  'var(--f-tint-color)',
+    purple:  'var(--f-tint-color)',
   };
   const c = colorMap[color] || colorMap.blue;
   return (
@@ -129,7 +127,7 @@ function ActivityItem({ icon: Icon, title, meta, time, color }) {
         <Icon className="w-4 h-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm truncate" style={{ color: 'var(--az-text-primary)' }}>{title}</p>
+        <p className="text-sm truncate" style={{ color: 'var(--f-text)' }}>{title}</p>
         {meta && <p className="text-xs truncate" style={{ color: 'var(--f-text-3)' }}>{meta}</p>}
       </div>
       <span className="text-xs shrink-0" style={{ color: 'var(--f-text-3)' }}>{time}</span>
@@ -146,7 +144,7 @@ function TimeRangeSelector({ value, onChange }) {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors"
         style={{
-          background: 'var(--az-surface-3)',
+          background: 'var(--f-surface-sunken)',
           border: '1px solid var(--f-line)',
           color: 'var(--f-text-2)',
         }}
@@ -159,7 +157,7 @@ function TimeRangeSelector({ value, onChange }) {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 mt-1 z-20 rounded-lg shadow-xl py-1 min-w-[100px]"
-            style={{ background: 'var(--az-surface-3)', border: '1px solid var(--az-border-bright)' }}>
+            style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line-strong)' }}>
             {TIME_RANGES.map(r => (
               <button
                 key={r.key}
@@ -265,7 +263,7 @@ export default function Dashboard() {
         className="flex items-center justify-between flex-wrap gap-3"
       >
         <div>
-          <h1 className="text-xl font-bold" style={{ color: 'var(--az-text-primary)' }}>Command Center</h1>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--f-text)' }}>Command Center</h1>
           <p className="text-sm mt-1" style={{ color: 'var(--f-text-2)' }}>Real-time platform overview</p>
         </div>
         <div className="flex items-center gap-3">
@@ -277,7 +275,7 @@ export default function Dashboard() {
           <button
             onClick={() => { refetchStats(); refetchHealth(); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors"
-            style={{ background: 'var(--az-surface-3)', border: '1px solid var(--f-line)', color: 'var(--f-text-2)' }}
+            style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line)', color: 'var(--f-text-2)' }}
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
@@ -316,7 +314,7 @@ export default function Dashboard() {
       >
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold" style={{ color: 'var(--az-text-primary)' }}>Revenue & Volume</h2>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--f-text)' }}>Revenue & Volume</h2>
             <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>
               {profitData?.totalProfitLast30Days ? `${fmtUSD(profitData.totalProfitLast30Days)} profit · ${profitData.totalTransactionsLast30Days || 0} transactions` : 'Loading…'}
             </p>
@@ -375,7 +373,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold" style={{ color: 'var(--az-text-primary)' }}>Live Activity</h2>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--f-text)' }}>Live Activity</h2>
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full az-pulse" style={{ background: 'var(--f-ok)' }} />
                 <span className="text-xs" style={{ color: 'var(--f-ok)' }}>Live</span>
@@ -399,7 +397,7 @@ export default function Dashboard() {
         {/* Quick actions */}
         <motion.div variants={cardVariants} initial="hidden" animate="visible" className="space-y-4">
           <div className="az-card rounded-xl p-5">
-            <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--az-text-primary)' }}>Quick Actions</h2>
+            <h2 className="text-sm font-semibold mb-3" style={{ color: 'var(--f-text)' }}>Quick Actions</h2>
             <div className="space-y-2">
               <QuickAction icon={CheckCircle} label={`Approve Withdrawals (${stats.pendingWithdrawals || 0})`} onClick={() => navigate('/withdrawals')} color={stats.pendingWithdrawals > 0 ? 'amber' : 'emerald'} />
               <QuickAction icon={AlertTriangle} label={`Resolve Disputes (${stats.activeDisputes || 0})`} onClick={() => navigate('/war-room')} color={stats.activeDisputes > 0 ? 'red' : 'blue'} />
@@ -427,7 +425,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-2)' }}>Oracle Rates</h2>
               <span className="az-chip" style={{
-                background: oracle.source === 'LIVE' ? 'var(--az-emerald-soft)' : 'var(--az-amber-soft)',
+                background: oracle.source === 'LIVE' ? 'var(--f-ok-bg)' : 'var(--f-warn-bg)',
                 color: oracle.source === 'LIVE' ? 'var(--f-ok)' : 'var(--f-warn)',
               }}>
                 {oracle.source || 'MOCK'}

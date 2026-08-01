@@ -72,7 +72,7 @@ export default function Storefronts() {
       <div className="flex items-center gap-3">
         <Store className="w-7 h-7 text-[var(--f-warn)]" />
         <div>
-          <h1 className="text-2xl font-bold text-[var(--az-text-primary)]">Storefront Moderation</h1>
+          <h1 className="text-2xl font-bold text-[var(--f-text)]">Storefront Moderation</h1>
           <p className="text-sm text-ink-2">{pagination?.total ?? 0} published storefronts</p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function Storefronts() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-[var(--az-text-primary)] truncate">{biz?.businessName ?? 'Unknown'}</h3>
+                  <h3 className="font-bold text-[var(--f-text)] truncate">{biz?.businessName ?? 'Unknown'}</h3>
                   <p className="text-sm text-ink-2">
                     {biz?.category ?? '—'} · Theme: {sf.theme?.name ?? 'Default'}
                   </p>
@@ -198,14 +198,14 @@ export default function Storefronts() {
       {/* ── Media Review Modal ── */}
       {mediaTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={() => setMediaTarget(null)}>
-          <div className="max-w-2xl w-full max-h-[80vh] overflow-y-auto rounded-2xl bg-[var(--az-surface-3)] border border-line p-6" onClick={e => e.stopPropagation()}>
+          <div className="max-w-2xl w-full max-h-[80vh] overflow-y-auto rounded-2xl bg-[var(--f-surface-sunken)] border border-line p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-[var(--f-warn)]" />
-                <h3 className="text-lg font-bold text-[var(--az-text-primary)]">Media Review</h3>
+                <h3 className="text-lg font-bold text-[var(--f-text)]">Media Review</h3>
                 <span className="text-sm text-ink-2">— {mediaData?.data?.businessName || 'Loading…'}</span>
               </div>
-              <button onClick={() => setMediaTarget(null)} className="p-1 rounded-lg text-ink-2 hover:text-[var(--az-text-primary)]">
+              <button onClick={() => setMediaTarget(null)} className="p-1 rounded-lg text-ink-2 hover:text-[var(--f-text)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -295,18 +295,18 @@ function RevertModal({ target, onClose, onRevert, isPending }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={onClose}>
-      <div className="max-w-md w-full rounded-2xl bg-[var(--az-surface-3)] border border-line p-6" onClick={e => e.stopPropagation()}>
+      <div className="max-w-md w-full rounded-2xl bg-[var(--f-surface-sunken)] border border-line p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-[var(--f-warn)]" />
-            <h3 className="text-lg font-bold text-[var(--az-text-primary)]">Force Revert</h3>
+            <h3 className="text-lg font-bold text-[var(--f-text)]">Force Revert</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg text-ink-2 hover:text-[var(--az-text-primary)]">
+          <button onClick={onClose} className="p-1 rounded-lg text-ink-2 hover:text-[var(--f-text)]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mb-4 px-4 py-3 rounded-xl bg-[var(--az-amber-soft)] border border-amber-500/30 flex items-start gap-2">
+        <div className="mb-4 px-4 py-3 rounded-xl bg-[var(--f-warn-bg)] border border-amber-500/30 flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-[var(--f-warn)] flex-shrink-0 mt-0.5" />
           <p className="text-sm text-amber-200">
             This will force-revert the storefront for <span className="font-bold">{target.businessName}</span> back to the last published version. The merchant will need to re-publish any changes.
@@ -322,7 +322,7 @@ function RevertModal({ target, onClose, onRevert, isPending }) {
             {versions.map(v => (
               <div key={v.id} className="flex items-center justify-between p-3 rounded-xl bg-surface/40 border border-line">
                 <div>
-                  <p className="text-sm font-semibold text-[var(--az-text-primary)]">{v.version}</p>
+                  <p className="text-sm font-semibold text-[var(--f-text)]">{v.version}</p>
                   {v.isLatest && <p className="text-xs text-ink-2">Safest revert option</p>}
                 </div>
                 <Button

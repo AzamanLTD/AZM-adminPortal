@@ -55,12 +55,12 @@ export default function Config() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-xl font-bold text-[var(--az-text-primary)]">System Configuration</h1>
+        <h1 className="text-xl font-bold text-[var(--f-text)]">System Configuration</h1>
         <p className="text-sm text-ink-2 mt-1">App version gate, payout automation, and system controls.</p>
       </div>
 
       {hasAnyError && (
-        <div className="bg-[var(--az-amber-soft)] border border-amber-500/30 rounded-xl p-3 flex items-center gap-3 text-sm">
+        <div className="bg-[var(--f-warn-bg)] border border-amber-500/30 rounded-xl p-3 flex items-center gap-3 text-sm">
           <span className="text-[var(--f-warn)]">⚠ Some settings failed to load. Values shown may be defaults.</span>
           <div className="flex gap-2 ml-auto">
             {vgError && <Button variant="ghost" size="sm" onClick={refetchVg} className="h-7 text-xs">Retry VG</Button>}
@@ -71,7 +71,7 @@ export default function Config() {
       )}
 
       {/* Version Gate */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Smartphone className="w-4 h-4 text-[var(--f-info)]" />
           <h2 className="text-sm font-semibold text-ink-2">App Version Gate</h2>
@@ -79,24 +79,24 @@ export default function Config() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-ink-2 block mb-1">Minimum Version</label>
-            <Input value={vgData.minVersion || ''} onChange={(e) => setVgForm((f) => ({ ...f, minVersion: e.target.value }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" placeholder="1.2.0" />
+            <Input value={vgData.minVersion || ''} onChange={(e) => setVgForm((f) => ({ ...f, minVersion: e.target.value }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" placeholder="1.2.0" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Update URL</label>
-            <Input value={vgData.updateUrl || ''} onChange={(e) => setVgForm((f) => ({ ...f, updateUrl: e.target.value }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" placeholder="https://play.google.com/..." />
+            <Input value={vgData.updateUrl || ''} onChange={(e) => setVgForm((f) => ({ ...f, updateUrl: e.target.value }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" placeholder="https://play.google.com/..." />
           </div>
         </div>
         <div>
           <label className="text-xs text-ink-2 block mb-1">Update Message</label>
-          <Input value={vgData.message || ''} onChange={(e) => setVgForm((f) => ({ ...f, message: e.target.value }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" placeholder="Please update to continue using the app." />
+          <Input value={vgData.message || ''} onChange={(e) => setVgForm((f) => ({ ...f, message: e.target.value }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" placeholder="Please update to continue using the app." />
         </div>
-        <Button onClick={() => updateVg.mutate(vgData)} className="bg-blue-600 hover:bg-[var(--f-info)] text-[var(--az-text-primary)]">
+        <Button onClick={() => updateVg.mutate(vgData)} className="bg-blue-600 hover:bg-[var(--f-info)] text-[var(--f-text)]">
           Save Version Gate
         </Button>
       </div>
 
       {/* Payout Automation */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-[var(--f-ok)]" />
           <h2 className="text-sm font-semibold text-ink-2">Autonomous Payout Settings</h2>
@@ -104,36 +104,36 @@ export default function Config() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs text-ink-2 block mb-1">Auto-payout Threshold ($)</label>
-            <Input type="number" value={poData.threshold || ''} onChange={(e) => setPoForm((f) => ({ ...f, threshold: parseFloat(e.target.value) }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" />
+            <Input type="number" value={poData.threshold || ''} onChange={(e) => setPoForm((f) => ({ ...f, threshold: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Max Amount per Payout ($)</label>
-            <Input type="number" value={poData.maxAmount || ''} onChange={(e) => setPoForm((f) => ({ ...f, maxAmount: parseFloat(e.target.value) }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" />
+            <Input type="number" value={poData.maxAmount || ''} onChange={(e) => setPoForm((f) => ({ ...f, maxAmount: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Interval (hours)</label>
-            <Input type="number" value={poData.intervalHours || ''} onChange={(e) => setPoForm((f) => ({ ...f, intervalHours: parseInt(e.target.value) }))} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" />
+            <Input type="number" value={poData.intervalHours || ''} onChange={(e) => setPoForm((f) => ({ ...f, intervalHours: parseInt(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Enabled</label>
-            <select value={poData.enabled ? 'true' : 'false'} onChange={(e) => setPoForm((f) => ({ ...f, enabled: e.target.value === 'true' }))} className="w-full bg-[var(--az-surface-3)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
+            <select value={poData.enabled ? 'true' : 'false'} onChange={(e) => setPoForm((f) => ({ ...f, enabled: e.target.value === 'true' }))} className="w-full bg-[var(--f-surface-sunken)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]">
               <option value="true">Enabled</option>
               <option value="false">Disabled</option>
             </select>
           </div>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => updatePo.mutate(poData)} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]">
+          <Button onClick={() => updatePo.mutate(poData)} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)]">
             Save Payout Settings
           </Button>
-          <Button variant="outline" onClick={() => batchProcess.mutate()} className="border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
+          <Button variant="outline" onClick={() => batchProcess.mutate()} className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
             Trigger Batch Now
           </Button>
         </div>
       </div>
 
       {/* Phase 5: Susu Profit Percentage */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-[var(--f-warn)]" />
           <h2 className="text-sm font-semibold text-ink-2">Susu Platform Fee</h2>
@@ -151,33 +151,33 @@ export default function Config() {
               max="1"
               value={gsData.susuProfitPct ?? 0.03}
               onChange={(e) => setGsForm((f) => ({ ...f, susuProfitPct: parseFloat(e.target.value) }))}
-              className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]"
+              className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]"
               placeholder="0.03"
             />
           </div>
           <div className="flex items-end">
-            <div className="bg-[var(--az-amber-soft)] border border-[var(--az-amber-soft)] rounded-lg p-3 w-full">
+            <div className="bg-[var(--f-warn-bg)] border border-[var(--f-warn-bg)] rounded-lg p-3 w-full">
               <p className="text-xs text-[var(--f-warn)] font-semibold">
                 Current: {((gsData.susuProfitPct ?? 0.03) * 100).toFixed(1)}%
               </p>
             </div>
           </div>
         </div>
-        <Button onClick={() => updateGs.mutate({ susuProfitPct: gsData.susuProfitPct })} className="bg-amber-600 hover:bg-[var(--f-warn)] text-[var(--az-text-primary)]">
+        <Button onClick={() => updateGs.mutate({ susuProfitPct: gsData.susuProfitPct })} className="bg-amber-600 hover:bg-[var(--f-warn)] text-[var(--f-text)]">
           Save Susu Fee
         </Button>
       </div>
 
 
       {/* 2FA Security */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-[var(--f-ok)]" />
             <h2 className="text-sm font-semibold text-ink-2">Two-Factor Authentication (TOTP)</h2>
           </div>
           {twoFAStatus?.enabled && (
-            <span className="flex items-center gap-1 text-[10px] text-[var(--f-ok)] bg-[var(--az-emerald-soft)] px-2 py-0.5 rounded-full">
+            <span className="flex items-center gap-1 text-[10px] text-[var(--f-ok)] bg-[var(--f-ok-bg)] px-2 py-0.5 rounded-full">
               <CheckCircle2 className="w-2.5 h-2.5" /> Enabled
             </span>
           )}
@@ -186,7 +186,7 @@ export default function Config() {
         {!twoFAStatus?.enabled && !twoFASetup && (
           <div className="space-y-3">
             <p className="text-xs text-ink-2">Add an extra layer of security to your admin account using a TOTP authenticator app (Google Authenticator, Authy, etc.).</p>
-            <Button onClick={() => setup2FA.mutate()} disabled={setup2FA.isPending} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]">
+            <Button onClick={() => setup2FA.mutate()} disabled={setup2FA.isPending} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)]">
               {setup2FA.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Shield className="w-4 h-4 mr-2" />}
               Setup 2FA
             </Button>
@@ -209,12 +209,12 @@ export default function Config() {
                 maxLength={6}
                 value={twoFAToken}
                 onChange={(e) => setTwoFAToken(e.target.value.replace(/\D/g, ''))}
-                className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-center text-lg tracking-widest"
+                className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)] text-center text-lg tracking-widest"
               />
               <Button
                 onClick={() => verify2FA.mutate(twoFAToken)}
                 disabled={twoFAToken.length !== 6 || verify2FA.isPending}
-                className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]"
+                className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)]"
               >
                 {verify2FA.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
               </Button>
@@ -224,7 +224,7 @@ export default function Config() {
 
         {twoFAStatus?.enabled && (
           <div className="space-y-3">
-            <div className="flex items-start gap-2 bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] rounded-lg p-3">
+            <div className="flex items-start gap-2 bg-[var(--f-ok-bg)] border border-[var(--f-ok)] rounded-lg p-3">
               <CheckCircle2 className="w-4 h-4 text-[var(--f-ok)] flex-shrink-0 mt-0.5" />
               <p className="text-xs text-[var(--f-ok)]">2FA is active. You'll need a code from your authenticator app when logging in.</p>
             </div>
@@ -235,12 +235,12 @@ export default function Config() {
                 maxLength={6}
                 value={twoFADisableToken}
                 onChange={(e) => setTwoFADisableToken(e.target.value.replace(/\D/g, ''))}
-                className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]"
+                className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]"
               />
               <Button
                 onClick={() => disable2FA.mutate(twoFADisableToken)}
                 disabled={twoFADisableToken.length !== 6 || disable2FA.isPending}
-                className="bg-red-600 hover:bg-[var(--f-bad)] text-[var(--az-text-primary)]"
+                className="bg-red-600 hover:bg-[var(--f-bad)] text-[var(--f-text)]"
               >
                 {disable2FA.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Disable 2FA'}
               </Button>
@@ -250,13 +250,13 @@ export default function Config() {
       </div>
 
       {/* KYC Provider note */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-3">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-[var(--az-violet)]" />
+          <Bot className="w-4 h-4 text-[var(--f-tint-color)]" />
           <h2 className="text-sm font-semibold text-ink-2">KYC Provider</h2>
         </div>
         <p className="text-xs text-ink-2">Currently using manual admin KYC approval. Once Dojah integration is live, approved KYC submissions will be auto-verified and this panel will display the Dojah webhook status and configuration.</p>
-        <div className="bg-[var(--az-amber-soft)] border border-[var(--az-amber-soft)] rounded-lg p-3">
+        <div className="bg-[var(--f-warn-bg)] border border-[var(--f-warn-bg)] rounded-lg p-3">
           <p className="text-xs text-[var(--f-warn)]">Temporary: Admin manually approves KYC from the Users tab. Hook up Dojah webhook URL once your company registration is complete.</p>
         </div>
       </div>

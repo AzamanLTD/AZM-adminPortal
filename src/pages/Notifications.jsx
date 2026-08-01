@@ -46,11 +46,11 @@ export default function Notifications() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--az-emerald-soft)] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-[var(--f-ok-bg)] rounded-lg flex items-center justify-center">
             <Bell className="w-4 h-4 text-[var(--f-ok)]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Notification Center</h1>
+            <h1 className="text-xl font-bold text-[var(--f-text)]">Notification Center</h1>
             <p className="text-sm text-ink-2">
               {open.length} open
               {unreadCount > 0 && <span className="text-[var(--f-ok)]"> · {unreadCount} unread</span>}
@@ -62,7 +62,7 @@ export default function Notifications() {
           size="sm"
           onClick={markAllRead}
           disabled={unreadCount === 0}
-          className="border-line text-ink-2 hover:bg-[var(--az-surface-3)] disabled:opacity-40"
+          className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)] disabled:opacity-40"
         >
           <CheckCheck className="w-3.5 h-3.5 mr-2" /> Mark all read
         </Button>
@@ -77,7 +77,7 @@ export default function Notifications() {
               onClick={() => setStatus(f.key)}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 status === f.key
-                  ? 'border-emerald-500 bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'
+                  ? 'border-emerald-500 bg-[var(--f-ok-bg)] text-[var(--f-ok)]'
                   : 'border-line text-ink-2 hover:border-line-bright'
               }`}
             >
@@ -92,7 +92,7 @@ export default function Notifications() {
               onClick={() => setSource(f.key)}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 source === f.key
-                  ? 'border-az-text-muted bg-line/40 text-[var(--az-text-primary)]'
+                  ? 'border-line bg-line/40 text-[var(--f-text)]'
                   : 'border-line text-ink-3 hover:border-line'
               }`}
             >
@@ -109,7 +109,7 @@ export default function Notifications() {
           <NotificationItem key={n.id} n={n} onNavigate={(r) => navigate(r)} onRead={markRead} />
         ))}
         {!isLoading && list.length === 0 && (
-          <div className="text-center py-12 text-ink-3 text-sm bg-[var(--az-surface-2)] border border-line rounded-xl">
+          <div className="text-center py-12 text-ink-3 text-sm bg-[var(--f-surface-raised)] border border-line rounded-xl">
             {status === 'open' ? 'No open notifications — all clear ✓' : 'Nothing to show'}
           </div>
         )}

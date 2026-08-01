@@ -12,10 +12,10 @@ import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRi
 import { toast } from 'sonner';
 
 const KYB_COLORS = {
-  VERIFIED:   'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]',
-  PENDING:    'bg-[var(--az-amber-soft)] text-[var(--f-warn)]',
-  REJECTED:   'bg-[var(--az-red-soft)] text-[var(--f-bad)]',
-  UNVERIFIED: 'bg-az-text-muted/20 text-ink-2',
+  VERIFIED:   'bg-[var(--f-ok-bg)] text-[var(--f-ok)]',
+  PENDING:    'bg-[var(--f-warn-bg)] text-[var(--f-warn)]',
+  REJECTED:   'bg-[var(--f-bad-bg)] text-[var(--f-bad)]',
+  UNVERIFIED: 'bg-surface-sunken text-ink-2',
 };
 
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
@@ -30,9 +30,9 @@ function BusinessDetailDialog({ bizId, onClose }) {
 
   return (
     <Dialog open={!!bizId} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-lg bg-[var(--az-surface-2)] border-[var(--az-border-bright)] text-[var(--az-text-primary)]">
+      <DialogContent className="max-w-lg bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]">
         <DialogHeader>
-          <DialogTitle className="text-[var(--az-text-primary)]">Business Details</DialogTitle>
+          <DialogTitle className="text-[var(--f-text)]">Business Details</DialogTitle>
         </DialogHeader>
         {isLoading ? (
           <p className="text-sm text-[var(--f-text-2)] py-6 text-center">Loading…</p>
@@ -45,7 +45,7 @@ function BusinessDetailDialog({ bizId, onClose }) {
                 ? <img src={biz.logoUrl} alt={biz.businessName} className="w-12 h-12 rounded-xl object-cover" />
                 : <div className="w-12 h-12 rounded-xl bg-[var(--f-line)] flex items-center justify-center"><Building2 className="w-5 h-5 text-[var(--f-text-3)]" /></div>}
               <div>
-                <p className="font-bold text-[var(--az-text-primary)]">{biz.businessName}</p>
+                <p className="font-bold text-[var(--f-text)]">{biz.businessName}</p>
                 <p className="text-xs text-[var(--f-text-3)] f-mono">{biz.bizId}</p>
               </div>
             </div>
@@ -61,9 +61,9 @@ function BusinessDetailDialog({ bizId, onClose }) {
                 ['Total Volume', `${num(biz.totalVolume).toLocaleString()} USDC`],
                 ['Rating', num(biz.averageRating).toFixed(2)],
               ].map(([k, v]) => (
-                <div key={k} className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-lg p-2.5">
+                <div key={k} className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-lg p-2.5">
                   <p className="text-[var(--f-text-3)]">{k}</p>
-                  <p className="text-[var(--az-text-primary)] mt-0.5 truncate">{v}</p>
+                  <p className="text-[var(--f-text)] mt-0.5 truncate">{v}</p>
                 </div>
               ))}
             </div>
@@ -115,7 +115,7 @@ export default function Businesses() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Businesses</h1>
+        <h1 className="text-xl font-bold text-[var(--f-text)]">Businesses</h1>
         <p className="text-sm text-ink-2 mt-1">{total} total businesses</p>
       </div>
 
@@ -132,10 +132,10 @@ export default function Businesses() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3" />
           <Input placeholder="Search by name or BIZ id…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-                 className="pl-9 bg-[var(--az-surface-2)] border-line text-[var(--az-text-primary)]" />
+                 className="pl-9 bg-[var(--f-surface-raised)] border-line text-[var(--f-text)]" />
         </div>
         <select value={kybFilter} onChange={(e) => { setKybFilter(e.target.value); setPage(1); }}
-                className="bg-[var(--az-surface-2)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
+                className="bg-[var(--f-surface-raised)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]">
           <option value="">All KYB</option>
           <option value="VERIFIED">Verified</option>
           <option value="PENDING">Pending</option>
@@ -145,7 +145,7 @@ export default function Businesses() {
       </div>
 
       {/* Table */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl overflow-hidden">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl overflow-hidden">
         <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-line text-xs text-ink-3 uppercase tracking-wide">
           <span className="col-span-3">Business</span>
           <span className="col-span-2">Owner</span>
@@ -165,7 +165,7 @@ export default function Businesses() {
         {list.map((b) => (
           <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-line/50 last:border-0 items-center hover:bg-surface/20 transition-colors">
             <div className="col-span-3 min-w-0">
-              <p className="text-sm font-medium text-[var(--az-text-primary)] truncate">{b.businessName}</p>
+              <p className="text-sm font-medium text-[var(--f-text)] truncate">{b.businessName}</p>
               <p className="text-xs text-ink-3 f-mono truncate">{b.bizId}</p>
             </div>
             <div className="col-span-2 min-w-0">
@@ -175,23 +175,23 @@ export default function Businesses() {
             <Tag className={`${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED} border-0 text-xs w-fit`}>{b.kybStatus}</Tag>
             <span className="text-xs text-ink-2 text-right f-mono">{num(b.totalEscrows)}</span>
             <span className="col-span-2 text-xs text-ink-2 text-right f-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-            <Tag className={`${b.isSuspended ? 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' : 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'} border-0 text-xs w-fit`}>
+            <Tag className={`${b.isSuspended ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]'} border-0 text-xs w-fit`}>
               {b.isSuspended ? 'Suspended' : 'Active'}
             </Tag>
             <div className="col-span-2 flex gap-1 justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-ink-2 hover:text-[var(--az-text-primary)] hover:bg-line" title="View details">
+              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-ink-2 hover:text-[var(--f-text)] hover:bg-line" title="View details">
                 <Eye className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/business-kyb')} className="h-7 px-2 text-xs text-[var(--f-info)] hover:text-blue-300 hover:bg-[var(--az-blue-soft)]" title="View KYB">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/business-kyb')} className="h-7 px-2 text-xs text-[var(--f-info)] hover:text-blue-300 hover:bg-[var(--f-info-bg)]" title="View KYB">
                 <FileCheck className="w-3.5 h-3.5" />
               </Button>
               {b.isSuspended ? (
                 <Button variant="ghost" size="sm" onClick={() => unsuspendMutation.mutate(b.bizId)} disabled={unsuspendMutation.isPending}
-                        className="h-7 px-2 text-xs text-[var(--f-ok)] hover:text-emerald-300 hover:bg-[var(--az-emerald-soft)]">
+                        className="h-7 px-2 text-xs text-[var(--f-ok)] hover:text-emerald-300 hover:bg-[var(--f-ok-bg)]">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setSuspendTarget(b)} className="h-7 px-2 text-xs text-[var(--f-bad)] hover:text-red-300 hover:bg-[var(--az-red-soft)]" title="Suspend">
+                <Button variant="ghost" size="sm" onClick={() => setSuspendTarget(b)} className="h-7 px-2 text-xs text-[var(--f-bad)] hover:text-red-300 hover:bg-[var(--f-bad-bg)]" title="Suspend">
                   <Ban className="w-3.5 h-3.5" />
                 </Button>
               )}
@@ -217,19 +217,19 @@ export default function Businesses() {
 
       {/* Suspend confirmation */}
       <Dialog open={!!suspendTarget} onOpenChange={(o) => { if (!o) { setSuspendTarget(null); setSuspendReason(''); } }}>
-        <DialogContent className="max-w-md bg-[var(--az-surface-2)] border-[var(--az-border-bright)] text-[var(--az-text-primary)]">
+        <DialogContent className="max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]">
           <DialogHeader>
-            <DialogTitle className="text-[var(--az-text-primary)]">Suspend {suspendTarget?.businessName}</DialogTitle>
+            <DialogTitle className="text-[var(--f-text)]">Suspend {suspendTarget?.businessName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-[var(--f-text-2)]">This hides the business from new activity until unsuspended. Provide a reason.</p>
             <Textarea placeholder="Reason for suspension (required)…" value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)}
-                      className="bg-[#0a0a12] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-sm" />
+                      className="bg-bg border-[var(--f-line-strong)] text-[var(--f-text)] text-sm" />
             <div className="flex gap-2 justify-end">
               <Button variant="ghost" onClick={() => { setSuspendTarget(null); setSuspendReason(''); }} className="text-[var(--f-text-2)]">Cancel</Button>
               <Button onClick={() => suspendMutation.mutate({ bizId: suspendTarget.bizId, reason: suspendReason })}
                       disabled={!suspendReason.trim() || suspendMutation.isPending}
-                      className="bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)]">
+                      className="bg-[var(--f-bad-bg)] text-[var(--f-bad)] border border-[var(--f-bad)]">
                 <Ban className="w-4 h-4 mr-2" /> Confirm Suspend
               </Button>
             </div>

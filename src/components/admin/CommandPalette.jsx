@@ -146,7 +146,7 @@ export default function CommandPalette({ open, onOpenChange }) {
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-xl bg-[var(--az-surface-2)] border border-line rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xl bg-[var(--f-surface-raised)] border border-line rounded-2xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Search input */}
@@ -158,9 +158,9 @@ export default function CommandPalette({ open, onOpenChange }) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search pages and actions…"
-            className="flex-1 bg-transparent text-[var(--az-text-primary)] text-sm placeholder:text-ink-3 outline-none"
+            className="flex-1 bg-transparent text-[var(--f-text)] text-sm placeholder:text-ink-3 outline-none"
           />
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-ink-3 bg-[var(--az-surface-3)] border border-line rounded">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-ink-3 bg-[var(--f-surface-sunken)] border border-line rounded">
             ESC
           </kbd>
         </div>
@@ -183,8 +183,8 @@ export default function CommandPalette({ open, onOpenChange }) {
                 onMouseEnter={() => setSelectedIndex(i)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                   active
-                    ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'
-                    : 'text-ink-2 hover:bg-[var(--az-surface-3)]'
+                    ? 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]'
+                    : 'text-ink-2 hover:bg-[var(--f-surface-sunken)]'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -204,12 +204,12 @@ export default function CommandPalette({ open, onOpenChange }) {
         <div className="flex items-center justify-between px-4 py-2 border-t border-line text-xs text-ink-3">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↑</kbd>
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↓</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--f-surface-sunken)] border border-line rounded font-mono">↑</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--f-surface-sunken)] border border-line rounded font-mono">↓</kbd>
               Navigate
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↵</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--f-surface-sunken)] border border-line rounded font-mono">↵</kbd>
               Select
             </span>
           </div>

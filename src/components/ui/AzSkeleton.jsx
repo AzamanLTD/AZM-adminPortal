@@ -25,10 +25,10 @@ export function StatCardSkeleton({ count = 4 }) {
 export function TableSkeleton({ rows = 8, cols = 5 }) {
   return (
     <div className="az-card rounded-xl overflow-hidden">
-      <div className="border-b p-4" style={{ borderColor: 'var(--az-border)' }}>
+      <div className="border-b p-4" style={{ borderColor: 'var(--f-line)' }}>
         <Bone className="h-4 w-32" />
       </div>
-      <div className="divide-y" style={{ borderColor: 'var(--az-border)' }}>
+      <div className="divide-y" style={{ borderColor: 'var(--f-line)' }}>
         {[...Array(rows)].map((_, r) => (
           <div key={r} className="flex items-center gap-4 px-5 py-3.5">
             {[...Array(cols)].map((_, c) => (

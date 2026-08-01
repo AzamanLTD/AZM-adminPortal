@@ -777,3 +777,26 @@ textarea.f-input{ height:auto; padding:8px 10px; resize:vertical; line-height:1.
 .f-icon-wrap--warn{ background:var(--f-warn-bg); border-color:color-mix(in oklab,var(--f-warn) 25%,transparent); color:var(--f-warn); }
 .f-icon-wrap--bad{ background:var(--f-bad-bg); border-color:color-mix(in oklab,var(--f-bad) 25%,transparent); color:var(--f-bad); }
 .f-icon-wrap--info{ background:var(--f-info-bg); border-color:color-mix(in oklab,var(--f-info) 25%,transparent); color:var(--f-info); }
+
+/* ---------- Restaurant Kitchen (KDS) animations ------------------------- */
+@keyframes kds-pulse-red {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--f-bad) 70%, transparent); }
+  70% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--f-bad) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--f-bad) 0%, transparent); }
+}
+@keyframes kds-pulse-amber {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--f-warn) 70%, transparent); }
+  70% { box-shadow: 0 0 0 10px color-mix(in oklab, var(--f-warn) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--f-warn) 0%, transparent); }
+}
+@keyframes glow-rush {
+  0%, 100% { border-color: var(--f-bad); filter: drop-shadow(0 0 2px var(--f-bad)); }
+  50% { border-color: var(--f-tint-color); filter: drop-shadow(0 0 8px var(--f-tint-color)); }
+}
+.kds-card-rush { animation: glow-rush 2s infinite ease-in-out; border-width: 2px !important; }
+.pulse-amber { animation: kds-pulse-amber 2s infinite; }
+.pulse-red { animation: kds-pulse-red 1.5s infinite; }
+.kds-grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.kds-kiosk { font-size: 1.15rem; }
+.kds-kiosk button, .kds-kiosk select, .kds-kiosk input { min-height: 48px; }
+.f-ticket--overdue { animation: kds-pulse-red 1.5s infinite; }

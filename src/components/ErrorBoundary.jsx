@@ -25,11 +25,11 @@ export default class ErrorBoundary extends React.Component {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-8">
           <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
+            <AlertTriangle className="w-6 h-6 text-bad" />
           </div>
           <div className="text-center">
-            <h2 className="text-base font-semibold text-az-text-primary">Something went wrong</h2>
-            <p className="text-sm text-az-text-muted mt-1 max-w-md">
+            <h2 className="text-base font-semibold text-ink-primary">Something went wrong</h2>
+            <p className="text-sm text-ink-3 mt-1 max-w-md">
               {this.state.error?.message || 'An unexpected error occurred while rendering this page.'}
             </p>
           </div>
@@ -37,7 +37,7 @@ export default class ErrorBoundary extends React.Component {
             variant="outline"
             size="sm"
             onClick={this.handleReset}
-            className="border-az-border text-az-text-secondary hover:bg-az-card"
+            className="border-line text-ink-2 hover:bg-surface"
           >
             <RefreshCw className="w-3.5 h-3.5 mr-2" /> Try Again
           </Button>

@@ -13,13 +13,13 @@ import {
 } from 'lucide-react';
 
 const SOURCE_META = {
-  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--az-blue-soft)] text-[var(--f-info)]' },
-  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' },
-  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]' },
-  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' },
-  VENDOR:     { label: 'Vendor',     icon: Store,       color: 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]' },
-  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' },
-  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' },
+  WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--f-info-bg)] text-[var(--f-info)]' },
+  DISPUTE:    { label: 'Dispute',    icon: Swords,      color: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' },
+  SUSU:       { label: 'Susu',       icon: PiggyBank,   color: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)]' },
+  KYC:        { label: 'KYC',        icon: ShieldCheck, color: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]' },
+  VENDOR:     { label: 'Vendor',     icon: Store,       color: 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)]' },
+  RESIDENCY:  { label: 'Residency',  icon: Home,        color: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]' },
+  SYSTEM:     { label: 'System',     icon: Server,      color: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' },
 };
 
 const SEV_DOT = {
@@ -81,7 +81,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
   return (
     <div
       className={`rounded-xl border transition-colors ${
-        resolved ? 'border-line bg-surface/60' : 'border-line bg-[var(--az-surface-2)]'
+        resolved ? 'border-line bg-surface/60' : 'border-line bg-[var(--f-surface-raised)]'
       } ${!n.read && !resolved ? 'ring-1 ring-emerald-500/20' : ''}`}
     >
       <button
@@ -96,14 +96,14 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
             <Icon className="w-4 h-4" />
           </div>
           {!n.read && !resolved && (
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-az-surface" />
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-ok border-2 border-surface" />
           )}
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <Circle className={`w-2 h-2 fill-current ${SEV_DOT[n.severity] || 'text-ink-3'}`} />
-            <span className="text-sm font-medium text-[var(--az-text-primary)] truncate">{n.title}</span>
+            <span className="text-sm font-medium text-[var(--f-text)] truncate">{n.title}</span>
           </div>
           {n.description && (
             <p className="text-xs text-ink-2 mt-0.5 truncate">{n.description}</p>
@@ -111,7 +111,7 @@ export default function NotificationItem({ n, onNavigate, onRead }) {
           <div className="flex items-center gap-2 mt-1">
             <Tag className={`${meta.color} border-0 text-[10px]`}>{meta.label}</Tag>
             {resolved && (
-              <Tag className="bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-0 text-[10px]">RESOLVED</Tag>
+              <Tag className="bg-[var(--f-ok-bg)] text-[var(--f-ok)] border-0 text-[10px]">RESOLVED</Tag>
             )}
             <span className="text-[10px] text-ink-3">{fmtTime(n.createdAt)}</span>
           </div>

@@ -120,7 +120,7 @@ export default function AzTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--az-border)]">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-[var(--f-line)]">
           <p className="text-xs">
             {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sorted.length)} of {sorted.length}
           </p>

@@ -20,35 +20,35 @@ export default function PageNotFound({}) {
     });
     
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-az-black">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-bg">
             <div className="max-w-md w-full">
                 <div className="text-center space-y-6">
                     {/* 404 Error Code */}
                     <div className="space-y-2">
-                        <h1 className="text-7xl font-light text-az-text-secondary">404</h1>
-                        <div className="h-0.5 w-16 bg-az-border mx-auto"></div>
+                        <h1 className="text-7xl font-light text-ink-2">404</h1>
+                        <div className="h-0.5 w-16 bg-line mx-auto"></div>
                     </div>
                     
                     {/* Main Message */}
                     <div className="space-y-3">
-                        <h2 className="text-2xl font-medium text-az-text-primary">
+                        <h2 className="text-2xl font-medium text-ink-primary">
                             Page Not Found
                         </h2>
-                        <p className="text-az-text-muted leading-relaxed">
-                            The page <span className="font-medium text-az-text-secondary">"{pageName}"</span> could not be found in this application.
+                        <p className="text-ink-3 leading-relaxed">
+                            The page <span className="font-medium text-ink-2">"{pageName}"</span> could not be found in this application.
                         </p>
                     </div>
                     
                     {/* Admin Note */}
                     {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="mt-8 p-4 bg-az-surface rounded-lg border border-az-border">
+                        <div className="mt-8 p-4 bg-surface rounded-lg border border-line">
                             <div className="flex items-start space-x-3">
                                 <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center mt-0.5">
                                     <div className="w-2 h-2 rounded-full bg-orange-400"></div>
                                 </div>
                                 <div className="text-left space-y-1">
-                                    <p className="text-sm font-medium text-az-text-secondary">Admin Note</p>
-                                    <p className="text-sm text-az-text-muted leading-relaxed">
+                                    <p className="text-sm font-medium text-ink-2">Admin Note</p>
+                                    <p className="text-sm text-ink-3 leading-relaxed">
                                         This could mean that the AI hasn't implemented this page yet. Ask it to implement it in the chat.
                                     </p>
                                 </div>
@@ -60,7 +60,7 @@ export default function PageNotFound({}) {
                     <div className="pt-6">
                         <button 
                             onClick={() => window.location.href = '/'} 
-                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-az-text-secondary bg-white border border-az-border rounded-lg hover:bg-az-black hover:border-az-border-bright transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-az-border-bright"
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-ink-2 bg-white border border-line rounded-lg hover:bg-bg hover:border-line-bright transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-az-border-bright"
                         >
                             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

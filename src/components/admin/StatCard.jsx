@@ -28,28 +28,28 @@ export default function StatCard({
 
   const accentMap = {
     emerald: {
-      iconBg:   'var(--az-emerald-subtle)',
+      iconBg:   'var(--f-ok-bg)',
       iconText: 'var(--f-ok)',
-      border:   'var(--az-emerald-border)',
+      border:   'var(--f-ok)',
     },
     red: {
-      iconBg:   'var(--az-danger-subtle)',
+      iconBg:   'var(--f-bad-bg)',
       iconText: 'var(--f-bad)',
       border:   'rgba(220,38,38,0.18)',
     },
     amber: {
-      iconBg:   'var(--az-warning-subtle)',
+      iconBg:   'var(--f-warn-bg)',
       iconText: 'var(--f-warn)',
       border:   'rgba(217,119,6,0.18)',
     },
     blue: {
-      iconBg:   'var(--az-info-subtle)',
+      iconBg:   'var(--f-info-bg)',
       iconText: 'var(--f-info)',
       border:   'rgba(37,99,235,0.18)',
     },
     violet: {
-      iconBg:   'var(--az-violet-soft)',
-      iconText: 'var(--az-violet)',
+      iconBg:   'var(--f-surface-sunken)',
+      iconText: 'var(--f-tint-color)',
       border:   'rgba(108,79,209,0.18)',
     },
   };
@@ -76,7 +76,7 @@ export default function StatCard({
       whileHover={{
         y: -2,
         borderTopColor: colors.iconText,
-        boxShadow: 'var(--az-shadow-md)',
+        boxShadow: 'var(--f-shadow-sm)',
       }}
       transition={{ duration: 0.15 }}
     >
