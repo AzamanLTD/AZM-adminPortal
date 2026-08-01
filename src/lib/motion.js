@@ -110,3 +110,7 @@ export const cardVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0, transition: spring.hover },
 };
+
+// Container/item stagger aliases for page-level motion
+export const ContainerV = { hidden: {}, visible: { transition: { staggerChildren: 0.03 } } };
+export const ItemV = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: ease.out } } };
