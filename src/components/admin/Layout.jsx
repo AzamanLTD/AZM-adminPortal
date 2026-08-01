@@ -170,7 +170,7 @@ export default function AdminLayout() {
       <div
         className={cn(
           'flex items-center gap-3 shrink-0 border-b',
-          'border-[var(--az-sidebar-border)]',
+          'border-[var(--f-line)]',
           collapsed ? 'justify-center py-4 px-2' : 'px-4 py-3.5',
         )}
         style={{ height: 'var(--header-height)', minHeight: 'var(--header-height)' }}
@@ -207,7 +207,7 @@ export default function AdminLayout() {
       </nav>
 
       {/* Bottom: sign out */}
-      <div className="shrink-0 border-t border-[var(--az-sidebar-border)] p-2">
+      <div className="shrink-0 border-t border-[var(--f-line)] p-2">
         <button
           onClick={() => logout?.()}
           className={cn('az-nav-item w-full text-left', collapsed && 'justify-center !px-0')}
@@ -228,8 +228,8 @@ export default function AdminLayout() {
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         className="hidden lg:flex flex-col shrink-0 border-r overflow-hidden"
         style={{
-          background:   'var(--az-sidebar-bg)',
-          borderColor:  'var(--az-sidebar-border)',
+          background:   'var(--f-surface)',
+          borderColor:  'var(--f-line)',
         }}
       >
         <SidebarContent />
@@ -250,8 +250,8 @@ export default function AdminLayout() {
               transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
               className="lg:hidden fixed left-0 top-0 bottom-0 z-50 w-60 border-r flex flex-col"
               style={{
-                background:  'var(--az-sidebar-bg)',
-                borderColor: 'var(--az-sidebar-border)',
+                background:  'var(--f-surface)',
+                borderColor: 'var(--f-line)',
               }}
             >
               <SidebarContent />
@@ -269,8 +269,8 @@ export default function AdminLayout() {
           style={{
             height:      'var(--header-height)',
             minHeight:   'var(--header-height)',
-            background:  'var(--az-sidebar-bg)',
-            borderColor: 'var(--az-sidebar-border)',
+            background:  'var(--f-surface)',
+            borderColor: 'var(--f-line)',
           }}
         >
           {/* Collapse / mobile open */}
@@ -280,7 +280,7 @@ export default function AdminLayout() {
                 ? setMobileOpen(true)
                 : setCollapsed((c) => !c)
             }
-            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
+            className="p-1.5 rounded-md hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)] transition-colors"
           >
             <Menu style={{ width: 16, height: 16 }} />
           </button>
@@ -291,7 +291,7 @@ export default function AdminLayout() {
             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm border transition-colors min-w-[160px] max-w-[260px]"
             style={{
               border:     '1px solid var(--f-line)',
-              background: 'var(--az-surface-1)',
+              background: 'var(--f-surface)',
               color:      'var(--f-text-3)',
             }}
           >
@@ -300,7 +300,7 @@ export default function AdminLayout() {
             <kbd
               className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
               style={{
-                background:  'var(--az-surface-2)',
+                background:  'var(--f-surface-raised)',
                 borderColor: 'var(--f-line)',
                 color:       'var(--f-text-3)',
               }}
@@ -314,7 +314,7 @@ export default function AdminLayout() {
           {/* Theme toggle */}
           <button
             onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-            className="p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
+            className="p-1.5 rounded-md hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)] transition-colors"
             title="Toggle theme"
           >
             {theme === 'dark'
@@ -325,7 +325,7 @@ export default function AdminLayout() {
           {/* Notifications bell */}
           <button
             onClick={() => setNotifOpen((o) => !o)}
-            className="relative p-1.5 rounded-md hover:bg-[var(--az-nav-hover)] text-[var(--f-text-3)] transition-colors"
+            className="relative p-1.5 rounded-md hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)] transition-colors"
           >
             <Bell style={{ width: 15, height: 15 }} />
             {unreadCount > 0 && (
@@ -333,7 +333,7 @@ export default function AdminLayout() {
                 className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full border"
                 style={{
                   background:  'var(--f-bad)',
-                  borderColor: 'var(--az-sidebar-bg)',
+                  borderColor: 'var(--f-surface)',
                 }}
               />
             )}
@@ -343,8 +343,8 @@ export default function AdminLayout() {
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center border"
             style={{
-              background:  'var(--az-emerald-subtle)',
-              borderColor: 'var(--az-emerald-border)',
+              background:  'var(--f-ok-bg)',
+              borderColor: 'var(--f-ok)',
             }}
           >
             <Shield style={{ width: 13, height: 13, color: 'var(--f-ok)' }} />

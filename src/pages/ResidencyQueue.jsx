@@ -32,7 +32,7 @@ function RejectDialog({ submission, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--az-surface-2)] border-line text-ink-primary">
+      <DialogContent className="bg-[var(--f-surface-raised)] border-line text-ink-primary">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <XCircle className="w-4 h-4 text-[var(--f-bad)]" /> Reject Residency
@@ -42,7 +42,7 @@ function RejectDialog({ submission, open, onOpenChange }) {
           <p className="text-sm text-ink-2">Rejecting @{submission?.username}'s residency document.</p>
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3}
             placeholder="Reason for rejection (1–500 chars, shown to the user)…"
-            className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm resize-none" />
+            className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)] text-sm resize-none" />
           <p className="text-[11px] text-ink-3">{reason.trim().length}/500</p>
         </div>
         <DialogFooter>
@@ -59,7 +59,7 @@ function PreviewDialog({ submission, open, onOpenChange }) {
   const url = submission?.proofOfResidencyUrl;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--az-surface-2)] border-line text-ink-primary max-w-3xl">
+      <DialogContent className="bg-[var(--f-surface-raised)] border-line text-ink-primary max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-[var(--f-ok)]" /> {submission?.username} — Residency Document
@@ -93,15 +93,15 @@ export default function ResidencyQueue() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[var(--az-emerald-soft)] rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-[var(--f-ok-bg)] rounded-lg flex items-center justify-center">
             <Home className="w-4 h-4 text-[var(--f-ok)]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Proof of Residency Queue</h1>
+            <h1 className="text-xl font-bold text-[var(--f-text)]">Proof of Residency Queue</h1>
             <p className="text-sm text-ink-2">{queue.length} awaiting review</p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
@@ -109,7 +109,7 @@ export default function ResidencyQueue() {
       <div className="space-y-3">
         {isLoading && <p className="text-ink-3 text-sm">Loading…</p>}
         {queue.map((s) => (
-          <div key={s.id} className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 flex items-center gap-4">
+          <div key={s.id} className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-4 flex items-center gap-4">
             <button onClick={() => setPreviewTarget(s)}
               className="w-16 h-16 rounded-lg bg-bg border border-line flex items-center justify-center flex-shrink-0 overflow-hidden hover:border-emerald-500/50 transition-colors">
               {s.proofOfResidencyUrl && !isPdf(s.proofOfResidencyUrl)
@@ -118,31 +118,31 @@ export default function ResidencyQueue() {
             </button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-[var(--az-text-primary)]">@{s.username}</span>
-                <Tag className="bg-[var(--az-amber-soft)] text-[var(--f-warn)] border-0 text-xs">PENDING REVIEW</Tag>
+                <span className="text-sm font-semibold text-[var(--f-text)]">@{s.username}</span>
+                <Tag className="bg-[var(--f-warn-bg)] text-[var(--f-warn)] border-0 text-xs">PENDING REVIEW</Tag>
               </div>
               <p className="text-xs text-ink-3 mt-0.5">{s.email}</p>
               <p className="text-[11px] text-ink-3 mt-1">Submitted {fmtDateTime(s.proofOfResidencySubmittedAt)}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <Button size="sm" variant="outline" onClick={() => setPreviewTarget(s)}
-                className="border-line text-ink-2 hover:bg-[var(--az-surface-3)] h-8">
+                className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)] h-8">
                 <FileText className="w-3.5 h-3.5 mr-1.5" /> View
               </Button>
               <Button size="sm" onClick={() => approve.mutate(s.id, { onSuccess: () => toast.success('Residency approved') })}
                 disabled={approve.isPending}
-                className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)] h-8">
+                className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)] h-8">
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
               </Button>
               <Button size="sm" variant="outline" onClick={() => setRejectTarget(s)}
-                className="border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--az-red-soft)] h-8">
+                className="border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--f-bad-bg)] h-8">
                 <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
               </Button>
             </div>
           </div>
         ))}
         {!isLoading && queue.length === 0 && (
-          <div className="text-center py-12 text-ink-3 text-sm bg-[var(--az-surface-2)] border border-line rounded-xl">
+          <div className="text-center py-12 text-ink-3 text-sm bg-[var(--f-surface-raised)] border border-line rounded-xl">
             No residency documents awaiting review
           </div>
         )}

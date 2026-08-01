@@ -34,7 +34,7 @@ const Storefronts = lazy(() => import('@/pages/Storefronts'));
 function RouteLoader() {
   return (
     <div className="flex items-center justify-center min-h-[50vh]">
-      <div className="w-6 h-6 border-3 border-az-border border-t-emerald-400 rounded-full animate-spin" />
+      <div className="w-6 h-6 border-3 border-line border-t-emerald-400 rounded-full animate-spin" />
     </div>
   );
 }
@@ -44,10 +44,10 @@ const AuthenticatedApp = () => {
 
   if (isLoadingAuth) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-az-black">
+      <div className="fixed inset-0 flex items-center justify-center bg-bg">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-az-border border-t-emerald-400 rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm text-az-text-secondary mt-4">Verifying credentials...</p>
+          <div className="w-8 h-8 border-4 border-line border-t-emerald-400 rounded-full animate-spin mx-auto"></div>
+          <p className="text-sm text-ink-2 mt-4">Verifying credentials...</p>
         </div>
       </div>
     );

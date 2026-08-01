@@ -20,11 +20,11 @@ const DOC_TYPE_LABELS = {
 };
 
 const KYB_STATUS_STYLE = {
-  PENDING:    'bg-[var(--az-amber-soft)] text-[var(--f-warn)] border-amber-500/30',
-  APPROVED:   'bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-[var(--az-emerald-glow)]',
-  REJECTED:   'bg-[var(--az-red-soft)] text-[var(--f-bad)] border-[var(--az-red-glow)]',
-  VERIFIED:   'bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-[var(--az-emerald-glow)]',
-  UNVERIFIED: 'bg-az-text-muted/20 text-ink-2 border-az-text-muted/30',
+  PENDING:    'bg-[var(--f-warn-bg)] text-[var(--f-warn)] border-amber-500/30',
+  APPROVED:   'bg-[var(--f-ok-bg)] text-[var(--f-ok)] border-[var(--f-ok)]',
+  REJECTED:   'bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-[var(--f-bad)]',
+  VERIFIED:   'bg-[var(--f-ok-bg)] text-[var(--f-ok)] border-[var(--f-ok)]',
+  UNVERIFIED: 'bg-surface-sunken text-ink-2 border-line',
 };
 
 // Maps the page's tab labels onto the backend KybStatus the queue filters by.
@@ -43,23 +43,23 @@ function DocumentCard({ doc }) {
   });
 
   return (
-    <div className="bg-[var(--f-line)] border border-[var(--az-border-bright)] rounded-xl p-4 space-y-3">
+    <div className="bg-[var(--f-line)] border border-[var(--f-line-strong)] rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-semibold text-[var(--f-text-2)]">{DOC_TYPE_LABELS[doc.documentType] || doc.documentType}</p>
         <span className={`text-xs px-2 py-0.5 rounded-full border font-medium flex-shrink-0 ${KYB_STATUS_STYLE[doc.status]}`}>{doc.status}</span>
       </div>
 
-      <div className="relative cursor-pointer rounded-lg overflow-hidden bg-[var(--az-surface-2)] h-32 group"
+      <div className="relative cursor-pointer rounded-lg overflow-hidden bg-[var(--f-surface-raised)] h-32 group"
            onClick={() => setLightboxOpen(true)}>
         <img src={doc.documentUrl} alt={doc.documentType}
              className="w-full h-full object-cover group-hover:opacity-90 transition-opacity" />
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 transition-opacity">
-          <Eye className="w-6 h-6 text-[var(--az-text-primary)]" />
+          <Eye className="w-6 h-6 text-[var(--f-text)]" />
         </div>
       </div>
 
       {doc.reviewNotes && doc.status === 'REJECTED' && (
-        <p className="text-xs text-[var(--f-bad)]/80 bg-[var(--az-red-soft)] border border-[var(--az-red-glow)] rounded-lg px-2.5 py-1.5">{doc.reviewNotes}</p>
+        <p className="text-xs text-[var(--f-bad)]/80 bg-[var(--f-bad-bg)] border border-[var(--f-bad)] rounded-lg px-2.5 py-1.5">{doc.reviewNotes}</p>
       )}
 
       {doc.status === 'PENDING' && !showRejectInput && (
@@ -70,7 +70,7 @@ function DocumentCard({ doc }) {
             <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Approve
           </Button>
           <Button size="sm" onClick={() => setShowRejectInput(true)}
-                  className="flex-1 bg-[var(--az-red-soft)] hover:bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)] h-8">
+                  className="flex-1 bg-[var(--f-bad-bg)] hover:bg-[var(--f-bad-bg)] text-[var(--f-bad)] border border-[var(--f-bad)] h-8">
             <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
           </Button>
         </div>
@@ -79,12 +79,12 @@ function DocumentCard({ doc }) {
       {showRejectInput && (
         <div className="space-y-2">
           <Textarea placeholder="Reason for rejection..." value={notes} onChange={(e) => setNotes(e.target.value)}
-                    className="bg-[var(--az-surface-2)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-xs min-h-[60px]" />
+                    className="bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)] text-xs min-h-[60px]" />
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => { setShowRejectInput(false); setNotes(''); }} className="text-[var(--f-text-2)] h-8">Cancel</Button>
             <Button size="sm" onClick={() => reviewMutation.mutate({ status: 'REJECTED', reviewNotes: notes })}
                     disabled={!notes.trim() || reviewMutation.isPending}
-                    className="flex-1 bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)] h-8">
+                    className="flex-1 bg-[var(--f-bad-bg)] text-[var(--f-bad)] border border-[var(--f-bad)] h-8">
               Confirm Reject
             </Button>
           </div>
@@ -92,7 +92,7 @@ function DocumentCard({ doc }) {
       )}
 
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="max-w-3xl bg-[var(--az-surface-2)] border-[var(--az-border-bright)]">
+        <DialogContent className="max-w-3xl bg-[var(--f-surface-raised)] border-[var(--f-line-strong)]">
           <img src={doc.documentUrl} alt={doc.documentType} className="w-full rounded-lg" />
         </DialogContent>
       </Dialog>
@@ -150,10 +150,10 @@ export default function BusinessKYB() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Business KYB Review</h1>
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Business KYB Review</h1>
           <p className="text-sm text-[var(--f-text-2)] mt-1">Verify business identity documents</p>
         </div>
-        {pendingCount > 0 && <span className="text-xs bg-[var(--az-amber-soft)] text-[var(--f-warn)] border border-amber-500/30 rounded-full px-3 py-1 font-semibold">{pendingCount} Pending</span>}
+        {pendingCount > 0 && <span className="text-xs bg-[var(--f-warn-bg)] text-[var(--f-warn)] border border-amber-500/30 rounded-full px-3 py-1 font-semibold">{pendingCount} Pending</span>}
       </div>
 
       {/* Stats row */}
@@ -167,10 +167,10 @@ export default function BusinessKYB() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-[var(--f-surface-raised)] border border-[var(--f-line-strong)] rounded-xl p-1 w-fit">
         {['PENDING', 'APPROVED', 'REJECTED'].map((tab) => (
           <button key={tab} onClick={() => { setActiveTab(tab); setSelectedId(null); }}
-                  className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab ? 'bg-[var(--az-border-bright)] text-[var(--az-text-primary)]' : 'text-[var(--f-text-3)] hover:text-[var(--f-text-2)]'}`}>
+                  className={`px-4 py-1.5 rounded-lg text-sm transition-colors ${activeTab === tab ? 'bg-[var(--f-line-strong)] text-[var(--f-text)]' : 'text-[var(--f-text-3)] hover:text-[var(--f-text-2)]'}`}>
             {tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
         ))}
@@ -187,10 +187,10 @@ export default function BusinessKYB() {
              </div>
            ) : activeList.map((biz) => (
              <div key={biz.id} onClick={() => setSelectedId(biz.id)}
-                  className={`bg-[var(--az-surface-2)] border rounded-2xl p-4 cursor-pointer transition-all hover:border-[var(--f-info)]/40 ${selectedId === biz.id ? 'border-[var(--f-info)]/60 bg-[var(--az-surface-3)]' : 'border-[var(--az-border-bright)]'}`}>
+                  className={`bg-[var(--f-surface-raised)] border rounded-2xl p-4 cursor-pointer transition-all hover:border-[var(--f-info)]/40 ${selectedId === biz.id ? 'border-[var(--f-info)]/60 bg-[var(--f-surface-sunken)]' : 'border-[var(--f-line-strong)]'}`}>
                <div className="flex items-start justify-between gap-3">
                  <div className="flex-1 min-w-0">
-                   <p className="text-sm font-semibold text-[var(--az-text-primary)] truncate">{biz.businessName}</p>
+                   <p className="text-sm font-semibold text-[var(--f-text)] truncate">{biz.businessName}</p>
                    <p className="text-xs text-[var(--f-text-3)] mt-0.5 truncate">{biz.user?.username} · {biz.user?.email}</p>
                    <p className="text-xs text-[var(--f-text-3)] mt-0.5">{biz.verificationDocuments?.length || 0} document(s)</p>
                  </div>
@@ -204,16 +204,16 @@ export default function BusinessKYB() {
         {/* Document Review Panel */}
         <div className="lg:col-span-2">
           {!selectedBiz ? (
-             <div className="bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-2xl p-12 text-center text-[var(--f-text-3)]">
+             <div className="bg-[var(--f-surface-raised)] border border-[var(--f-line-strong)] rounded-2xl p-12 text-center text-[var(--f-text-3)]">
                <FileCheck className="w-10 h-10 mx-auto mb-4 opacity-30" />
                <p className="text-sm">Select a business to review documents</p>
              </div>
           ) : (
-             <div className="bg-[var(--az-surface-2)] border border-[var(--az-border-bright)] rounded-2xl p-5 space-y-5">
+             <div className="bg-[var(--f-surface-raised)] border border-[var(--f-line-strong)] rounded-2xl p-5 space-y-5">
                {/* Business header */}
                <div className="flex items-center justify-between gap-3">
                  <div className="min-w-0">
-                   <p className="text-base font-bold text-[var(--az-text-primary)] truncate">{selectedBiz.businessName}</p>
+                   <p className="text-base font-bold text-[var(--f-text)] truncate">{selectedBiz.businessName}</p>
                    <p className="text-xs text-[var(--f-text-2)] mt-0.5">{selectedBiz.user?.username} · {selectedBiz.bizId}</p>
                  </div>
                  <span className={`text-xs px-2.5 py-1 rounded-full border font-medium flex-shrink-0 ${KYB_STATUS_STYLE[selectedBiz.kybStatus]}`}>{selectedBiz.kybStatus}</span>
@@ -230,10 +230,10 @@ export default function BusinessKYB() {
 
                {/* Overall business action */}
                {selectedBiz.kybStatus === 'PENDING' && (
-                 <div className="border-t border-[var(--az-border-bright)] pt-4 space-y-3">
+                 <div className="border-t border-[var(--f-line-strong)] pt-4 space-y-3">
                    <p className="text-xs text-[var(--f-text-2)]">After reviewing all documents above, make a final decision on this business.</p>
                    {!allDocsApproved && (
-                     <div className="flex items-center gap-2 bg-[var(--az-amber-soft)] border border-amber-500/30 rounded-xl px-3 py-2">
+                     <div className="flex items-center gap-2 bg-[var(--f-warn-bg)] border border-amber-500/30 rounded-xl px-3 py-2">
                        <Clock className="w-3.5 h-3.5 text-[var(--f-warn)] flex-shrink-0" />
                        <span className="text-xs text-[var(--f-warn)]">All documents must be APPROVED before the business can be verified.</span>
                      </div>
@@ -246,7 +246,7 @@ export default function BusinessKYB() {
                          <CheckCircle2 className="w-4 h-4 mr-2" /> Approve Business
                        </Button>
                        <Button onClick={() => setShowRejectBizInput(true)}
-                               className="flex-1 bg-[var(--az-red-soft)] hover:bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)]">
+                               className="flex-1 bg-[var(--f-bad-bg)] hover:bg-[var(--f-bad-bg)] text-[var(--f-bad)] border border-[var(--f-bad)]">
                          <XCircle className="w-4 h-4 mr-2" /> Reject Business
                        </Button>
                      </div>
@@ -254,12 +254,12 @@ export default function BusinessKYB() {
                      <div className="space-y-2">
                        <Textarea placeholder="Reason for business rejection (required)..."
                                  value={rejectReason} onChange={(e) => setRejectReason(e.target.value)}
-                                 className="bg-[#0a0a12] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-sm" />
+                                 className="bg-bg border-[var(--f-line-strong)] text-[var(--f-text)] text-sm" />
                        <div className="flex gap-2">
                          <Button variant="ghost" onClick={() => { setShowRejectBizInput(false); setRejectReason(''); }} className="text-[var(--f-text-2)]">Cancel</Button>
                          <Button onClick={() => rejectBiz.mutate({ bizId: selectedBiz.bizId, reason: rejectReason })}
                                  disabled={!rejectReason.trim() || rejectBiz.isPending}
-                                 className="flex-1 bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)]">
+                                 className="flex-1 bg-[var(--f-bad-bg)] text-[var(--f-bad)] border border-[var(--f-bad)]">
                            Confirm Reject Business
                          </Button>
                        </div>

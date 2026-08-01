@@ -14,7 +14,7 @@ const SOURCE_COLORS = {
 const CustomTooltip = ({ active, payload, label, rate }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[var(--az-surface-3)] border border-line rounded-lg p-3 text-xs">
+    <div className="bg-[var(--f-surface-sunken)] border border-line rounded-lg p-3 text-xs">
       <p className="text-ink-2 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }} className="font-medium">
@@ -36,7 +36,7 @@ export default function Profits() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Revenue Dashboard</h1>
+        <h1 className="text-xl font-bold text-[var(--f-text)]">Revenue Dashboard</h1>
         <p className="text-sm text-ink-2 mt-1">Last 30 days — all amounts in USD and GHS</p>
       </div>
 
@@ -49,7 +49,7 @@ export default function Profits() {
       </div>
 
       {/* PnL Chart */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5">
         <h2 className="text-sm font-semibold text-ink-2 mb-4">Daily PnL — 30 Days</h2>
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={dailyPnL}>
@@ -63,7 +63,7 @@ export default function Profits() {
       </div>
 
       {/* Revenue by source */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5">
         <h2 className="text-sm font-semibold text-ink-2 mb-5">Revenue by Source</h2>
         <div className="space-y-4">
           {bySource.map(({ source, usd, ghs }) => {
@@ -73,11 +73,11 @@ export default function Profits() {
                 <div className="flex justify-between items-center mb-1.5">
                   <span className="text-xs font-medium text-ink-2">{source.replace(/_/g, ' ')}</span>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-[var(--az-text-primary)]">${usd.toLocaleString()}</span>
+                    <span className="text-xs font-bold text-[var(--f-text)]">${usd.toLocaleString()}</span>
                     <span className="text-xs text-ink-3 ml-2">₵{ghs.toLocaleString()}</span>
                   </div>
                 </div>
-                <div className="w-full bg-[var(--az-surface-3)] rounded-full h-2">
+                <div className="w-full bg-[var(--f-surface-sunken)] rounded-full h-2">
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{ width: `${pct}%`, backgroundColor: SOURCE_COLORS[source] || '#6366f1' }}
@@ -90,7 +90,7 @@ export default function Profits() {
       </div>
 
       {/* GHS Bar chart */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5">
         <h2 className="text-sm font-semibold text-ink-2 mb-4">Daily Revenue in GHS</h2>
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={dailyPnL}>

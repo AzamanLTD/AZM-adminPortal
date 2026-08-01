@@ -56,13 +56,13 @@ export default function AiOps() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">AI Operations</h1>
+          <h1 className="text-xl font-bold text-[var(--f-text)]">AI Operations</h1>
           <p className="text-sm text-ink-2 mt-1">AI-powered insights, anomaly detection, and loyalty tools.</p>
         </div>
         <Button
           onClick={() => cfoMut.mutate()}
           disabled={cfoMut.isPending}
-          className="bg-purple-600 hover:bg-[var(--az-violet)] text-[var(--az-text-primary)]"
+          className="bg-tint hover:bg-[var(--f-tint-color)] text-[var(--f-text)]"
         >
           {cfoMut.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Zap className="w-4 h-4 mr-2" />}
           Run CFO Analysis
@@ -79,14 +79,14 @@ export default function AiOps() {
         ].map(cap => {
           const Icon = cap.icon;
           return (
-            <div key={cap.id} className="bg-[var(--az-surface-2)] border border-line rounded-xl p-4 flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[var(--az-violet)]/15 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 text-[var(--az-violet)]" />
+            <div key={cap.id} className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-4 flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[var(--f-tint-color)]/15 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-5 h-5 text-[var(--f-tint-color)]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-[var(--az-text-primary)]">{cap.name}</p>
-                  <span className="flex items-center gap-1 text-[10px] text-[var(--f-ok)] bg-[var(--az-emerald-soft)] px-1.5 py-0.5 rounded-full">
+                  <p className="text-sm font-semibold text-[var(--f-text)]">{cap.name}</p>
+                  <span className="flex items-center gap-1 text-[10px] text-[var(--f-ok)] bg-[var(--f-ok-bg)] px-1.5 py-0.5 rounded-full">
                     <CheckCircle2 className="w-2.5 h-2.5" /> Active
                   </span>
                 </div>
@@ -98,13 +98,13 @@ export default function AiOps() {
       </div>
 
       {/* CFO Insights */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-3">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Brain className="w-4 h-4 text-[var(--az-violet)]" />
+            <Brain className="w-4 h-4 text-[var(--f-tint-color)]" />
             <h2 className="text-sm font-semibold text-ink-2">CFO Insights</h2>
           </div>
-          <button onClick={() => refetchInsights()} className="text-ink-3 hover:text-[var(--az-text-primary)] transition-colors">
+          <button onClick={() => refetchInsights()} className="text-ink-3 hover:text-[var(--f-text)] transition-colors">
             <RefreshCw className={`w-3.5 h-3.5 ${loadingInsights ? 'animate-spin' : ''}`} />
           </button>
         </div>
@@ -117,7 +117,7 @@ export default function AiOps() {
               <div className="space-y-2 mt-3">
                 <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">Recommendations</p>
                 {insights.recommendations.map((r, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-ink-2 bg-[var(--az-surface-3)] rounded-lg p-2.5">
+                  <div key={i} className="flex items-start gap-2 text-xs text-ink-2 bg-[var(--f-surface-sunken)] rounded-lg p-2.5">
                     <TrendingUp className="w-3.5 h-3.5 text-[var(--f-ok)] mt-0.5 flex-shrink-0" />
                     {r}
                   </div>
@@ -129,31 +129,31 @@ export default function AiOps() {
       </div>
 
       {/* Discount Candidates */}
-      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Gift className="w-4 h-4 text-[var(--f-warn)]" />
             <h2 className="text-sm font-semibold text-ink-2">Loyalty Discount Candidates</h2>
           </div>
-          <button onClick={() => refetchCandidates()} className="text-ink-3 hover:text-[var(--az-text-primary)] transition-colors">
+          <button onClick={() => refetchCandidates()} className="text-ink-3 hover:text-[var(--f-text)] transition-colors">
             <RefreshCw className={`w-3.5 h-3.5 ${loadingCandidates ? 'animate-spin' : ''}`} />
           </button>
         </div>
         {loadingCandidates && <p className="text-ink-3 text-sm">Loading…</p>}
         {candidatesError && <ErrorState message="Failed to load discount candidates." onRetry={refetchCandidates} compact />}
         {candidates.map((c) => (
-          <div key={c.userId} className="flex items-center gap-4 bg-[var(--az-surface-3)] rounded-xl p-3">
+          <div key={c.userId} className="flex items-center gap-4 bg-[var(--f-surface-sunken)] rounded-xl p-3">
             <div className="w-9 h-9 rounded-full bg-[var(--f-warn)]/15 flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-bold text-[var(--f-warn)]">{(c.userName || '?').charAt(0).toUpperCase()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--az-text-primary)] truncate">{c.userName}</p>
+              <p className="text-sm font-medium text-[var(--f-text)] truncate">{c.userName}</p>
               <p className="text-xs text-ink-2">{c.tradeCount} trades · {c.reason}</p>
             </div>
             <Input
               type="number"
               placeholder="$"
-              className="w-20 bg-line border-line-bright text-[var(--az-text-primary)] text-sm h-8"
+              className="w-20 bg-line border-line-bright text-[var(--f-text)] text-sm h-8"
               value={discountAmounts[c.userId] || ''}
               onChange={(e) => setDiscountAmounts((d) => ({ ...d, [c.userId]: e.target.value }))}
             />
@@ -161,7 +161,7 @@ export default function AiOps() {
               size="sm"
               onClick={() => approve.mutate({ userId: c.userId, amount: parseFloat(discountAmounts[c.userId]), duration: 30 })}
               disabled={!discountAmounts[c.userId] || approve.isPending}
-              className="bg-amber-600 hover:bg-[var(--f-warn)] text-[var(--az-text-primary)] h-8"
+              className="bg-amber-600 hover:bg-[var(--f-warn)] text-[var(--f-text)] h-8"
             >
               Approve
             </Button>

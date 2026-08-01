@@ -29,8 +29,8 @@ export default function Login() {
       <div
         className="hidden lg:flex flex-col justify-between w-[340px] shrink-0 p-10 border-r"
         style={{
-          background:  'var(--az-sidebar-bg)',
-          borderColor: 'var(--az-sidebar-border)',
+          background:  'var(--f-surface)',
+          borderColor: 'var(--f-line)',
         }}
       >
         {/* Top: logo + tagline */}
@@ -178,7 +178,7 @@ export default function Login() {
                 transition={{ duration: 0.18 }}
                 className="flex items-center gap-2 p-3 rounded-md"
                 style={{
-                  background: 'var(--az-danger-subtle)',
+                  background: 'var(--f-bad-bg)',
                   border:     '1px solid rgba(220,38,38,0.18)',
                 }}
               >

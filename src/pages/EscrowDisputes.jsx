@@ -10,9 +10,9 @@ import { Lock, ArrowRight, ShieldAlert, AlertTriangle, Scale, CheckCircle, Dolla
 import { toast } from 'sonner';
 
 const RULINGS = [
-  { value: 'FULL_RELEASE', label: 'Full Release', desc: '100% to Payee (Seller)', color: 'text-[var(--f-ok)]', active: 'border-emerald-500/50 bg-[var(--az-emerald-soft)]' },
-  { value: 'FULL_REFUND',  label: 'Full Refund',  desc: '100% to Payer (Buyer)',  color: 'text-[var(--f-info)]',    active: 'border-blue-500/50 bg-[var(--az-blue-soft)]' },
-  { value: 'SPLIT',        label: 'Custom Split',  desc: 'Set custom percentages', color: 'text-[var(--f-warn)]',   active: 'border-amber-500/50 bg-[var(--az-amber-soft)]' },
+  { value: 'FULL_RELEASE', label: 'Full Release', desc: '100% to Payee (Seller)', color: 'text-[var(--f-ok)]', active: 'border-emerald-500/50 bg-[var(--f-ok-bg)]' },
+  { value: 'FULL_REFUND',  label: 'Full Refund',  desc: '100% to Payer (Buyer)',  color: 'text-[var(--f-info)]',    active: 'border-blue-500/50 bg-[var(--f-info-bg)]' },
+  { value: 'SPLIT',        label: 'Custom Split',  desc: 'Set custom percentages', color: 'text-[var(--f-warn)]',   active: 'border-amber-500/50 bg-[var(--f-warn-bg)]' },
 ];
 
 const DISPUTE_STATUS_STYLE = {
@@ -42,19 +42,19 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
             <p className="text-xs text-[var(--f-text-2)] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
-        <div className="bg-[var(--az-surface-1)] border border-[var(--az-border-bright)] rounded-xl p-4 space-y-2">
+        <div className="bg-[var(--f-surface)] border border-[var(--f-line-strong)] rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-[var(--f-text-2)]">Payer (Buyer) receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] f-mono">{payerPct}%</span>
+            <span className="font-bold text-[var(--f-text)] f-mono">{payerPct}%</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-[var(--f-text-2)]">Payee (Seller) receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] f-mono">{payeePct}%</span>
+            <span className="font-bold text-[var(--f-text)] f-mono">{payeePct}%</span>
           </div>
         </div>
         <p className="text-sm text-[var(--f-text-2)] leading-relaxed">This is an unusual split. Are you absolutely certain?</p>
         <div className="flex gap-3 pt-1">
-          <Button variant="ghost" className="flex-1 border border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:text-[var(--az-text-primary)] hover:bg-[var(--f-line)]" onClick={onCancel}>Cancel</Button>
+          <Button variant="ghost" className="flex-1 border border-[var(--f-line-strong)] text-[var(--f-text-2)] hover:text-[var(--f-text)] hover:bg-[var(--f-line)]" onClick={onCancel}>Cancel</Button>
           <Button className="flex-1 border border-[var(--f-bad)] bg-transparent text-[var(--f-bad)] hover:bg-[var(--f-bad)15] font-semibold" onClick={onConfirm}>
             <ShieldAlert className="w-4 h-4 mr-2" /> Confirm Extreme Ruling
           </Button>
@@ -105,12 +105,12 @@ function EscrowDisputeCard({ dispute }) {
 
       <div className="az-card overflow-hidden transition-all duration-200">
         {/* Collapsed header */}
-        <div className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[var(--az-surface-1)] transition-colors" onClick={() => setExpanded(!expanded)}>
+        <div className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[var(--f-surface)] transition-colors" onClick={() => setExpanded(!expanded)}>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs f-mono text-[var(--f-text-2)] truncate">#{String(dispute.escrowId).slice(0, 8)}</span>
-              <Tag className={`text-xs border font-medium ${DISPUTE_STATUS_STYLE[dispute.status] || 'bg-[var(--f-line)] text-[var(--f-text-2)] border-[var(--az-border-bright)]'}`}>{dispute.status}</Tag>
-              <span className="text-sm font-bold text-[var(--az-text-primary)]">{usdc(amount)}</span>
+              <Tag className={`text-xs border font-medium ${DISPUTE_STATUS_STYLE[dispute.status] || 'bg-[var(--f-line)] text-[var(--f-text-2)] border-[var(--f-line-strong)]'}`}>{dispute.status}</Tag>
+              <span className="text-sm font-bold text-[var(--f-text)]">{usdc(amount)}</span>
             </div>
             <div className="flex items-center gap-2 mt-2 text-xs text-[var(--f-text-3)]">
               <span className="text-[var(--f-text-2)]">{e.payer?.username || '—'}</span>
@@ -125,21 +125,21 @@ function EscrowDisputeCard({ dispute }) {
           <div className="border-t border-[var(--f-line)] p-4 space-y-4">
             {/* Escrow details */}
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-xl p-3">
+              <div className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl p-3">
                 <p className="text-[var(--f-text-3)]">Amount</p>
-                <p className="text-[var(--az-text-primary)] font-bold f-mono mt-0.5">{usdc(amount)}</p>
+                <p className="text-[var(--f-text)] font-bold f-mono mt-0.5">{usdc(amount)}</p>
               </div>
-              <div className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-xl p-3">
+              <div className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl p-3">
                 <p className="text-[var(--f-text-3)]">Fee</p>
-                <p className="text-[var(--az-text-primary)] font-bold f-mono mt-0.5">{usdc(e.feeUsdc)}</p>
+                <p className="text-[var(--f-text)] font-bold f-mono mt-0.5">{usdc(e.feeUsdc)}</p>
               </div>
-              <div className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-xl p-3">
+              <div className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl p-3">
                 <p className="text-[var(--f-text-3)]">Payer (Buyer)</p>
-                <p className="text-[var(--az-text-primary)] mt-0.5">{e.payer?.username || '—'}</p>
+                <p className="text-[var(--f-text)] mt-0.5">{e.payer?.username || '—'}</p>
               </div>
-              <div className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-xl p-3">
+              <div className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl p-3">
                 <p className="text-[var(--f-text-3)]">Payee (Seller)</p>
-                <p className="text-[var(--az-text-primary)] mt-0.5">{e.payee?.username || '—'}</p>
+                <p className="text-[var(--f-text)] mt-0.5">{e.payee?.username || '—'}</p>
               </div>
             </div>
 
@@ -150,9 +150,9 @@ function EscrowDisputeCard({ dispute }) {
             </div>
 
             {/* Dispute reason */}
-            <div className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-xl p-3">
+            <div className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl p-3">
               <p className="text-xs text-[var(--f-text-3)] mb-1">Dispute reason</p>
-              <p className="text-sm text-[var(--az-text-primary)]">{dispute.reason || '—'}</p>
+              <p className="text-sm text-[var(--f-text)]">{dispute.reason || '—'}</p>
             </div>
 
             {isResolved ? (
@@ -168,7 +168,7 @@ function EscrowDisputeCard({ dispute }) {
                 <div className="grid grid-cols-3 gap-2">
                   {RULINGS.map((r) => (
                     <button key={r.value} onClick={() => setRuling(r.value)}
-                            className={`text-left p-3 rounded-xl border transition-all ${ruling === r.value ? `${r.active} ${r.color}` : 'border-[var(--f-line)] text-[var(--f-text-3)] hover:border-[var(--az-border-bright)] hover:text-[var(--f-text-2)]'}`}>
+                            className={`text-left p-3 rounded-xl border transition-all ${ruling === r.value ? `${r.active} ${r.color}` : 'border-[var(--f-line)] text-[var(--f-text-3)] hover:border-[var(--f-line-strong)] hover:text-[var(--f-text-2)]'}`}>
                       <p className="text-xs font-semibold">{r.label}</p>
                       <p className="text-[10px] mt-0.5 opacity-80">{r.desc}</p>
                     </button>
@@ -184,12 +184,12 @@ function EscrowDisputeCard({ dispute }) {
                       <label className="text-xs text-[var(--f-text-2)] block mb-1">Payer %</label>
                       <Input type="number" min={0} max={100} value={payerPct}
                              onChange={(ev) => setPayerPct(Math.min(100, Math.max(0, parseInt(ev.target.value, 10) || 0)))}
-                             className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] f-mono" />
+                             className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text)] f-mono" />
                     </div>
                     <div>
                       <label className="text-xs text-[var(--f-text-2)] block mb-1">Payee %</label>
                       <Input type="number" value={payeePct} readOnly
-                             className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--f-text-2)] f-mono" />
+                             className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text-2)] f-mono" />
                     </div>
                   </div>
                   <div className="flex rounded-lg overflow-hidden h-2">
@@ -211,7 +211,7 @@ function EscrowDisputeCard({ dispute }) {
 
               <Textarea value={notes} onChange={(ev) => setNotes(ev.target.value)}
                         placeholder="Ruling notes (recorded in audit log)..."
-                        className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-xs resize-none placeholder:text-[var(--f-text-3)]" rows={2} />
+                        className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text)] text-xs resize-none placeholder:text-[var(--f-text-3)]" rows={2} />
 
               <Button onClick={() => submit(false)} disabled={!ruling || !notes.trim() || resolveMutation.isPending}
                       className="w-full bg-[var(--f-ok)] hover:bg-[#00bf6f] text-[var(--f-bg)] font-semibold text-sm disabled:opacity-40">
@@ -249,7 +249,7 @@ export default function EscrowDisputes() {
           <Lock className="w-4 h-4 text-[var(--f-bad)]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Escrow Dispute Queue</h1>
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Escrow Dispute Queue</h1>
           <p className="text-xs text-[var(--f-text-3)]"><span className="text-[var(--f-bad)] font-semibold">{openDisputes.length}</span> open disputes</p>
         </div>
       </div>

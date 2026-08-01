@@ -43,10 +43,10 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
       >
         <SheetHeader className="p-4 border-b border-line">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-[var(--az-text-primary)] flex items-center gap-2">
+            <SheetTitle className="text-[var(--f-text)] flex items-center gap-2">
               Notifications
               {unreadCount > 0 && (
-                <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--az-emerald-soft)] text-[var(--f-ok)]">
+                <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-[var(--f-ok-bg)] text-[var(--f-ok)]">
                   {unreadCount} new
                 </span>
               )}
@@ -71,7 +71,7 @@ export default function NotificationCenter({ open, onOpenChange, notifications }
                   onClick={() => setTab(t.key)}
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     tab === t.key
-                      ? 'border-emerald-500 bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'
+                      ? 'border-emerald-500 bg-[var(--f-ok-bg)] text-[var(--f-ok)]'
                       : 'border-line text-ink-2 hover:border-line-bright'
                   }`}
                 >

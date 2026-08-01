@@ -29,29 +29,29 @@ export default function ConfirmDialog({
 
   const confirmColorClass =
     variant === 'destructive'
-      ? 'bg-red-600 hover:bg-red-500 text-[var(--az-text-primary)]'
-      : 'bg-az-border-bright hover:bg-az-border text-az-text-primary';
+      ? 'bg-red-600 hover:bg-red-500 text-[var(--f-text)]'
+      : 'bg-line-bright hover:bg-line text-ink-primary';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative bg-az-surface border border-az-border rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
+      <div className="relative bg-surface border border-line rounded-xl w-full max-w-md mx-4 p-6 space-y-4 shadow-2xl">
         <div className="flex items-start gap-3">
           {variant === 'destructive' && (
             <div className="w-9 h-9 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
+              <AlertTriangle className="w-4 h-4 text-bad" />
             </div>
           )}
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-az-text-primary">{title}</h2>
-            {message && <p className="text-sm text-az-text-secondary">{message}</p>}
+            <h2 className="text-base font-semibold text-ink-primary">{title}</h2>
+            {message && <p className="text-sm text-ink-2">{message}</p>}
           </div>
         </div>
 
         <div className="flex gap-3">
           <Button
             variant="ghost"
-            className="flex-1 border border-az-border text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-card"
+            className="flex-1 border border-line text-ink-2 hover:text-[var(--f-text)] hover:bg-surface"
             onClick={onCancel}
           >
             Cancel

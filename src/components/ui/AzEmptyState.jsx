@@ -24,14 +24,14 @@ export default function AzEmptyState({
       className={cn('flex flex-col items-center justify-center gap-3 text-center', sizes.py, className)}
     >
       {Icon && (
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1" style={{ background: 'var(--az-surface-3, var(--az-card))' }}>
-          <Icon className={cn(sizes.icon)} style={{ color: 'var(--az-text-muted)' }} />
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-1" style={{ background: 'var(--f-surface-sunken)' }}>
+          <Icon className={cn(sizes.icon)} style={{ color: 'var(--f-text-3)' }} />
         </div>
       )}
       <div>
-        <p className={cn('font-semibold', sizes.title)} style={{ color: 'var(--az-text-primary)' }}>{title}</p>
+        <p className={cn('font-semibold', sizes.title)} style={{ color: 'var(--f-text)' }}>{title}</p>
         {description && (
-          <p className={cn('mt-1 max-w-sm', sizes.desc)} style={{ color: 'var(--az-text-muted)' }}>{description}</p>
+          <p className={cn('mt-1 max-w-sm', sizes.desc)} style={{ color: 'var(--f-text-3)' }}>{description}</p>
         )}
       </div>
       {action && (

@@ -36,9 +36,9 @@ function getSLA(createdAt) {
 }
 
 const SLA_STYLES = {
-  normal: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-[var(--az-emerald-glow)]', dot: 'bg-emerald-400' },
-  warning: { badge: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)] border-[var(--az-amber-soft)]', dot: 'bg-amber-400' },
-  critical: { badge: 'bg-[var(--az-red-soft)] text-[var(--f-bad)] border-[var(--az-red-glow)]', dot: 'bg-red-400' },
+  normal: { badge: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)] border-[var(--f-ok)]', dot: 'bg-ok' },
+  warning: { badge: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)] border-[var(--f-warn-bg)]', dot: 'bg-amber-400' },
+  critical: { badge: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-[var(--f-bad)]', dot: 'bg-red-400' },
 };
 
 function SLATimer({ createdAt }) {
@@ -143,25 +143,25 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
             <p className="text-xs text-[var(--f-text-2)] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
-        <div className="bg-[var(--az-surface-1)] border border-[var(--az-border-bright)] rounded-xl p-4 space-y-2">
+        <div className="bg-[var(--f-surface)] border border-[var(--f-line-strong)] rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-[var(--f-text-2)]">Buyer receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] f-mono">{buyerPercent}%</span>
+            <span className="font-bold text-[var(--f-text)] f-mono">{buyerPercent}%</span>
           </div>
           <div className="flex items-center justify-between text-sm">
             <span className="text-[var(--f-text-2)]">Vendor receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] f-mono">{vendorPercent}%</span>
+            <span className="font-bold text-[var(--f-text)] f-mono">{vendorPercent}%</span>
           </div>
         </div>
         <p className="text-sm text-[var(--f-text-2)] leading-relaxed">
-          You are assigning <span className="text-[var(--az-text-primary)] font-semibold">{buyerPercent}%</span> to the buyer and{' '}
-          <span className="text-[var(--az-text-primary)] font-semibold">{vendorPercent}%</span> to the vendor.
+          You are assigning <span className="text-[var(--f-text)] font-semibold">{buyerPercent}%</span> to the buyer and{' '}
+          <span className="text-[var(--f-text)] font-semibold">{vendorPercent}%</span> to the vendor.
           This is an unusual split. Are you absolutely certain?
         </p>
         <div className="flex gap-3 pt-1">
           <Button
             variant="ghost"
-            className="flex-1 border border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:text-[var(--az-text-primary)] hover:bg-[var(--f-line)]"
+            className="flex-1 border border-[var(--f-line-strong)] text-[var(--f-text-2)] hover:text-[var(--f-text)] hover:bg-[var(--f-line)]"
             onClick={onCancel}
           >
             Cancel
@@ -188,18 +188,18 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative az-card w-full max-w-md mx-4 p-6 space-y-4 ">
-        <h2 className="text-base font-bold text-[var(--az-text-primary)]">{title}</h2>
+        <h2 className="text-base font-bold text-[var(--f-text)]">{title}</h2>
         <Textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder={placeholder}
-          className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)] min-h-[80px]"
+          className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)] min-h-[80px]"
           autoFocus
         />
         <div className="flex gap-3">
           <Button
             variant="ghost"
-            className="flex-1 border border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:text-[var(--az-text-primary)] hover:bg-[var(--f-line)]"
+            className="flex-1 border border-[var(--f-line-strong)] text-[var(--f-text-2)] hover:text-[var(--f-text)] hover:bg-[var(--f-line)]"
             onClick={onCancel}
           >
             Cancel
@@ -221,8 +221,8 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
 function PatternAlert({ pattern }) {
   const Icon = pattern.icon;
   const styles = {
-    high: 'bg-[var(--az-red-soft)] border-[var(--az-red-glow)] text-[var(--f-bad)]',
-    medium: 'bg-[var(--az-amber-soft)] border-[var(--az-amber-soft)] text-[var(--f-warn)]',
+    high: 'bg-[var(--f-bad-bg)] border-[var(--f-bad)] text-[var(--f-bad)]',
+    medium: 'bg-[var(--f-warn-bg)] border-[var(--f-warn-bg)] text-[var(--f-warn)]',
     warning: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
   };
   return (
@@ -371,7 +371,7 @@ function DisputeCard({ dispute, allDisputes }) {
       <div className="az-card overflow-hidden transition-all duration-200">
         {/* Header row */}
         <div
-          className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[var(--az-surface-1)] transition-colors"
+          className="p-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[var(--f-surface)] transition-colors"
           onClick={() => setExpanded(!expanded)}
         >
           <div className="flex-1 min-w-0">
@@ -380,7 +380,7 @@ function DisputeCard({ dispute, allDisputes }) {
               <Tag className="bg-[var(--f-bad)22] text-[var(--f-bad)] border-[var(--f-bad)40] text-xs font-medium">
                 DISPUTED
               </Tag>
-              <span className="text-sm font-bold text-[var(--az-text-primary)]">
+              <span className="text-sm font-bold text-[var(--f-text)]">
                 ${dispute.amount} <span className="text-[var(--f-text-2)] font-normal">{dispute.currency}</span>
               </span>
               <span className="text-xs text-[var(--f-text-3)] bg-[var(--f-line)] px-2 py-0.5 rounded-full">
@@ -442,7 +442,7 @@ function DisputeCard({ dispute, allDisputes }) {
                   onClick={() => setTab(t)}
                   className={`flex-1 text-xs py-1.5 rounded-lg transition-all ${
                     tab === t
-                      ? 'bg-[var(--az-surface-2)] text-[var(--az-text-primary)] font-medium shadow-sm'
+                      ? 'bg-[var(--f-surface-raised)] text-[var(--f-text)] font-medium shadow-sm'
                       : 'text-[var(--f-text-3)] hover:text-[var(--f-text-2)]'
                   }`}
                 >
@@ -462,7 +462,7 @@ function DisputeCard({ dispute, allDisputes }) {
                       className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
                         ruling === r.value
                           ? r.active
-                          : 'border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:bg-[var(--az-surface-2)]'
+                          : 'border-[var(--f-line-strong)] text-[var(--f-text-2)] hover:bg-[var(--f-surface-raised)]'
                       }`}
                     >
                       {r.label}
@@ -488,13 +488,13 @@ function DisputeCard({ dispute, allDisputes }) {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Reason for ruling (required)…"
-                  className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
+                  className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
                 />
 
                 <Button
                   onClick={handleResolve}
                   disabled={!reason.trim() || resolve.isPending}
-                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
+                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--f-text)] font-semibold text-sm"
                 >
                   {resolve.isPending ? 'Resolving…' : 'Resolve Dispute'}
                 </Button>
@@ -508,12 +508,12 @@ function DisputeCard({ dispute, allDisputes }) {
                   value={injectMsg}
                   onChange={(e) => setInjectMsg(e.target.value)}
                   placeholder="Admin message to inject into trade chat..."
-                  className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
+                  className="bg-[var(--f-bg)] border-[var(--f-line-strong)] text-[var(--f-text)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
                 />
                 <Button
                   onClick={() => inject.mutate({ id: dispute.id, message: injectMsg })}
                   disabled={!injectMsg || inject.isPending}
-                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
+                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--f-text)] font-semibold text-sm"
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-2" />
                   {inject.isPending ? 'Injecting…' : 'Inject Message'}
@@ -580,7 +580,7 @@ function SummaryBar({ disputes }) {
           <Swords className="w-3.5 h-3.5 text-[var(--f-bad)]" />
           <span className="text-xs text-[var(--f-text-3)] uppercase">Total Disputes</span>
         </div>
-        <p className="text-xl font-bold text-[var(--az-text-primary)]">{stats.total}</p>
+        <p className="text-xl font-bold text-[var(--f-text)]">{stats.total}</p>
       </div>
       <div className={`az-card p-3 ${stats.escalated > 0 ? 'border-[var(--f-bad)40]' : ''}`}>
         <div className="flex items-center gap-2 mb-1">
@@ -657,7 +657,7 @@ export default function WarRoom() {
             <Swords className="w-4.5 h-4.5 text-[var(--f-bad)]" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-[var(--az-text-primary)]">War Room</h1>
+            <h1 className="text-xl font-bold text-[var(--f-text)]">War Room</h1>
             <p className="text-xs text-[var(--f-text-3)]">
               <span className="text-[var(--f-bad)] font-semibold">{disputes.length}</span> active disputes
               {' · '}
@@ -669,7 +669,7 @@ export default function WarRoom() {
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:bg-[var(--az-surface-2)] hover:text-[var(--az-text-primary)] text-xs"
+          className="border-[var(--f-line-strong)] text-[var(--f-text-2)] hover:bg-[var(--f-surface-raised)] hover:text-[var(--f-text)] text-xs"
         >
           <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
         </Button>
@@ -724,8 +724,8 @@ export default function WarRoom() {
               className="az-table-row grid grid-cols-5 gap-4 px-4 py-3 text-sm last:border-0"
             >
               <span className="f-mono text-xs text-[var(--f-text-3)] truncate">#{t.id}</span>
-              <span className="font-semibold text-[var(--az-text-primary)] f-mono">${t.amount}</span>
-              <Tag className={`text-xs border w-fit ${statusColors[t.status] || 'bg-[var(--f-line)] text-[var(--f-text-2)] border-[var(--az-border-bright)]'}`}>
+              <span className="font-semibold text-[var(--f-text)] f-mono">${t.amount}</span>
+              <Tag className={`text-xs border w-fit ${statusColors[t.status] || 'bg-[var(--f-line)] text-[var(--f-text-2)] border-[var(--f-line-strong)]'}`}>
                 {t.status}
               </Tag>
               <span className="text-[var(--f-text-2)] truncate">{t.buyer?.name || t.user?.username || '–'}</span>

@@ -9,20 +9,20 @@ import {
 } from 'lucide-react';
 
 const KYC_COLORS = {
-  VERIFIED: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]',
-  PENDING: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]',
-  REJECTED: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]',
+  VERIFIED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]',
+  PENDING: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)]',
+  REJECTED: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]',
   UNVERIFIED: 'bg-line-bright/30 text-ink-2',
 };
 const POR_COLORS = {
-  VERIFIED: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]',
-  PENDING_REVIEW: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)]',
-  REJECTED: 'bg-[var(--az-red-soft)] text-[var(--f-bad)]',
+  VERIFIED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]',
+  PENDING_REVIEW: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)]',
+  REJECTED: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]',
   EXPIRED: 'bg-orange-500/20 text-orange-400',
   NOT_SUBMITTED: 'bg-line-bright/30 text-ink-2',
 };
 
-function Stat({ label, value, color = 'text-[var(--az-text-primary)]' }) {
+function Stat({ label, value, color = 'text-[var(--f-text)]' }) {
   return (
     <div className="bg-surface/50 rounded-lg px-3 py-2">
       <p className="text-[11px] text-ink-3 uppercase tracking-wide">{label}</p>
@@ -51,7 +51,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[var(--az-surface-2)] border-line text-ink-primary max-w-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--f-surface-raised)] border-line text-ink-primary max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Fingerprint className="w-4 h-4 text-[var(--f-ok)]" />
@@ -65,13 +65,13 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
           <div className="space-y-5">
             {/* Identity */}
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-[var(--az-emerald-soft)] flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="w-12 h-12 rounded-full bg-[var(--f-ok-bg)] flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {u.avatar
                   ? <img src={u.avatar} alt="" className="w-full h-full object-cover" />
                   : <span className="text-[var(--f-ok)] font-bold">{(u.username || '?').slice(0, 1).toUpperCase()}</span>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-bold text-[var(--az-text-primary)]">{u.displayName || u.username}</p>
+                <p className="text-base font-bold text-[var(--f-text)]">{u.displayName || u.username}</p>
                 <p className="text-xs text-ink-3">@{u.username} · {u.email}</p>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <Tag className={`${KYC_COLORS[u.kycStatus] || KYC_COLORS.UNVERIFIED} border-0 text-xs`}>
@@ -81,14 +81,14 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                     PoR {u.proofOfResidencyStatus?.replace('_', ' ')}
                   </Tag>
                   {u.banStatus && u.banStatus !== 'ACTIVE' && (
-                    <Tag className="bg-[var(--az-red-soft)] text-[var(--f-bad)] border-0 text-xs">{u.banStatus}</Tag>
+                    <Tag className="bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-0 text-xs">{u.banStatus}</Tag>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Decrypted identity card */}
-            <div className="bg-bg border border-[var(--az-amber-soft)] rounded-xl p-4 space-y-3">
+            <div className="bg-bg border border-[var(--f-warn-bg)] rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-3.5 h-3.5 text-[var(--f-warn)]" />
                 <span className="text-xs font-semibold text-[var(--f-warn)] uppercase tracking-wide">
@@ -109,19 +109,19 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                 <div className="flex gap-2">
                   {u.idImageFront && (
                     <a href={u.idImageFront} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
                       ID Front
                     </a>
                   )}
                   {u.idImageBack && (
                     <a href={u.idImageBack} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
                       ID Back
                     </a>
                   )}
                   {u.proofOfResidencyUrl && (
                     <a href={u.proofOfResidencyUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
+                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
                       Residency Doc
                     </a>
                   )}
@@ -133,8 +133,8 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
             <div className="grid grid-cols-4 gap-2">
               <Stat label="Trust Rating" value={u.trustRating ?? '—'}
                 color={u.trustRating >= 80 ? 'text-[var(--f-ok)]' : u.trustRating >= 40 ? 'text-[var(--f-warn)]' : 'text-[var(--f-bad)]'} />
-              <Stat label="Strikes" value={u.strikeCount ?? 0} color={u.strikeCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--az-text-primary)]'} />
-              <Stat label="Defaults" value={h?.defaultCount ?? 0} color={h?.defaultCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--az-text-primary)]'} />
+              <Stat label="Strikes" value={u.strikeCount ?? 0} color={u.strikeCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-text)]'} />
+              <Stat label="Defaults" value={h?.defaultCount ?? 0} color={h?.defaultCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-text)]'} />
               <Stat label="AZM" value={Number(u.azmBalance || 0).toFixed(0)} />
             </div>
 
@@ -146,7 +146,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                     <span className="text-ink-2 truncate">{m.susuName}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Tag className="bg-line text-ink-2 border-0 text-[10px]">slot {m.payoutSlot ?? '—'}</Tag>
-                      <Tag className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' : m.memberStatus === 'ACTIVE' ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]' : 'bg-line text-ink-2'}`}>
+                      <Tag className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : m.memberStatus === 'ACTIVE' ? 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]' : 'bg-line text-ink-2'}`}>
                         {m.memberStatus}
                       </Tag>
                     </div>
