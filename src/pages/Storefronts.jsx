@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefronts as sfApi } from '@/lib/api';
 import { Button } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import StatCard from '@/components/admin/StatCard';
 import { Store, ChevronLeft, ChevronRight, Lock, Unlock, History, Image as ImageIcon, X, RotateCcw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';

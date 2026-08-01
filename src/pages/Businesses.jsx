@@ -5,7 +5,6 @@ import { businesses as bizApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import { Textarea } from '@/components/forge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/forge';
 import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';

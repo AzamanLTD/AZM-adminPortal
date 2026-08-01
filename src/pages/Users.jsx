@@ -6,7 +6,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';

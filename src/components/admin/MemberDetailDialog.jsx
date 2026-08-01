@@ -2,7 +2,6 @@ import { useSusuMember } from '@/lib/useAdminData';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import {
   Fingerprint, AlertTriangle,
   TrendingDown, Hand, FileText, Eye,

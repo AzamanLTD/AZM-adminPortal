@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Input } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import { FileText, Search, ChevronLeft, ChevronRight, AlertTriangle, Download } from 'lucide-react';
 import { Button } from '@/components/forge';
 import { toast } from 'sonner';

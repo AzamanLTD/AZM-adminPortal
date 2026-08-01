@@ -6,7 +6,6 @@
 // =============================================================================
 
 import { useState } from 'react';
-import { Badge } from '@/components/forge';
 import {
   ChevronDown, ChevronUp, ExternalLink, Wallet, Swords, PiggyBank,
   ShieldCheck, Store, Home, Server, Circle,

@@ -1,16 +1,15 @@
 import { getSLA, detectPatterns } from "@/lib/disputes";
 import { SlaTimer } from "@/components/forge/SlaTimer";
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Textarea } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import {
   Swords, MessageSquare, CheckCircle, XCircle, RefreshCw,
-  AlertTriangle, ShieldAlert, Clock, Flame, Users, History,
+  AlertTriangle, ShieldAlert, Clock, Flame, History,
   FileSearch,
 } from 'lucide-react';
 import { toast } from 'sonner';

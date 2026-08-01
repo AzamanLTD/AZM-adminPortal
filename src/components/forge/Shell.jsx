@@ -1,10 +1,9 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { usePrefetch } from '@/lib/prefetch';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Menu, Search, Bell, Sun, Moon, ChevronDown,
+  Menu, Search, Bell, Sun, Moon,
 } from 'lucide-react';
 import { resolveNav } from '@/lib/nav';
 
@@ -35,7 +34,6 @@ const ROUTE_QUERIES = {
 import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
-import { Tag } from './Tag';
 import { ProfileMenu } from './ProfileMenu';
 import { cn } from '@/lib/utils';
 

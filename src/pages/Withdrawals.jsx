@@ -16,7 +16,6 @@ import { useWithdrawals, useStats } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
   ShieldCheck, ShieldAlert, ChevronRight, X,

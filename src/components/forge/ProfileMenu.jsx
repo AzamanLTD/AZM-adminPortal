@@ -1,7 +1,7 @@
 // src/components/forge/ProfileMenu.jsx
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, LogOut, Settings as SettingsIcon, User } from 'lucide-react';
+import { ChevronDown, LogOut, Settings as SettingsIcon } from 'lucide-react';
 import { spring } from '@/lib/motion';
 
 /**

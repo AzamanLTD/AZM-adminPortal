@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Login from '@/pages/Login';
+import { Toaster } from 'sonner';
 
 // Code-split all authenticated pages with React.lazy
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -104,6 +105,20 @@ function App() {
         <Router>
           <AuthenticatedApp />
         </Router>
+        <Toaster
+          position="top-center"
+          theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+          toastOptions={{
+            className: 'sentry-toast',
+            style: {
+              background: 'var(--f-surface-raised)',
+              border: '1px solid var(--f-line)',
+              color: 'var(--f-text)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 20px rgba(17,17,17,0.08)',
+            },
+          }}
+        />
       </QueryClientProvider>
     </AuthProvider>
   )

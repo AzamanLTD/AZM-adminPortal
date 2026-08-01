@@ -5,7 +5,6 @@ import StatCard from '@/components/admin/StatCard';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Textarea } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import { Lock, ArrowRight, ShieldAlert, AlertTriangle, Scale, CheckCircle, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 

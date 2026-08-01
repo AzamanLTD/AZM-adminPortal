@@ -4,7 +4,6 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/forge';
 import { Button } from '@/components/forge';
-import { Badge } from '@/components/forge';
 import { Textarea } from '@/components/forge';
 import MemberDetailDialog from '@/components/admin/MemberDetailDialog';
 import {

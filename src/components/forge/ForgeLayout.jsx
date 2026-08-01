@@ -1,10 +1,9 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { Shell, CommandPalette, TooltipProvider, ToastProvider as ForgeToast } from '@/components/forge';
+import { Shell, CommandPalette, TooltipProvider } from '@/components/forge';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useStats } from '@/lib/useAdminData';
-import { useAdminNotifications } from '@/lib/useAdminNotifications';
 import { useAuth } from '@/lib/AuthContext';
 
 export function ForgeLayout() {
@@ -30,19 +29,17 @@ export function ForgeLayout() {
       <div {...adminRoot}>
         <CommandProvider>
           <TooltipProvider>
-            <ForgeToast>
-              <Shell
-                navProps={navProps}
-                brandName="Azaman Admin"
-                brandShort="AZ"
-                user={user}
-                onLogout={logout}
-                onNavigateSettings={() => navigate('/config')}
-              >
-                <Outlet />
-              </Shell>
-              <CommandPalette navProps={navProps} />
-            </ForgeToast>
+            <Shell
+              navProps={navProps}
+              brandName="Azaman Admin"
+              brandShort="AZ"
+              user={user}
+              onLogout={logout}
+              onNavigateSettings={() => navigate('/config')}
+            >
+              <Outlet />
+            </Shell>
+            <CommandPalette navProps={navProps} />
           </TooltipProvider>
         </CommandProvider>
       </div>

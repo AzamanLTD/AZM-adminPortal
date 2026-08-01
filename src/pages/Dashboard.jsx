@@ -20,7 +20,7 @@ import {
   ShieldCheck, Clock, Server, Cpu, Radio,
   Lock, ShieldAlert, Building2, CheckCircle, ArrowRight, RefreshCw, ChevronDown
 } from 'lucide-react';
-import { cardVariants, listVariants, listItemVariants, spring } from '@/lib/motion';
+import { cardVariants, listVariants, listItemVariants } from '@/lib/motion';
 
 const TIME_RANGES = [
   { key: '24h', label: '24h' },
