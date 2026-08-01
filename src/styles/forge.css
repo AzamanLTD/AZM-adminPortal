@@ -765,3 +765,15 @@ textarea.f-input{ height:auto; padding:8px 10px; resize:vertical; line-height:1.
   .f-shell .f-rail{ display:none; }
   .f-cmd-trigger{ min-width:0; flex:1; max-width:200px; }
 }
+
+/* ---------- Icon wrapper (for cards, widgets) ---------------------------- */
+.f-icon-wrap{
+  display:flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:var(--f-r-2); flex-shrink:0;
+  background:var(--f-surface-sunken); border:1px solid var(--f-line);
+  color:var(--f-text-2);
+}
+.f-icon-wrap--ok{ background:var(--f-ok-bg); border-color:color-mix(in oklab,var(--f-ok) 25%,transparent); color:var(--f-ok); }
+.f-icon-wrap--warn{ background:var(--f-warn-bg); border-color:color-mix(in oklab,var(--f-warn) 25%,transparent); color:var(--f-warn); }
+.f-icon-wrap--bad{ background:var(--f-bad-bg); border-color:color-mix(in oklab,var(--f-bad) 25%,transparent); color:var(--f-bad); }
+.f-icon-wrap--info{ background:var(--f-info-bg); border-color:color-mix(in oklab,var(--f-info) 25%,transparent); color:var(--f-info); }
