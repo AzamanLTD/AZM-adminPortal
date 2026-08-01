@@ -17,3 +17,4 @@ export { Shell } from './Shell';
 export { CommandPalette } from './CommandPalette';
 export { ToastProvider, useToast, notify } from './toast';
 export * from './chartTheme';
+export { ForgeLayout } from './ForgeLayout';
