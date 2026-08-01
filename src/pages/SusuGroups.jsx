@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useSusuList, useSusuDetail, useResolveSusu } from '@/lib/useAdminData';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/components/forge';
+import { Button } from '@/components/forge';
+import { Badge } from '@/components/forge';
+import { Textarea } from '@/components/forge';
 import MemberDetailDialog from '@/components/admin/MemberDetailDialog';
 import {
   PiggyBank, RefreshCw, Snowflake, Users, CalendarClock, Eye,

@@ -7,8 +7,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/forge';
+import { Button } from '@/components/forge';
 import { X, Shield, ShieldCheck, AlertTriangle, DollarSign, Activity, FileText, Clock, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Hash, Mail, Phone, MapPin, Calendar, Award, Zap, Skull } from 'lucide-react';
 import { toast } from 'sonner';
 

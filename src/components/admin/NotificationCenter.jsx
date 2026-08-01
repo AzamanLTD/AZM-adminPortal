@@ -12,8 +12,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
-} from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from '@/components/forge';
+import { ScrollArea } from '@/components/forge';
 import { CheckCheck, Inbox } from 'lucide-react';
 import NotificationItem from './NotificationItem';
 

@@ -2,8 +2,8 @@ import { useSystemHealth, useStats } from '@/lib/useAdminData';
 import PoolBar from '@/components/admin/PoolBar';
 import { AlertTriangle, RefreshCw, ArrowUpDown, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 

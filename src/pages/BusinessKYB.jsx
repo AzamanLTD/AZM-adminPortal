@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessKyb } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/forge';
+import { Textarea } from '@/components/forge';
+import { Dialog, DialogContent } from '@/components/forge';
+import { Skeleton } from '@/components/forge';
 import { FileCheck, CheckCircle2, XCircle, Eye, Building2, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 

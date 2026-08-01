@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
 import { toast } from 'sonner';
 import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2 } from 'lucide-react';
 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalSettings, useUpdateSettings, useStats } from '@/lib/useAdminData';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';

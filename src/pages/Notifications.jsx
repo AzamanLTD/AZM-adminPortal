@@ -8,7 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdminNotifications } from '@/lib/useAdminNotifications';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/forge';
 import { Bell, CheckCheck } from 'lucide-react';
 import NotificationItem from '@/components/admin/NotificationItem';
 

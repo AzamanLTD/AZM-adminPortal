@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { escrow as escrowApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
+import { Textarea } from '@/components/forge';
+import { Badge } from '@/components/forge';
 import { Lock, ArrowRight, ShieldAlert, AlertTriangle, Scale, CheckCircle, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
+import { Textarea } from '@/components/forge';
 import { AlertTriangle } from 'lucide-react';
 
 /**

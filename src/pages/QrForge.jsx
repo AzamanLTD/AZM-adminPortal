@@ -60,8 +60,8 @@ import {
   Monitor, Shirt, ImageIcon, AlertCircle, Clock, ExternalLink,
   ChevronDown, Loader2, Sparkles, Globe, BarChart3, Activity, Users, Plus, Copy, Eye, EyeOff, Trash2,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
 import { toast } from 'sonner';
 
 // ── Constants ─────────────────────────────────────────────────────────────────

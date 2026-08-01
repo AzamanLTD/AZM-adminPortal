@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
 import { useState } from 'react';
 import {
   Bot, TrendingUp, Gift, Brain, Scale, Handshake, ListOrdered,

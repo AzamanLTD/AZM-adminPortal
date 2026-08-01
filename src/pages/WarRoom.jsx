@@ -4,10 +4,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
+import { Textarea } from '@/components/forge';
+import { Badge } from '@/components/forge';
 import {
   Swords, MessageSquare, CheckCircle, XCircle, RefreshCw,
   AlertTriangle, ShieldAlert, Clock, Flame, Users, History,

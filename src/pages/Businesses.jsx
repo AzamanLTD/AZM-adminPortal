@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businesses as bizApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/forge';
+import { Input } from '@/components/forge';
+import { Badge } from '@/components/forge';
+import { Textarea } from '@/components/forge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/forge';
 import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 

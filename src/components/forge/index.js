@@ -28,3 +28,8 @@ export { Avatar } from './Avatar';
 export { Tabs } from './Tabs';
 export { ProfileMenu } from "./ProfileMenu";
 export { SlaTimer } from "./SlaTimer";
+
+// ── Dialog / Sheet / ScrollArea ──
+export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './Dialog';
+export { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from './Sheet';
+export { ScrollArea, ScrollBar } from './ScrollArea';
