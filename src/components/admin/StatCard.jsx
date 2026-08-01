@@ -29,22 +29,22 @@ export default function StatCard({
   const accentMap = {
     emerald: {
       iconBg:   'var(--az-emerald-subtle)',
-      iconText: 'var(--az-emerald)',
+      iconText: 'var(--f-ok)',
       border:   'var(--az-emerald-border)',
     },
     red: {
       iconBg:   'var(--az-danger-subtle)',
-      iconText: 'var(--az-danger)',
+      iconText: 'var(--f-bad)',
       border:   'rgba(220,38,38,0.18)',
     },
     amber: {
       iconBg:   'var(--az-warning-subtle)',
-      iconText: 'var(--az-warning)',
+      iconText: 'var(--f-warn)',
       border:   'rgba(217,119,6,0.18)',
     },
     blue: {
       iconBg:   'var(--az-info-subtle)',
-      iconText: 'var(--az-info)',
+      iconText: 'var(--f-info)',
       border:   'rgba(37,99,235,0.18)',
     },
     violet: {
@@ -84,7 +84,7 @@ export default function StatCard({
       <div className="flex items-start justify-between mb-3">
         <p
           className="text-[11px] font-semibold uppercase tracking-wider"
-          style={{ color: 'var(--az-text-muted)' }}
+          style={{ color: 'var(--f-text-3)' }}
         >
           {label}
         </p>
@@ -101,7 +101,7 @@ export default function StatCard({
       {/* Value */}
       <p
         className="text-[22px] font-bold font-mono tabular-nums mb-2"
-        style={{ color: 'var(--az-text)' }}
+        style={{ color: 'var(--f-text)' }}
       >
         {value ?? '—'}
       </p>
@@ -109,23 +109,23 @@ export default function StatCard({
       {/* Delta */}
       {delta !== undefined && (
         <div className="flex items-center gap-1.5">
-          {isPositive && <TrendingUp  style={{ width: 12, height: 12, color: 'var(--az-success)' }} />}
-          {isNegative && <TrendingDown style={{ width: 12, height: 12, color: 'var(--az-danger)'  }} />}
-          {isNeutral  && <Minus        style={{ width: 12, height: 12, color: 'var(--az-text-muted)' }} />}
+          {isPositive && <TrendingUp  style={{ width: 12, height: 12, color: 'var(--f-ok)' }} />}
+          {isNegative && <TrendingDown style={{ width: 12, height: 12, color: 'var(--f-bad)'  }} />}
+          {isNeutral  && <Minus        style={{ width: 12, height: 12, color: 'var(--f-text-3)' }} />}
           <span
             className="text-xs font-semibold"
             style={{
               color: isPositive
-                ? 'var(--az-success)'
+                ? 'var(--f-ok)'
                 : isNegative
-                ? 'var(--az-danger)'
-                : 'var(--az-text-muted)',
+                ? 'var(--f-bad)'
+                : 'var(--f-text-3)',
             }}
           >
             {delta > 0 ? '+' : ''}{delta}%
           </span>
           {deltaLabel && (
-            <span className="text-xs" style={{ color: 'var(--az-text-muted)' }}>
+            <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>
               {deltaLabel}
             </span>
           )}

@@ -12,11 +12,11 @@ function asPct(v) { return parseFloat(v) / 100; }
 
 function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning }) {
   return (
-    <div className="flex items-start gap-4 py-4 border-b border-az-border last:border-0">
+    <div className="flex items-start gap-4 py-4 border-b border-line last:border-0">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-az-text-primary">{label}</p>
-        <p className="text-xs text-az-text-muted mt-0.5">{description}</p>
-        {warning && <p className="text-xs text-[var(--az-amber)] mt-1">⚠ {warning}</p>}
+        <p className="text-sm font-medium text-ink-primary">{label}</p>
+        <p className="text-xs text-ink-3 mt-0.5">{description}</p>
+        {warning && <p className="text-xs text-[var(--f-warn)] mt-1">⚠ {warning}</p>}
       </div>
       <div className="flex items-center gap-2 w-32 flex-shrink-0">
         <Input
@@ -26,9 +26,9 @@ function SettingRow({ label, description, value, onChange, min = 0, max = 100, u
           step="0.01"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm text-right"
+          className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm text-right"
         />
-        <span className="text-sm text-az-text-secondary">{unit}</span>
+        <span className="text-sm text-ink-2">{unit}</span>
       </div>
       <ConfirmDialog
         open={!!removeKey}
@@ -65,29 +65,29 @@ function P2PCalculator({ settings, rate }) {
   const totalPlatform = adminEarns + margin;
 
   return (
-    <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+    <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <Calculator className="w-4 h-4 text-[var(--az-emerald)]" />
-        <h3 className="text-sm font-semibold text-az-text-secondary">P2P Trade Simulator</h3>
-        <span className="ml-auto text-xs text-az-text-muted">Live preview</span>
+        <Calculator className="w-4 h-4 text-[var(--f-ok)]" />
+        <h3 className="text-sm font-semibold text-ink-2">P2P Trade Simulator</h3>
+        <span className="ml-auto text-xs text-ink-3">Live preview</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-az-text-secondary block mb-1">Trade Amount ($)</label>
+          <label className="text-xs text-ink-2 block mb-1">Trade Amount ($)</label>
           <Input
             type="number"
             value={amount}
             onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-            className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)]"
+            className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]"
           />
         </div>
         <div>
-          <label className="text-xs text-az-text-secondary block mb-1">Payment Method</label>
+          <label className="text-xs text-ink-2 block mb-1">Payment Method</label>
           <select
             value={method}
             onChange={(e) => setMethod(e.target.value)}
-            className="w-full bg-[var(--az-surface-3)] border border-az-border rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]"
+            className="w-full bg-[var(--az-surface-3)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]"
           >
             <option value="3rd_party">CashApp / PayPal</option>
             <option value="bank">Bank Transfer</option>
@@ -95,21 +95,21 @@ function P2PCalculator({ settings, rate }) {
         </div>
       </div>
 
-      <div className={`text-xs px-3 py-1.5 rounded-full inline-flex ${isCorp ? 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]' : 'bg-[var(--az-blue-soft)] text-[var(--az-blue)]'}`}>
+      <div className={`text-xs px-3 py-1.5 rounded-full inline-flex ${isCorp ? 'bg-[var(--az-violet-soft)] text-[var(--az-violet)]' : 'bg-[var(--az-blue-soft)] text-[var(--f-info)]'}`}>
         {isCorp ? `Over $${threshold} — Corporate tier` : `Under $${threshold} — Standard tier`}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         {[
-          { label: 'Platform Fee Collected', usd: platformFee, color: 'text-[var(--az-emerald)]' },
-          { label: `Margin (${(marginPct * 100).toFixed(1)}%)`, usd: margin, color: 'text-[var(--az-blue)]' },
+          { label: 'Platform Fee Collected', usd: platformFee, color: 'text-[var(--f-ok)]' },
+          { label: `Margin (${(marginPct * 100).toFixed(1)}%)`, usd: margin, color: 'text-[var(--f-info)]' },
           { label: `Admin Earnings (${(adminShare * 100).toFixed(0)}%)`, usd: adminEarns, color: 'text-[var(--az-violet)]' },
-          { label: `Vendor Earnings (${(vendorShare * 100).toFixed(0)}%)`, usd: vendorEarns, color: 'text-[var(--az-amber)]' },
+          { label: `Vendor Earnings (${(vendorShare * 100).toFixed(0)}%)`, usd: vendorEarns, color: 'text-[var(--f-warn)]' },
         ].map(({ label, usd, color }) => (
           <div key={label} className="bg-[var(--az-surface-3)] rounded-lg p-3">
-            <p className="text-xs text-az-text-muted">{label}</p>
+            <p className="text-xs text-ink-3">{label}</p>
             <p className={`text-lg font-bold mt-1 ${color}`}>${usd.toFixed(2)}</p>
-            <p className="text-xs text-az-text-muted">GHS {(usd * rate).toFixed(2)}</p>
+            <p className="text-xs text-ink-3">GHS {(usd * rate).toFixed(2)}</p>
           </div>
         ))}
       </div>
@@ -117,8 +117,8 @@ function P2PCalculator({ settings, rate }) {
       <div className="bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)] rounded-lg p-3 flex justify-between items-center">
         <span className="text-sm font-medium text-emerald-300">Total Platform Revenue</span>
         <div className="text-right">
-          <p className="text-xl font-bold text-[var(--az-emerald)]">${totalPlatform.toFixed(2)}</p>
-          <p className="text-xs text-az-text-muted">GHS {(totalPlatform * rate).toFixed(2)}</p>
+          <p className="text-xl font-bold text-[var(--f-ok)]">${totalPlatform.toFixed(2)}</p>
+          <p className="text-xs text-ink-3">GHS {(totalPlatform * rate).toFixed(2)}</p>
         </div>
       </div>
       <ConfirmDialog
@@ -145,19 +145,19 @@ function WithdrawalCalculator({ settings, rate }) {
   const userReceives = amount - feeAmount;
 
   return (
-    <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+    <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
       <div className="flex items-center gap-2">
-        <TrendingUp className="w-4 h-4 text-[var(--az-blue)]" />
-        <h3 className="text-sm font-semibold text-az-text-secondary">Withdrawal Simulator</h3>
+        <TrendingUp className="w-4 h-4 text-[var(--f-info)]" />
+        <h3 className="text-sm font-semibold text-ink-2">Withdrawal Simulator</h3>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-az-text-secondary block mb-1">Withdrawal Amount ($)</label>
-          <Input type="number" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)]" />
+          <label className="text-xs text-ink-2 block mb-1">Withdrawal Amount ($)</label>
+          <Input type="number" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)} className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)]" />
         </div>
         <div>
-          <label className="text-xs text-az-text-secondary block mb-1">Type</label>
-          <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-[var(--az-surface-3)] border border-az-border rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
+          <label className="text-xs text-ink-2 block mb-1">Type</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="w-full bg-[var(--az-surface-3)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
             <option value="fiat">Fiat (MTN MoMo)</option>
             <option value="crypto">Crypto (USDC)</option>
           </select>
@@ -166,30 +166,30 @@ function WithdrawalCalculator({ settings, rate }) {
       {type === 'crypto' && (
         <div className="bg-[var(--az-surface-3)] rounded-lg p-3 text-xs space-y-1">
           <div className="flex justify-between">
-            <span className="text-az-text-secondary">Gas fee ({(cryptoGas * 100).toFixed(2)}%)</span>
-            <span className="text-[var(--az-amber)]">${(amount * cryptoGas).toFixed(2)}</span>
+            <span className="text-ink-2">Gas fee ({(cryptoGas * 100).toFixed(2)}%)</span>
+            <span className="text-[var(--f-warn)]">${(amount * cryptoGas).toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-az-text-secondary">Platform fee ({(cryptoPlatform * 100).toFixed(2)}%)</span>
+            <span className="text-ink-2">Platform fee ({(cryptoPlatform * 100).toFixed(2)}%)</span>
             <span className="text-[var(--az-violet)]">${(amount * cryptoPlatform).toFixed(2)}</span>
           </div>
         </div>
       )}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Total Fee Rate', value: `${(feePct * 100).toFixed(2)}%`, color: 'text-[var(--az-amber)]' },
-          { label: 'Platform Earns', usd: feeAmount, color: 'text-[var(--az-emerald)]' },
-          { label: 'User Receives', usd: userReceives, color: 'text-[var(--az-blue)]' },
+          { label: 'Total Fee Rate', value: `${(feePct * 100).toFixed(2)}%`, color: 'text-[var(--f-warn)]' },
+          { label: 'Platform Earns', usd: feeAmount, color: 'text-[var(--f-ok)]' },
+          { label: 'User Receives', usd: userReceives, color: 'text-[var(--f-info)]' },
         ].map(({ label, value, usd, color }) => (
           <div key={label} className="bg-[var(--az-surface-3)] rounded-lg p-3">
-            <p className="text-xs text-az-text-muted">{label}</p>
+            <p className="text-xs text-ink-3">{label}</p>
             <p className={`text-base font-bold mt-1 ${color}`}>{value || `$${usd?.toFixed(2)}`}</p>
-            {usd !== undefined && <p className="text-xs text-az-text-muted">GHS {(usd * rate).toFixed(2)}</p>}
+            {usd !== undefined && <p className="text-xs text-ink-3">GHS {(usd * rate).toFixed(2)}</p>}
           </div>
         ))}
       </div>
       {type === 'crypto' && cryptoPlatform === 0 && (
-        <p className="text-xs text-[var(--az-amber)]">Platform crypto fee is 0% — you only earn gas. Set a platform fee below if desired.</p>
+        <p className="text-xs text-[var(--f-warn)]">Platform crypto fee is 0% — you only earn gas. Set a platform fee below if desired.</p>
       )}
       <ConfirmDialog
         open={!!removeKey}
@@ -215,9 +215,9 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
 
   if (isLoading) {
     return (
-      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-6">
-        <h2 className="text-sm font-semibold text-[var(--az-emerald)] uppercase tracking-wide mb-3">Projected Revenue Impact</h2>
-        <p className="text-az-text-muted text-sm">Loading revenue data…</p>
+      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-6">
+        <h2 className="text-sm font-semibold text-[var(--f-ok)] uppercase tracking-wide mb-3">Projected Revenue Impact</h2>
+        <p className="text-ink-3 text-sm">Loading revenue data…</p>
       </div>
     );
   }
@@ -259,58 +259,58 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
   }
 
   return (
-    <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-6 space-y-4">
+    <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-6 space-y-4">
       <div className="flex items-center gap-2">
-        <BarChart3 className="w-4 h-4 text-[var(--az-emerald)]" />
-        <h2 className="text-sm font-semibold text-[var(--az-emerald)] uppercase tracking-wide">Projected Revenue Impact</h2>
+        <BarChart3 className="w-4 h-4 text-[var(--f-ok)]" />
+        <h2 className="text-sm font-semibold text-[var(--f-ok)] uppercase tracking-wide">Projected Revenue Impact</h2>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-az-border/50">
-          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">Current Monthly</p>
+        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-line/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink-3">Current Monthly</p>
           <p className="text-lg font-bold text-[var(--az-text-primary)] mt-1">{fmtUSD(monthlyProjected)}</p>
-          <p className="text-[10px] text-az-text-muted mt-0.5">{fmtUSD(dailyAvgRevenue)}/day avg</p>
+          <p className="text-[10px] text-ink-3 mt-0.5">{fmtUSD(dailyAvgRevenue)}/day avg</p>
         </div>
-        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-az-border/50">
-          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">Projected Monthly</p>
-          <p className={`text-lg font-bold mt-1 ${dirty ? (monthlyDelta >= 0 ? 'text-[var(--az-emerald)]' : 'text-[var(--az-red)]') : 'text-[var(--az-text-primary)]'}`}>
+        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-line/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink-3">Projected Monthly</p>
+          <p className={`text-lg font-bold mt-1 ${dirty ? (monthlyDelta >= 0 ? 'text-[var(--f-ok)]' : 'text-[var(--f-bad)]') : 'text-[var(--az-text-primary)]'}`}>
             {fmtUSD(projectedMonthly)}
           </p>
           {dirty && (
-            <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${monthlyDelta >= 0 ? 'text-[var(--az-emerald)]' : 'text-[var(--az-red)]'}`}>
+            <p className={`text-[10px] mt-0.5 flex items-center gap-1 ${monthlyDelta >= 0 ? 'text-[var(--f-ok)]' : 'text-[var(--f-bad)]'}`}>
               {monthlyDelta >= 0 ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
               {Math.abs(pctChange).toFixed(1)}% ({monthlyDelta >= 0 ? '+' : ''}{fmtUSD(monthlyDelta)})
             </p>
           )}
-          {!dirty && <p className="text-[10px] text-az-text-muted mt-0.5">Save to see impact</p>}
+          {!dirty && <p className="text-[10px] text-ink-3 mt-0.5">Save to see impact</p>}
         </div>
-        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-az-border/50">
-          <p className="text-[10px] uppercase tracking-wide text-az-text-muted">30d Transactions</p>
+        <div className="bg-[var(--az-surface-3)] rounded-xl p-3 border border-line/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink-3">30d Transactions</p>
           <p className="text-lg font-bold text-[var(--az-text-primary)] mt-1">{totalTxns30d.toLocaleString()}</p>
-          <p className="text-[10px] text-az-text-muted mt-0.5">{(totalTxns30d / 30).toFixed(0)}/day avg</p>
+          <p className="text-[10px] text-ink-3 mt-0.5">{(totalTxns30d / 30).toFixed(0)}/day avg</p>
         </div>
       </div>
 
       {/* Revenue by source */}
       <div>
-        <h3 className="text-xs text-az-text-secondary mb-2">Revenue by Source (30d)</h3>
+        <h3 className="text-xs text-ink-2 mb-2">Revenue by Source (30d)</h3>
         <div className="space-y-1.5">
           {Object.entries(sourceBreakdown).map(([source, data]) => {
             const pct = totalProfit30d > 0 ? ((data.totalUsdc / totalProfit30d) * 100) : 0;
             return (
               <div key={source} className="flex items-center gap-3">
-                <span className="text-xs text-az-text-secondary w-32 truncate">{source.replace(/_/g, ' ')}</span>
+                <span className="text-xs text-ink-2 w-32 truncate">{source.replace(/_/g, ' ')}</span>
                 <div className="flex-1 h-2 bg-[var(--az-surface-3)] rounded-full overflow-hidden">
-                  <div className="h-full bg-[var(--az-emerald)]/60 rounded-full" style={{ width: `${Math.max(pct, 2)}%` }} />
+                  <div className="h-full bg-[var(--f-ok)]/60 rounded-full" style={{ width: `${Math.max(pct, 2)}%` }} />
                 </div>
                 <span className="text-xs text-[var(--az-text-primary)] font-mono w-20 text-right">{fmtUSD(data.totalUsdc)}</span>
-                <span className="text-[10px] text-az-text-muted w-10 text-right">{pct.toFixed(0)}%</span>
+                <span className="text-[10px] text-ink-3 w-10 text-right">{pct.toFixed(0)}%</span>
               </div>
             );
           })}
           {Object.keys(sourceBreakdown).length === 0 && (
-            <p className="text-xs text-az-text-muted text-center py-2">No revenue data for this period</p>
+            <p className="text-xs text-ink-3 text-center py-2">No revenue data for this period</p>
           )}
         </div>
       </div>
@@ -318,13 +318,13 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
       {/* 14-day sparkline */}
       {recentDays.length > 0 && (
         <div>
-          <h3 className="text-xs text-az-text-secondary mb-2">Daily Profit (last {recentDays.length} days)</h3>
+          <h3 className="text-xs text-ink-2 mb-2">Daily Profit (last {recentDays.length} days)</h3>
           <div className="flex items-end gap-1 h-16">
             {recentDays.map((d, i) => {
               const height = Math.max((d.profit / maxProfit) * 100, 2);
               return (
-                <div key={i} className="flex-1 bg-[var(--az-emerald)]/40 hover:bg-[var(--az-emerald)]/70 rounded-t transition-colors group relative" style={{ height: `${height}%` }}>
-                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[var(--az-surface-3)] border border-az-border rounded px-1.5 py-0.5 text-[10px] text-[var(--az-text-primary)] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                <div key={i} className="flex-1 bg-[var(--f-ok)]/40 hover:bg-[var(--f-ok)]/70 rounded-t transition-colors group relative" style={{ height: `${height}%` }}>
+                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[var(--az-surface-3)] border border-line rounded px-1.5 py-0.5 text-[10px] text-[var(--az-text-primary)] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
                     {fmtUSD(d.profit || 0)}
                   </div>
                 </div>
@@ -336,7 +336,7 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
 
       {dirty && (
         <div className={`rounded-lg p-3 flex items-center gap-2 ${monthlyDelta >= 0 ? 'bg-[var(--az-emerald-soft)] border border-[var(--az-emerald-glow)]' : 'bg-[var(--az-red-soft)] border border-[var(--az-red-glow)]'}`}>
-          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${monthlyDelta >= 0 ? 'text-[var(--az-emerald)]' : 'text-[var(--az-red)]'}`} />
+          <AlertTriangle className={`w-4 h-4 flex-shrink-0 ${monthlyDelta >= 0 ? 'text-[var(--f-ok)]' : 'text-[var(--f-bad)]'}`} />
           <p className={`text-xs ${monthlyDelta >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
             Your pending changes are projected to {monthlyDelta >= 0 ? 'increase' : 'decrease'} monthly revenue by {fmtUSD(Math.abs(monthlyDelta))} ({Math.abs(pctChange).toFixed(1)}%)
           </p>
@@ -382,16 +382,16 @@ function ChangeHistory() {
   }
 
   return (
-    <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-6 space-y-3">
+    <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-6 space-y-3">
       <div className="flex items-center gap-2">
-        <History className="w-4 h-4 text-[var(--az-blue)]" />
-        <h2 className="text-sm font-semibold text-[var(--az-blue)] uppercase tracking-wide">Fee Change History</h2>
+        <History className="w-4 h-4 text-[var(--f-info)]" />
+        <h2 className="text-sm font-semibold text-[var(--f-info)] uppercase tracking-wide">Fee Change History</h2>
       </div>
 
-      {isLoading && <p className="text-az-text-muted text-sm">Loading…</p>}
+      {isLoading && <p className="text-ink-3 text-sm">Loading…</p>}
 
       {!isLoading && logs.length === 0 && (
-        <p className="text-az-text-muted text-sm text-center py-3">No fee changes logged</p>
+        <p className="text-ink-3 text-sm text-center py-3">No fee changes logged</p>
       )}
 
       {!isLoading && logs.length > 0 && (
@@ -400,14 +400,14 @@ function ChangeHistory() {
             const changes = log.changes || {};
             const changedKeys = Object.keys(changes).filter(k => k !== 'updatedBy' && k !== 'reason');
             return (
-              <div key={log.id} className="bg-[var(--az-surface-3)] rounded-lg p-3 border border-az-border/30">
+              <div key={log.id} className="bg-[var(--az-surface-3)] rounded-lg p-3 border border-line/30">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-az-text-muted" />
-                    <span className="text-xs text-az-text-secondary">{log.adminName || 'Admin'}</span>
-                    <span className="text-[10px] text-az-text-muted">{timeAgo(log.createdAt)}</span>
+                    <Clock className="w-3 h-3 text-ink-3" />
+                    <span className="text-xs text-ink-2">{log.adminName || 'Admin'}</span>
+                    <span className="text-[10px] text-ink-3">{timeAgo(log.createdAt)}</span>
                   </div>
-                  <span className="text-[10px] text-az-text-muted">{changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} changed</span>
+                  <span className="text-[10px] text-ink-3">{changedKeys.length} field{changedKeys.length !== 1 ? 's' : ''} changed</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {changedKeys.slice(0, 5).map(key => {
@@ -416,14 +416,14 @@ function ChangeHistory() {
                     const newVal = change?.new ?? change?.newValue ?? change ?? '?';
                     const isIncrease = parseFloat(newVal) > parseFloat(oldVal);
                     return (
-                      <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-az-border/50 text-az-text-secondary inline-flex items-center gap-1">
+                      <span key={key} className="text-[10px] px-2 py-0.5 rounded-full bg-line/50 text-ink-2 inline-flex items-center gap-1">
                         {key}
-                        {isIncrease ? <ArrowUp className="w-2.5 h-2.5 text-[var(--az-emerald)]" /> : <ArrowDown className="w-2.5 h-2.5 text-[var(--az-red)]" />}
+                        {isIncrease ? <ArrowUp className="w-2.5 h-2.5 text-[var(--f-ok)]" /> : <ArrowDown className="w-2.5 h-2.5 text-[var(--f-bad)]" />}
                       </span>
                     );
                   })}
                   {changedKeys.length > 5 && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-az-border/50 text-az-text-muted">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-line/50 text-ink-3">
                       +{changedKeys.length - 5} more
                     </span>
                   )}
@@ -504,21 +504,21 @@ export default function FeeEngine() {
   const vendorUnder = parseFloat(form.vendorShareUnder1k || 0);
   const vendorOver = parseFloat(form.vendorShareOver1k || 0);
 
-  if (isLoading) return <div className="text-az-text-secondary text-sm p-8 text-center">Loading settings…</div>;
+  if (isLoading) return <div className="text-ink-2 text-sm p-8 text-center">Loading settings…</div>;
 
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Fee Engine</h1>
-          <p className="text-sm text-az-text-secondary mt-1">Every value is fully adjustable. Changes apply to the very next transaction — no restart needed.</p>
+          <p className="text-sm text-ink-2 mt-1">Every value is fully adjustable. Changes apply to the very next transaction — no restart needed.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => { setForm({}); setDirty(false); }} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
+          <Button variant="outline" size="sm" onClick={() => { setForm({}); setDirty(false); }} className="border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
             <RotateCcw className="w-3.5 h-3.5 mr-2" /> Reset
           </Button>
           {dirty && (
-            <Button onClick={handleSave} disabled={isPending} className="bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)]">
+            <Button onClick={handleSave} disabled={isPending} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)]">
               <Save className="w-3.5 h-3.5 mr-2" /> Save Changes
             </Button>
           )}
@@ -527,7 +527,7 @@ export default function FeeEngine() {
 
       {dirty && (
         <div className="bg-[var(--az-amber-soft)] border border-amber-500/30 rounded-xl p-3 flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-[var(--az-amber)] flex-shrink-0" />
+          <AlertTriangle className="w-4 h-4 text-[var(--f-warn)] flex-shrink-0" />
           <p className="text-xs text-amber-300">Unsaved changes — simulators already reflect your new values. Save to apply to live transactions.</p>
         </div>
       )}
@@ -535,9 +535,9 @@ export default function FeeEngine() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           {/* P2P Fees */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-[var(--az-emerald)] uppercase tracking-wide mb-1">P2P Trade Fees</h2>
-            <p className="text-xs text-az-text-muted mb-4">Charged to the buyer on every trade completion.</p>
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-[var(--f-ok)] uppercase tracking-wide mb-1">P2P Trade Fees</h2>
+            <p className="text-xs text-ink-3 mb-4">Charged to the buyer on every trade completion.</p>
             <SettingRow
               label="Base P2P Fee"
               description="Percentage of trade amount collected as platform fee"
@@ -547,9 +547,9 @@ export default function FeeEngine() {
           </div>
 
           {/* Revenue Split */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-[var(--az-blue)] uppercase tracking-wide mb-1">Revenue Split</h2>
-            <p className="text-xs text-az-text-muted mb-4">How the platform fee is divided. Admin share = 100% minus Vendor share.</p>
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-[var(--f-info)] uppercase tracking-wide mb-1">Revenue Split</h2>
+            <p className="text-xs text-ink-3 mb-4">How the platform fee is divided. Admin share = 100% minus Vendor share.</p>
             <SettingRow
               label="Vendor Share (Under Threshold)"
               description={`Trades under $${form.tierThreshold || 1000} — Admin gets ${(100 - vendorUnder).toFixed(2)}%`}
@@ -576,17 +576,17 @@ export default function FeeEngine() {
           </div>
 
           {/* Margins */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
             <h2 className="text-sm font-semibold text-[var(--az-violet)] uppercase tracking-wide mb-1">Payment Rail Margins</h2>
-            <p className="text-xs text-az-text-muted mb-4">Spread added on top of oracle rate per payment method.</p>
+            <p className="text-xs text-ink-3 mb-4">Spread added on top of oracle rate per payment method.</p>
             <SettingRow label="Bank Transfer Margin" description="Applied when payment method is bank transfer" value={form.bankMargin || ''} onChange={(v) => set('bankMargin', v)} />
             <SettingRow label="3rd Party Margin" description="Applied for CashApp, PayPal, and similar" value={form.thirdPartyMargin || ''} onChange={(v) => set('thirdPartyMargin', v)} />
           </div>
 
           {/* Withdrawal and Exit Fees */}
-          <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-[var(--az-amber)] uppercase tracking-wide mb-1">Withdrawal and Exit Fees</h2>
-            <p className="text-xs text-az-text-muted mb-4">Charged when users or vendors withdraw from the platform. All can be set to zero.</p>
+          <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
+            <h2 className="text-sm font-semibold text-[var(--f-warn)] uppercase tracking-wide mb-1">Withdrawal and Exit Fees</h2>
+            <p className="text-xs text-ink-3 mb-4">Charged when users or vendors withdraw from the platform. All can be set to zero.</p>
             <SettingRow label="Fiat Withdrawal Fee" description="Fee on GHS withdrawals via MTN MoMo" value={form.fiatWithdrawalFeePct || ''} onChange={(v) => set('fiatWithdrawalFeePct', v)} />
             <SettingRow label="Crypto Gas Fee (network cost)" description="Covers blockchain gas — goes to SystemProfitFees" value={form.cryptoWithdrawalFeePct || ''} onChange={(v) => set('cryptoWithdrawalFeePct', v)} />
             <SettingRow
@@ -649,7 +649,7 @@ function PaymentMethodsManager({ settings, onSave }) {
     }
   }, [settings]);
 
-  const riskColors = { LOW: 'text-[var(--az-emerald)] bg-[var(--az-emerald)]/15', MEDIUM: 'text-[var(--az-amber)] bg-[var(--az-amber)]/15', HIGH: 'text-[var(--az-red)] bg-[var(--az-red)]/15' };
+  const riskColors = { LOW: 'text-[var(--f-ok)] bg-[var(--f-ok)]/15', MEDIUM: 'text-[var(--f-warn)] bg-[var(--f-warn)]/15', HIGH: 'text-[var(--f-bad)] bg-[var(--f-bad)]/15' };
 
   function saveAll(updatedMethods, updatedFees) {
     onSave({
@@ -695,11 +695,11 @@ function PaymentMethodsManager({ settings, onSave }) {
   }
 
   return (
-    <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5 space-y-4">
+    <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide">Payment Methods & Per-Method Fees</h2>
-          <p className="text-xs text-az-text-muted mt-1">Define which payment methods vendors can use and set individual fee rates for each.</p>
+          <p className="text-xs text-ink-3 mt-1">Define which payment methods vendors can use and set individual fee rates for each.</p>
         </div>
         <Button size="sm" onClick={handleAddMethod} className="bg-cyan-600 hover:bg-cyan-500 text-[var(--az-text-primary)] h-8">
           + Add Method
@@ -714,7 +714,7 @@ function PaymentMethodsManager({ settings, onSave }) {
                 <span className="text-sm font-medium text-[var(--az-text-primary)]">{m.label}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${riskColors[m.riskLevel] || riskColors.MEDIUM}`}>{m.riskLevel}</span>
               </div>
-              <p className="text-xs text-az-text-muted mt-0.5">
+              <p className="text-xs text-ink-3 mt-0.5">
                 Fields: {m.requiredFields?.map(f => f.label).join(', ') || 'None'}
               </p>
             </div>
@@ -726,11 +726,11 @@ function PaymentMethodsManager({ settings, onSave }) {
                 max="100"
                 value={((fees[m.key] || 0) * 100).toFixed(1)}
                 onChange={(e) => handleFeeChange(m.key, e.target.value)}
-                className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] text-sm text-right h-8"
+                className="bg-line border-line-bright text-[var(--az-text-primary)] text-sm text-right h-8"
               />
-              <span className="text-xs text-az-text-secondary">%</span>
+              <span className="text-xs text-ink-2">%</span>
             </div>
-            <button onClick={() => handleRemoveMethod(m.key)} className="text-[var(--az-red)] hover:text-red-300 text-xs px-2">✕</button>
+            <button onClick={() => handleRemoveMethod(m.key)} className="text-[var(--f-bad)] hover:text-red-300 text-xs px-2">✕</button>
           </div>
         ))}
       </div>
@@ -740,16 +740,16 @@ function PaymentMethodsManager({ settings, onSave }) {
           <p className="text-sm font-medium text-cyan-400">Add New Payment Method</p>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="text-xs text-az-text-secondary">Key (e.g. APPLE_PAY)</label>
-              <Input value={newMethod.key} onChange={(e) => setNewMethod({ ...newMethod, key: e.target.value })} className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] mt-1" />
+              <label className="text-xs text-ink-2">Key (e.g. APPLE_PAY)</label>
+              <Input value={newMethod.key} onChange={(e) => setNewMethod({ ...newMethod, key: e.target.value })} className="bg-line border-line-bright text-[var(--az-text-primary)] mt-1" />
             </div>
             <div>
-              <label className="text-xs text-az-text-secondary">Display Label</label>
-              <Input value={newMethod.label} onChange={(e) => setNewMethod({ ...newMethod, label: e.target.value })} className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] mt-1" />
+              <label className="text-xs text-ink-2">Display Label</label>
+              <Input value={newMethod.label} onChange={(e) => setNewMethod({ ...newMethod, label: e.target.value })} className="bg-line border-line-bright text-[var(--az-text-primary)] mt-1" />
             </div>
             <div>
-              <label className="text-xs text-az-text-secondary">Risk Level</label>
-              <select value={newMethod.riskLevel} onChange={(e) => setNewMethod({ ...newMethod, riskLevel: e.target.value })} className="w-full bg-az-border border border-az-border-bright rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)] mt-1">
+              <label className="text-xs text-ink-2">Risk Level</label>
+              <select value={newMethod.riskLevel} onChange={(e) => setNewMethod({ ...newMethod, riskLevel: e.target.value })} className="w-full bg-line border border-line-bright rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)] mt-1">
                 <option value="LOW">LOW</option>
                 <option value="MEDIUM">MEDIUM</option>
                 <option value="HIGH">HIGH</option>
@@ -757,24 +757,24 @@ function PaymentMethodsManager({ settings, onSave }) {
             </div>
           </div>
           <div>
-            <label className="text-xs text-az-text-secondary">Required Fields (what vendors must provide)</label>
+            <label className="text-xs text-ink-2">Required Fields (what vendors must provide)</label>
             {newMethod.requiredFields.map((f, i) => (
               <div key={i} className="grid grid-cols-4 gap-2 mt-2">
-                <Input placeholder="Field name" value={f.name} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], name: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] text-xs" />
-                <Input placeholder="Label" value={f.label} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], label: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] text-xs" />
-                <select value={f.type} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], type: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-az-border border border-az-border-bright rounded-lg px-2 text-xs text-[var(--az-text-primary)]">
+                <Input placeholder="Field name" value={f.name} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], name: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-line border-line-bright text-[var(--az-text-primary)] text-xs" />
+                <Input placeholder="Label" value={f.label} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], label: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-line border-line-bright text-[var(--az-text-primary)] text-xs" />
+                <select value={f.type} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], type: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-line border border-line-bright rounded-lg px-2 text-xs text-[var(--az-text-primary)]">
                   <option value="text">Text</option>
                   <option value="email">Email</option>
                   <option value="phone">Phone</option>
                 </select>
-                <Input placeholder="Placeholder" value={f.placeholder} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], placeholder: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-az-border border-az-border-bright text-[var(--az-text-primary)] text-xs" />
+                <Input placeholder="Placeholder" value={f.placeholder} onChange={(e) => { const rf = [...newMethod.requiredFields]; rf[i] = { ...rf[i], placeholder: e.target.value }; setNewMethod({ ...newMethod, requiredFields: rf }); }} className="bg-line border-line-bright text-[var(--az-text-primary)] text-xs" />
               </div>
             ))}
             <Button size="sm" variant="ghost" onClick={() => setNewMethod({ ...newMethod, requiredFields: [...newMethod.requiredFields, { name: '', label: '', type: 'text', placeholder: '' }] })} className="text-cyan-400 text-xs mt-2">+ Add Field</Button>
           </div>
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={handleSaveNewMethod} className="bg-cyan-600 hover:bg-cyan-500 text-[var(--az-text-primary)]">Save Method</Button>
-            <Button size="sm" variant="ghost" onClick={() => setNewMethod(null)} className="text-az-text-secondary">Cancel</Button>
+            <Button size="sm" variant="ghost" onClick={() => setNewMethod(null)} className="text-ink-2">Cancel</Button>
           </div>
         </div>
       )}

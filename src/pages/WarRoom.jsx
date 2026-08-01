@@ -14,9 +14,9 @@ import {
 import { toast } from 'sonner';
 
 const RULINGS = [
-  { value: 'BUYER_WINS',  label: 'Buyer Wins',  color: 'text-[var(--az-emerald)]', active: 'border-[var(--az-emerald)] bg-[var(--az-emerald)10]' },
-  { value: 'VENDOR_WINS', label: 'Vendor Wins', color: 'text-[var(--az-blue)]', active: 'border-[var(--az-blue)] bg-[var(--az-blue)10]' },
-  { value: 'SPLIT',       label: 'Split Funds', color: 'text-[var(--az-amber)]', active: 'border-[var(--az-amber)] bg-[var(--az-amber)10]' },
+  { value: 'BUYER_WINS',  label: 'Buyer Wins',  color: 'text-[var(--f-ok)]', active: 'border-[var(--f-ok)] bg-[var(--f-ok)10]' },
+  { value: 'VENDOR_WINS', label: 'Vendor Wins', color: 'text-[var(--f-info)]', active: 'border-[var(--f-info)] bg-[var(--f-info)10]' },
+  { value: 'SPLIT',       label: 'Split Funds', color: 'text-[var(--f-warn)]', active: 'border-[var(--f-warn)] bg-[var(--f-warn)10]' },
 ];
 
 /* ── SLA Timer ───────────────────────────────────────────────────────────── */
@@ -36,9 +36,9 @@ function getSLA(createdAt) {
 }
 
 const SLA_STYLES = {
-  normal: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)] border-[var(--az-emerald-glow)]', dot: 'bg-emerald-400' },
-  warning: { badge: 'bg-[var(--az-amber-soft)] text-[var(--az-amber)] border-[var(--az-amber-soft)]', dot: 'bg-amber-400' },
-  critical: { badge: 'bg-[var(--az-red-soft)] text-[var(--az-red)] border-[var(--az-red-glow)]', dot: 'bg-red-400' },
+  normal: { badge: 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)] border-[var(--az-emerald-glow)]', dot: 'bg-emerald-400' },
+  warning: { badge: 'bg-[var(--az-amber-soft)] text-[var(--f-warn)] border-[var(--az-amber-soft)]', dot: 'bg-amber-400' },
+  critical: { badge: 'bg-[var(--az-red-soft)] text-[var(--f-bad)] border-[var(--az-red-glow)]', dot: 'bg-red-400' },
 };
 
 function SLATimer({ createdAt }) {
@@ -133,27 +133,27 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={onCancel}
       />
-      <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 animate-fade-in">
+      <div className="relative az-card az-glow-amber w-full max-w-md mx-4 p-6 space-y-5 ">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--az-amber)22] flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-[var(--az-amber)]" />
+          <div className="w-10 h-10 rounded-xl bg-[var(--f-warn)22] flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="w-5 h-5 text-[var(--f-warn)]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[var(--az-amber)]">⚠ Extreme Ruling</h2>
-            <p className="text-xs text-[var(--az-text-secondary)] mt-0.5">This split is outside the normal 5–95% range</p>
+            <h2 className="text-base font-bold text-[var(--f-warn)]">⚠ Extreme Ruling</h2>
+            <p className="text-xs text-[var(--f-text-2)] mt-0.5">This split is outside the normal 5–95% range</p>
           </div>
         </div>
         <div className="bg-[var(--az-surface-1)] border border-[var(--az-border-bright)] rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[var(--az-text-secondary)]">Buyer receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] az-mono">{buyerPercent}%</span>
+            <span className="text-[var(--f-text-2)]">Buyer receives</span>
+            <span className="font-bold text-[var(--az-text-primary)] f-mono">{buyerPercent}%</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-[var(--az-text-secondary)]">Vendor receives</span>
-            <span className="font-bold text-[var(--az-text-primary)] az-mono">{vendorPercent}%</span>
+            <span className="text-[var(--f-text-2)]">Vendor receives</span>
+            <span className="font-bold text-[var(--az-text-primary)] f-mono">{vendorPercent}%</span>
           </div>
         </div>
-        <p className="text-sm text-[var(--az-text-secondary)] leading-relaxed">
+        <p className="text-sm text-[var(--f-text-2)] leading-relaxed">
           You are assigning <span className="text-[var(--az-text-primary)] font-semibold">{buyerPercent}%</span> to the buyer and{' '}
           <span className="text-[var(--az-text-primary)] font-semibold">{vendorPercent}%</span> to the vendor.
           This is an unusual split. Are you absolutely certain?
@@ -161,13 +161,13 @@ function ExtremeRulingModal({ pending, onConfirm, onCancel }) {
         <div className="flex gap-3 pt-1">
           <Button
             variant="ghost"
-            className="flex-1 border border-[var(--az-border-bright)] text-[var(--az-text-secondary)] hover:text-[var(--az-text-primary)] hover:bg-[var(--az-border)]"
+            className="flex-1 border border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:text-[var(--az-text-primary)] hover:bg-[var(--f-line)]"
             onClick={onCancel}
           >
             Cancel
           </Button>
           <Button
-            className="flex-1 border border-[var(--az-red)] bg-transparent text-[var(--az-red)] hover:bg-[var(--az-red)15] font-semibold"
+            className="flex-1 border border-[var(--f-bad)] bg-transparent text-[var(--f-bad)] hover:bg-[var(--f-bad)15] font-semibold"
             onClick={onConfirm}
           >
             <ShieldAlert className="w-4 h-4 mr-2" />
@@ -187,19 +187,19 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative az-card w-full max-w-md mx-4 p-6 space-y-4 animate-fade-in">
+      <div className="relative az-card w-full max-w-md mx-4 p-6 space-y-4 ">
         <h2 className="text-base font-bold text-[var(--az-text-primary)]">{title}</h2>
         <Textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           placeholder={placeholder}
-          className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--az-blue)40] placeholder:text-[var(--az-text-muted)] min-h-[80px]"
+          className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)] min-h-[80px]"
           autoFocus
         />
         <div className="flex gap-3">
           <Button
             variant="ghost"
-            className="flex-1 border border-[var(--az-border-bright)] text-[var(--az-text-secondary)] hover:text-[var(--az-text-primary)] hover:bg-[var(--az-border)]"
+            className="flex-1 border border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:text-[var(--az-text-primary)] hover:bg-[var(--f-line)]"
             onClick={onCancel}
           >
             Cancel
@@ -221,8 +221,8 @@ function ReasonModal({ open, title, placeholder, confirmLabel, onConfirm, onCanc
 function PatternAlert({ pattern }) {
   const Icon = pattern.icon;
   const styles = {
-    high: 'bg-[var(--az-red-soft)] border-[var(--az-red-glow)] text-[var(--az-red)]',
-    medium: 'bg-[var(--az-amber-soft)] border-[var(--az-amber-soft)] text-[var(--az-amber)]',
+    high: 'bg-[var(--az-red-soft)] border-[var(--az-red-glow)] text-[var(--f-bad)]',
+    medium: 'bg-[var(--az-amber-soft)] border-[var(--az-amber-soft)] text-[var(--f-warn)]',
     warning: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
   };
   return (
@@ -243,22 +243,22 @@ function EvidenceSection({ dispute }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--az-text-secondary)]">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--f-text-2)]">
         <FileSearch className="w-3.5 h-3.5" />
         EVIDENCE & CONTEXT
       </div>
-      <div className="bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
+      <div className="bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg p-3 space-y-2 max-h-32 overflow-y-auto">
         {evidenceMessages.length === 0 ? (
-          <p className="text-xs text-[var(--az-text-muted)] italic">No evidence messages in this dispute</p>
+          <p className="text-xs text-[var(--f-text-3)] italic">No evidence messages in this dispute</p>
         ) : (
           evidenceMessages.slice(0, 5).map((m, i) => (
             <div key={i} className="text-xs">
               <span className={`font-semibold capitalize ${
-                m.sender === 'system' ? 'text-[var(--az-text-muted)]' :
-                m.sender === 'admin' ? 'text-[var(--az-amber)]' :
-                m.sender === 'buyer' ? 'text-[var(--az-blue)]' : 'text-[var(--az-emerald)]'
+                m.sender === 'system' ? 'text-[var(--f-text-3)]' :
+                m.sender === 'admin' ? 'text-[var(--f-warn)]' :
+                m.sender === 'buyer' ? 'text-[var(--f-info)]' : 'text-[var(--f-ok)]'
               }`}>{m.sender}:</span>{' '}
-              <span className="text-[var(--az-text-secondary)]">{m.text}</span>
+              <span className="text-[var(--f-text-2)]">{m.text}</span>
             </div>
           ))
         )}
@@ -376,31 +376,31 @@ function DisputeCard({ dispute, allDisputes }) {
         >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs az-mono text-[var(--az-text-secondary)]">#{dispute.id}</span>
-              <Badge className="bg-[var(--az-red)22] text-[var(--az-red)] border-[var(--az-red)40] text-xs font-medium">
+              <span className="text-xs f-mono text-[var(--f-text-2)]">#{dispute.id}</span>
+              <Tag className="bg-[var(--f-bad)22] text-[var(--f-bad)] border-[var(--f-bad)40] text-xs font-medium">
                 DISPUTED
-              </Badge>
+              </Tag>
               <span className="text-sm font-bold text-[var(--az-text-primary)]">
-                ${dispute.amount} <span className="text-[var(--az-text-secondary)] font-normal">{dispute.currency}</span>
+                ${dispute.amount} <span className="text-[var(--f-text-2)] font-normal">{dispute.currency}</span>
               </span>
-              <span className="text-xs text-[var(--az-text-muted)] bg-[var(--az-border)] px-2 py-0.5 rounded-full">
+              <span className="text-xs text-[var(--f-text-3)] bg-[var(--f-line)] px-2 py-0.5 rounded-full">
                 {dispute.paymentMethod}
               </span>
               {/* SLA Timer */}
               <SLATimer createdAt={dispute.createdAt} />
             </div>
-            <div className="flex gap-4 mt-2 text-xs text-[var(--az-text-muted)]">
-              <span>Buyer: <span className="text-[var(--az-text-secondary)]">{buyerName}</span></span>
-              <span>Vendor: <span className="text-[var(--az-text-secondary)]">{vendorName}</span></span>
+            <div className="flex gap-4 mt-2 text-xs text-[var(--f-text-3)]">
+              <span>Buyer: <span className="text-[var(--f-text-2)]">{buyerName}</span></span>
+              <span>Vendor: <span className="text-[var(--f-text-2)]">{vendorName}</span></span>
             </div>
           </div>
-          <span className="text-xs text-[var(--az-text-muted)] flex-shrink-0 mt-1">
+          <span className="text-xs text-[var(--f-text-3)] flex-shrink-0 mt-1">
             {expanded ? '▲ Collapse' : '▼ Expand'}
           </span>
         </div>
 
         {expanded && (
-          <div className="border-t border-[var(--az-border)] p-4 space-y-4">
+          <div className="border-t border-[var(--f-line)] p-4 space-y-4">
             {/* Pattern alerts */}
             {patterns.length > 0 && (
               <div className="space-y-1.5">
@@ -413,7 +413,7 @@ function DisputeCard({ dispute, allDisputes }) {
 
             {/* Chat messages */}
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--az-text-secondary)]">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--f-text-2)]">
                 <MessageSquare className="w-3.5 h-3.5" />
                 CHAT HISTORY
               </div>
@@ -421,8 +421,8 @@ function DisputeCard({ dispute, allDisputes }) {
                 <div key={i} className={`flex ${m.sender === 'buyer' ? 'justify-start' : 'justify-end'}`}>
                   <div className={`rounded-xl px-3 py-2 max-w-xs text-xs ${
                     m.sender === 'buyer'
-                      ? 'bg-[var(--az-border)] text-[var(--az-text-secondary)]'
-                      : 'bg-[var(--az-blue)22] text-[var(--az-blue)]'
+                      ? 'bg-[var(--f-line)] text-[var(--f-text-2)]'
+                      : 'bg-[var(--f-info)22] text-[var(--f-info)]'
                   }`}>
                     <p className="font-semibold mb-0.5 capitalize">{m.sender}</p>
                     <p>{m.text}</p>
@@ -430,12 +430,12 @@ function DisputeCard({ dispute, allDisputes }) {
                 </div>
               ))}
               {(!dispute.messages || dispute.messages.length === 0) && (
-                <p className="text-xs text-[var(--az-text-muted)] text-center py-2">No messages in this dispute</p>
+                <p className="text-xs text-[var(--f-text-3)] text-center py-2">No messages in this dispute</p>
               )}
             </div>
 
             {/* Tab bar */}
-            <div className="flex gap-1 bg-[var(--az-bg)] rounded-xl p-1 border border-[var(--az-border)]">
+            <div className="flex gap-1 bg-[var(--f-bg)] rounded-xl p-1 border border-[var(--f-line)]">
               {[['resolve', 'Resolve'], ['inject', 'Inject'], ['quick', 'Quick Actions']].map(([t, label]) => (
                 <button
                   key={t}
@@ -443,7 +443,7 @@ function DisputeCard({ dispute, allDisputes }) {
                   className={`flex-1 text-xs py-1.5 rounded-lg transition-all ${
                     tab === t
                       ? 'bg-[var(--az-surface-2)] text-[var(--az-text-primary)] font-medium shadow-sm'
-                      : 'text-[var(--az-text-muted)] hover:text-[var(--az-text-secondary)]'
+                      : 'text-[var(--f-text-3)] hover:text-[var(--f-text-2)]'
                   }`}
                 >
                   {label}
@@ -462,7 +462,7 @@ function DisputeCard({ dispute, allDisputes }) {
                       className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
                         ruling === r.value
                           ? r.active
-                          : 'border-[var(--az-border-bright)] text-[var(--az-text-secondary)] hover:bg-[var(--az-surface-2)]'
+                          : 'border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:bg-[var(--az-surface-2)]'
                       }`}
                     >
                       {r.label}
@@ -472,14 +472,14 @@ function DisputeCard({ dispute, allDisputes }) {
 
                 {ruling === 'SPLIT' && (
                   <div>
-                    <label className="text-xs text-[var(--az-text-muted)] block mb-1">Buyer share: {buyerPct}%</label>
+                    <label className="text-xs text-[var(--f-text-3)] block mb-1">Buyer share: {buyerPct}%</label>
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={buyerPct}
                       onChange={(e) => setBuyerPct(parseInt(e.target.value))}
-                      className="w-full accent-[var(--az-blue)]"
+                      className="w-full accent-[var(--f-info)]"
                     />
                   </div>
                 )}
@@ -488,13 +488,13 @@ function DisputeCard({ dispute, allDisputes }) {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Reason for ruling (required)…"
-                  className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--az-blue)40] placeholder:text-[var(--az-text-muted)]"
+                  className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
                 />
 
                 <Button
                   onClick={handleResolve}
                   disabled={!reason.trim() || resolve.isPending}
-                  className="w-full bg-[var(--az-blue)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
+                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
                 >
                   {resolve.isPending ? 'Resolving…' : 'Resolve Dispute'}
                 </Button>
@@ -508,12 +508,12 @@ function DisputeCard({ dispute, allDisputes }) {
                   value={injectMsg}
                   onChange={(e) => setInjectMsg(e.target.value)}
                   placeholder="Admin message to inject into trade chat..."
-                  className="bg-[var(--az-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--az-blue)40] placeholder:text-[var(--az-text-muted)]"
+                  className="bg-[var(--f-bg)] border-[var(--az-border-bright)] text-[var(--az-text-primary)] focus:border-[var(--f-info)40] placeholder:text-[var(--f-text-3)]"
                 />
                 <Button
                   onClick={() => inject.mutate({ id: dispute.id, message: injectMsg })}
                   disabled={!injectMsg || inject.isPending}
-                  className="w-full bg-[var(--az-blue)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
+                  className="w-full bg-[var(--f-info)] hover:bg-[#3d7ef0] text-[var(--az-text-primary)] font-semibold text-sm"
                 >
                   <MessageSquare className="w-3.5 h-3.5 mr-2" />
                   {inject.isPending ? 'Injecting…' : 'Inject Message'}
@@ -527,7 +527,7 @@ function DisputeCard({ dispute, allDisputes }) {
                 <Button
                   onClick={() => setReasonModal({ type: 'release' })}
                   variant="outline"
-                  className="border-[var(--az-emerald)40] text-[var(--az-emerald)] hover:bg-[var(--az-emerald)10] text-sm"
+                  className="border-[var(--f-ok)40] text-[var(--f-ok)] hover:bg-[var(--f-ok)10] text-sm"
                   disabled={forceRelease.isPending}
                 >
                   <CheckCircle className="w-3.5 h-3.5 mr-2" />
@@ -536,7 +536,7 @@ function DisputeCard({ dispute, allDisputes }) {
                 <Button
                   onClick={() => setReasonModal({ type: 'cancel' })}
                   variant="outline"
-                  className="border-[var(--az-red)40] text-[var(--az-red)] hover:bg-[var(--az-red)10] text-sm"
+                  className="border-[var(--f-bad)40] text-[var(--f-bad)] hover:bg-[var(--f-bad)10] text-sm"
                   disabled={forceCancel.isPending}
                 >
                   <XCircle className="w-3.5 h-3.5 mr-2" />
@@ -577,31 +577,31 @@ function SummaryBar({ disputes }) {
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div className="az-card p-3">
         <div className="flex items-center gap-2 mb-1">
-          <Swords className="w-3.5 h-3.5 text-[var(--az-red)]" />
-          <span className="text-xs text-[var(--az-text-muted)] uppercase">Total Disputes</span>
+          <Swords className="w-3.5 h-3.5 text-[var(--f-bad)]" />
+          <span className="text-xs text-[var(--f-text-3)] uppercase">Total Disputes</span>
         </div>
         <p className="text-xl font-bold text-[var(--az-text-primary)]">{stats.total}</p>
       </div>
-      <div className={`az-card p-3 ${stats.escalated > 0 ? 'border-[var(--az-red)40]' : ''}`}>
+      <div className={`az-card p-3 ${stats.escalated > 0 ? 'border-[var(--f-bad)40]' : ''}`}>
         <div className="flex items-center gap-2 mb-1">
-          <Flame className="w-3.5 h-3.5 text-[var(--az-red)]" />
-          <span className="text-xs text-[var(--az-text-muted)] uppercase">SLA Breached</span>
+          <Flame className="w-3.5 h-3.5 text-[var(--f-bad)]" />
+          <span className="text-xs text-[var(--f-text-3)] uppercase">SLA Breached</span>
         </div>
-        <p className={`text-xl font-bold ${stats.escalated > 0 ? 'text-[var(--az-red)]' : 'text-[var(--az-emerald)]'}`}>{stats.escalated}</p>
+        <p className={`text-xl font-bold ${stats.escalated > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-ok)]'}`}>{stats.escalated}</p>
       </div>
       <div className="az-card p-3">
         <div className="flex items-center gap-2 mb-1">
-          <Clock className="w-3.5 h-3.5 text-[var(--az-amber)]" />
-          <span className="text-xs text-[var(--az-text-muted)] uppercase">Avg Age</span>
+          <Clock className="w-3.5 h-3.5 text-[var(--f-warn)]" />
+          <span className="text-xs text-[var(--f-text-3)] uppercase">Avg Age</span>
         </div>
-        <p className="text-xl font-bold text-[var(--az-amber)]">{stats.avgAge}h</p>
+        <p className="text-xl font-bold text-[var(--f-warn)]">{stats.avgAge}h</p>
       </div>
       <div className="az-card p-3">
         <div className="flex items-center gap-2 mb-1">
-          <History className="w-3.5 h-3.5 text-[var(--az-blue)]" />
-          <span className="text-xs text-[var(--az-text-muted)] uppercase">At Risk</span>
+          <History className="w-3.5 h-3.5 text-[var(--f-info)]" />
+          <span className="text-xs text-[var(--f-text-3)] uppercase">At Risk</span>
         </div>
-        <p className="text-xl font-bold text-[var(--az-blue)]">${stats.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+        <p className="text-xl font-bold text-[var(--f-info)]">${stats.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
       </div>
     </div>
   );
@@ -611,13 +611,13 @@ function SummaryBar({ disputes }) {
 function EscalationBanner({ escalatedCount }) {
   if (escalatedCount === 0) return null;
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-[var(--az-red)10] border border-[var(--az-red)30] rounded-xl animate-fade-in">
-      <div className="w-8 h-8 rounded-lg bg-[var(--az-red)22] flex items-center justify-center shrink-0">
-        <AlertTriangle className="w-4 h-4 text-[var(--az-red)]" />
+    <div className="flex items-center gap-3 px-4 py-3 bg-[var(--f-bad)10] border border-[var(--f-bad)30] rounded-xl ">
+      <div className="w-8 h-8 rounded-lg bg-[var(--f-bad)22] flex items-center justify-center shrink-0">
+        <AlertTriangle className="w-4 h-4 text-[var(--f-bad)]" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-bold text-[var(--az-red)]">SLA Escalation</p>
-        <p className="text-xs text-[var(--az-text-secondary)]">
+        <p className="text-sm font-bold text-[var(--f-bad)]">SLA Escalation</p>
+        <p className="text-xs text-[var(--f-text-2)]">
           {escalatedCount} {escalatedCount === 1 ? 'dispute has' : 'disputes have'} been open for more than 4 hours.
           Immediate attention required.
         </p>
@@ -636,10 +636,10 @@ export default function WarRoom() {
   });
 
   const statusColors = {
-    PAID:            'bg-[var(--az-emerald)22] text-[var(--az-emerald)] border-[var(--az-emerald)40]',
-    PENDING_PAYMENT: 'bg-[var(--az-amber)22] text-[var(--az-amber)] border-[var(--az-amber)40]',
-    DISPUTED:        'bg-[var(--az-red)22] text-[var(--az-red)] border-[var(--az-red)40]',
-    COMPLETED:       'bg-[var(--az-blue)22] text-[var(--az-blue)] border-[var(--az-blue)40]',
+    PAID:            'bg-[var(--f-ok)22] text-[var(--f-ok)] border-[var(--f-ok)40]',
+    PENDING_PAYMENT: 'bg-[var(--f-warn)22] text-[var(--f-warn)] border-[var(--f-warn)40]',
+    DISPUTED:        'bg-[var(--f-bad)22] text-[var(--f-bad)] border-[var(--f-bad)40]',
+    COMPLETED:       'bg-[var(--f-info)22] text-[var(--f-info)] border-[var(--f-info)40]',
   };
 
   // Count escalated disputes (open > 4h)
@@ -649,19 +649,19 @@ export default function WarRoom() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 ">
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[var(--az-red)22] rounded-xl flex items-center justify-center az-glow-red">
-            <Swords className="w-4.5 h-4.5 text-[var(--az-red)]" />
+          <div className="w-9 h-9 bg-[var(--f-bad)22] rounded-xl flex items-center justify-center az-glow-red">
+            <Swords className="w-4.5 h-4.5 text-[var(--f-bad)]" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-[var(--az-text-primary)]">War Room</h1>
-            <p className="text-xs text-[var(--az-text-muted)]">
-              <span className="text-[var(--az-red)] font-semibold">{disputes.length}</span> active disputes
+            <p className="text-xs text-[var(--f-text-3)]">
+              <span className="text-[var(--f-bad)] font-semibold">{disputes.length}</span> active disputes
               {' · '}
-              <span className="text-[var(--az-amber)] font-semibold">{Array.isArray(liveTrades) ? liveTrades.length : 0}</span> live trades
+              <span className="text-[var(--f-warn)] font-semibold">{Array.isArray(liveTrades) ? liveTrades.length : 0}</span> live trades
             </p>
           </div>
         </div>
@@ -669,7 +669,7 @@ export default function WarRoom() {
           variant="outline"
           size="sm"
           onClick={() => refetch()}
-          className="border-[var(--az-border-bright)] text-[var(--az-text-secondary)] hover:bg-[var(--az-surface-2)] hover:text-[var(--az-text-primary)] text-xs"
+          className="border-[var(--az-border-bright)] text-[var(--f-text-2)] hover:bg-[var(--az-surface-2)] hover:text-[var(--az-text-primary)] text-xs"
         >
           <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
         </Button>
@@ -683,7 +683,7 @@ export default function WarRoom() {
 
       {/* Active Disputes */}
       <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-widest">
+        <h2 className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-widest">
           Active Disputes
         </h2>
         {isLoading && (
@@ -696,22 +696,22 @@ export default function WarRoom() {
         {disputes.map((d) => <DisputeCard key={d.id} dispute={d} allDisputes={disputes} />)}
         {!isLoading && disputes.length === 0 && (
           <div className="text-center py-12 az-card">
-            <div className="w-10 h-10 bg-[var(--az-emerald)22] rounded-xl flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-5 h-5 text-[var(--az-emerald)]" />
+            <div className="w-10 h-10 bg-[var(--f-ok)22] rounded-xl flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-5 h-5 text-[var(--f-ok)]" />
             </div>
-            <p className="text-sm font-medium text-[var(--az-text-secondary)]">No active disputes</p>
-            <p className="text-xs text-[var(--az-text-muted)] mt-1">The platform is clean ✓</p>
+            <p className="text-sm font-medium text-[var(--f-text-2)]">No active disputes</p>
+            <p className="text-xs text-[var(--f-text-3)] mt-1">The platform is clean ✓</p>
           </div>
         )}
       </div>
 
       {/* Live Trades */}
       <div className="space-y-3">
-        <h2 className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-widest">
+        <h2 className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-widest">
           Live Trades ({Array.isArray(liveTrades) ? liveTrades.length : 0})
         </h2>
         <div className="az-card overflow-hidden">
-          <div className="grid grid-cols-5 gap-4 px-4 py-2.5 border-b border-[var(--az-border)] text-xs text-[var(--az-text-muted)] uppercase tracking-wider">
+          <div className="grid grid-cols-5 gap-4 px-4 py-2.5 border-b border-[var(--f-line)] text-xs text-[var(--f-text-3)] uppercase tracking-wider">
             <span>ID</span>
             <span>Amount</span>
             <span>Status</span>
@@ -723,17 +723,17 @@ export default function WarRoom() {
               key={t.id}
               className="az-table-row grid grid-cols-5 gap-4 px-4 py-3 text-sm last:border-0"
             >
-              <span className="az-mono text-xs text-[var(--az-text-muted)] truncate">#{t.id}</span>
-              <span className="font-semibold text-[var(--az-text-primary)] az-mono">${t.amount}</span>
-              <Badge className={`text-xs border w-fit ${statusColors[t.status] || 'bg-[var(--az-border)] text-[var(--az-text-secondary)] border-[var(--az-border-bright)]'}`}>
+              <span className="f-mono text-xs text-[var(--f-text-3)] truncate">#{t.id}</span>
+              <span className="font-semibold text-[var(--az-text-primary)] f-mono">${t.amount}</span>
+              <Tag className={`text-xs border w-fit ${statusColors[t.status] || 'bg-[var(--f-line)] text-[var(--f-text-2)] border-[var(--az-border-bright)]'}`}>
                 {t.status}
-              </Badge>
-              <span className="text-[var(--az-text-secondary)] truncate">{t.buyer?.name || t.user?.username || '–'}</span>
-              <span className="text-[var(--az-text-secondary)] truncate">{t.vendor?.name || t.vendor?.username || '–'}</span>
+              </Tag>
+              <span className="text-[var(--f-text-2)] truncate">{t.buyer?.name || t.user?.username || '–'}</span>
+              <span className="text-[var(--f-text-2)] truncate">{t.vendor?.name || t.vendor?.username || '–'}</span>
             </div>
           ))}
           {(!Array.isArray(liveTrades) || liveTrades.length === 0) && (
-            <p className="text-[var(--az-text-muted)] text-sm text-center py-8">No live trades</p>
+            <p className="text-[var(--f-text-3)] text-sm text-center py-8">No live trades</p>
           )}
         </div>
       </div>

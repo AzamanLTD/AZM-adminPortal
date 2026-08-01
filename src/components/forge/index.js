@@ -18,3 +18,11 @@ export { CommandPalette } from './CommandPalette';
 export { ToastProvider, useToast, notify } from './toast';
 export * from './chartTheme';
 export { ForgeLayout } from './ForgeLayout';
+
+// ── Backward-compatible re-exports for legacy @/components/ui imports ──
+export { Badge } from './Tag';
+export { Skeleton, Spinner } from './Skeleton';
+export { Empty } from './EmptyState';
+export { Progress } from './Progress';
+export { Avatar } from './Avatar';
+export { Tabs } from './Tabs';

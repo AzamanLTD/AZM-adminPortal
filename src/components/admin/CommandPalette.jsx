@@ -146,21 +146,21 @@ export default function CommandPalette({ open, onOpenChange }) {
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-xl bg-[var(--az-surface-2)] border border-az-border rounded-2xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-xl bg-[var(--az-surface-2)] border border-line rounded-2xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-az-border">
-          <Search className="w-4 h-4 text-az-text-muted shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
+          <Search className="w-4 h-4 text-ink-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search pages and actions…"
-            className="flex-1 bg-transparent text-[var(--az-text-primary)] text-sm placeholder:text-az-text-muted outline-none"
+            className="flex-1 bg-transparent text-[var(--az-text-primary)] text-sm placeholder:text-ink-3 outline-none"
           />
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-az-text-muted bg-[var(--az-surface-3)] border border-az-border rounded">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-ink-3 bg-[var(--az-surface-3)] border border-line rounded">
             ESC
           </kbd>
         </div>
@@ -168,7 +168,7 @@ export default function CommandPalette({ open, onOpenChange }) {
         {/* Results */}
         <div ref={listRef} className="max-h-[400px] overflow-y-auto py-2">
           {filtered.length === 0 && (
-            <div className="px-4 py-8 text-center text-az-text-muted text-sm">
+            <div className="px-4 py-8 text-center text-ink-3 text-sm">
               No results for "{query}"
             </div>
           )}
@@ -183,15 +183,15 @@ export default function CommandPalette({ open, onOpenChange }) {
                 onMouseEnter={() => setSelectedIndex(i)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                   active
-                    ? 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'
-                    : 'text-az-text-secondary hover:bg-[var(--az-surface-3)]'
+                    ? 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'
+                    : 'text-ink-2 hover:bg-[var(--az-surface-3)]'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="font-medium">{cmd.label}</span>
                   {cmd.hint && (
-                    <span className="ml-2 text-xs text-az-text-muted">{cmd.hint}</span>
+                    <span className="ml-2 text-xs text-ink-3">{cmd.hint}</span>
                   )}
                 </div>
                 {active && <CornerDownLeft className="w-3.5 h-3.5 opacity-50" />}
@@ -201,15 +201,15 @@ export default function CommandPalette({ open, onOpenChange }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-az-border text-xs text-az-text-muted">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-line text-xs text-ink-3">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↑</kbd>
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↓</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↑</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↓</kbd>
               Navigate
             </span>
             <span className="flex items-center gap-1">
-              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-az-border rounded font-mono">↵</kbd>
+              <kbd className="px-1 py-0.5 bg-[var(--az-surface-3)] border border-line rounded font-mono">↵</kbd>
               Select
             </span>
           </div>

@@ -23,7 +23,7 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex"
-      style={{ background: 'var(--az-bg)' }}
+      style={{ background: 'var(--f-bg)' }}
     >
       {/* ── Left branding panel ── */}
       <div
@@ -47,8 +47,8 @@ export default function Login() {
               className="w-9 h-9 rounded-xl object-contain"
             />
             <div>
-              <p className="text-sm font-bold tracking-tight" style={{ color: 'var(--az-text)' }}>AZAMAN</p>
-              <p className="text-[11px] font-medium" style={{ color: 'var(--az-text-muted)' }}>Admin Portal</p>
+              <p className="text-sm font-bold tracking-tight" style={{ color: 'var(--f-text)' }}>AZAMAN</p>
+              <p className="text-[11px] font-medium" style={{ color: 'var(--f-text-3)' }}>Admin Portal</p>
             </div>
           </motion.div>
 
@@ -57,7 +57,7 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
             className="text-[22px] font-bold leading-snug mb-3"
-            style={{ color: 'var(--az-text)' }}
+            style={{ color: 'var(--f-text)' }}
           >
             Platform<br />Control Center
           </motion.h1>
@@ -67,7 +67,7 @@ export default function Login() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
             className="text-sm leading-relaxed"
-            style={{ color: 'var(--az-text-secondary)' }}
+            style={{ color: 'var(--f-text-2)' }}
           >
             Manage users, compliance, finance, Susu groups, and merchants across the Azaman platform.
           </motion.p>
@@ -90,15 +90,15 @@ export default function Login() {
             <div key={f} className="flex items-center gap-2.5">
               <div
                 className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background: 'var(--az-emerald)' }}
+                style={{ background: 'var(--f-ok)' }}
               />
-              <span className="text-sm" style={{ color: 'var(--az-text-secondary)' }}>{f}</span>
+              <span className="text-sm" style={{ color: 'var(--f-text-2)' }}>{f}</span>
             </div>
           ))}
         </motion.div>
 
         {/* Footer */}
-        <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>
+        <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>
           © 2026 Azaman. All rights reserved.
         </p>
       </div>
@@ -114,11 +114,11 @@ export default function Login() {
           {/* Mobile logo */}
           <div className="flex items-center gap-3 mb-8 lg:hidden">
             <img src="/azaman-logo.png" alt="Azaman" className="w-8 h-8 rounded-xl object-contain" />
-            <p className="text-sm font-bold" style={{ color: 'var(--az-text)' }}>AZAMAN Admin</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>AZAMAN Admin</p>
           </div>
 
-          <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--az-text)' }}>Sign in</h2>
-          <p className="text-sm mb-7" style={{ color: 'var(--az-text-muted)' }}>
+          <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--f-text)' }}>Sign in</h2>
+          <p className="text-sm mb-7" style={{ color: 'var(--f-text-3)' }}>
             Admin access only
           </p>
 
@@ -126,7 +126,7 @@ export default function Login() {
             <div>
               <label
                 className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
-                style={{ color: 'var(--az-text-muted)' }}
+                style={{ color: 'var(--f-text-3)' }}
               >
                 Email
               </label>
@@ -144,7 +144,7 @@ export default function Login() {
             <div>
               <label
                 className="block text-xs font-semibold uppercase tracking-wide mb-1.5"
-                style={{ color: 'var(--az-text-muted)' }}
+                style={{ color: 'var(--f-text-3)' }}
               >
                 Password
               </label>
@@ -162,7 +162,7 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPw((s) => !s)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: 'var(--az-text-muted)' }}
+                  style={{ color: 'var(--f-text-3)' }}
                 >
                   {showPw
                     ? <EyeOff style={{ width: 15, height: 15 }} />
@@ -182,8 +182,8 @@ export default function Login() {
                   border:     '1px solid rgba(220,38,38,0.18)',
                 }}
               >
-                <AlertCircle style={{ width: 13, height: 13, color: 'var(--az-danger)', flexShrink: 0 }} />
-                <p className="text-xs" style={{ color: 'var(--az-danger)' }}>{error}</p>
+                <AlertCircle style={{ width: 13, height: 13, color: 'var(--f-bad)', flexShrink: 0 }} />
+                <p className="text-xs" style={{ color: 'var(--f-bad)' }}>{error}</p>
               </motion.div>
             )}
 
@@ -205,7 +205,7 @@ export default function Login() {
             </motion.button>
           </form>
 
-          <p className="text-xs text-center mt-6" style={{ color: 'var(--az-text-muted)' }}>
+          <p className="text-xs text-center mt-6" style={{ color: 'var(--f-text-3)' }}>
             Only admin accounts can access this portal.
           </p>
         </motion.div>

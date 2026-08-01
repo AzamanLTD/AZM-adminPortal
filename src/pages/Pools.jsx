@@ -71,9 +71,9 @@ export default function Pools() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Pool Monitor</h1>
-          <p className="text-sm text-az-text-secondary mt-1">Total system value: <span className="text-[var(--az-emerald)] font-bold">${totalSystemUSD.toLocaleString()} USD</span></p>
+          <p className="text-sm text-ink-2 mt-1">Total system value: <span className="text-[var(--f-ok)] font-bold">${totalSystemUSD.toLocaleString()} USD</span></p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-az-border text-az-text-secondary hover:bg-[var(--az-surface-3)]">
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-line text-ink-2 hover:bg-[var(--az-surface-3)]">
           <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
         </Button>
       </div>
@@ -81,17 +81,17 @@ export default function Pools() {
       {/* Loading state */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="w-6 h-6 border-2 border-az-border border-t-emerald-400 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-2 border-line border-t-emerald-400 rounded-full animate-spin" />
         </div>
       )}
 
       {/* Error state */}
       {isError && (
         <div className="bg-[var(--az-red-soft)] border border-[var(--az-red-glow)] rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-[var(--az-red)] mt-0.5 flex-shrink-0" />
+          <AlertTriangle className="w-4 h-4 text-[var(--f-bad)] mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-[var(--az-red)]">Failed to load pool data</p>
-            <p className="text-xs text-az-text-secondary mt-1">{error?.message || 'Server error — try refreshing'}</p>
+            <p className="text-sm font-semibold text-[var(--f-bad)]">Failed to load pool data</p>
+            <p className="text-xs text-ink-2 mt-1">{error?.message || 'Server error — try refreshing'}</p>
           </div>
         </div>
       )}
@@ -109,54 +109,54 @@ export default function Pools() {
           {/* Low pool warning */}
           {pools.fiatPool?.status === 'WARNING' && (
             <div className="bg-[var(--az-amber-soft)] border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
-              <AlertTriangle className="w-4 h-4 text-[var(--az-amber)] mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-[var(--f-warn)] mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-[var(--az-amber)]">Fiat Pool Running Low</p>
-                <p className="text-xs text-az-text-secondary mt-1">MTN MoMo fiat pool is below the replenishment threshold. Consider transferring funds from the bank account to the MoMo wallet.</p>
+                <p className="text-sm font-semibold text-[var(--f-warn)]">Fiat Pool Running Low</p>
+                <p className="text-xs text-ink-2 mt-1">MTN MoMo fiat pool is below the replenishment threshold. Consider transferring funds from the bank account to the MoMo wallet.</p>
               </div>
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Corporate USDC Purchase (Kotani) */}
-            <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
+            <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <ShoppingCart className="w-4 h-4 text-[var(--az-emerald)]" />
-                <h2 className="text-sm font-semibold text-az-text-secondary">Buy USDC (Kotani Corporate Rate)</h2>
+                <ShoppingCart className="w-4 h-4 text-[var(--f-ok)]" />
+                <h2 className="text-sm font-semibold text-ink-2">Buy USDC (Kotani Corporate Rate)</h2>
               </div>
               <form onSubmit={submitCorpPurchase} className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs text-az-text-secondary block mb-1">Corporate Rate (GHS/USD)</label>
+                    <label className="text-xs text-ink-2 block mb-1">Corporate Rate (GHS/USD)</label>
                     <Input
-                      className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                      className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                       placeholder="12.20"
                       value={corpForm.discountRate}
                       onChange={(e) => setCorpForm({ ...corpForm, discountRate: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-az-text-secondary block mb-1">Market Rate (GHS/USD)</label>
+                    <label className="text-xs text-ink-2 block mb-1">Market Rate (GHS/USD)</label>
                     <Input
-                      className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                      className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                       placeholder="12.50"
                       value={corpForm.marketRate}
                       onChange={(e) => setCorpForm({ ...corpForm, marketRate: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-az-text-secondary block mb-1">USDC Amount</label>
+                    <label className="text-xs text-ink-2 block mb-1">USDC Amount</label>
                     <Input
-                      className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                      className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                       placeholder="5000"
                       value={corpForm.usdcAmount}
                       onChange={(e) => setCorpForm({ ...corpForm, usdcAmount: e.target.value })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-az-text-secondary block mb-1">GHS Sent</label>
+                    <label className="text-xs text-ink-2 block mb-1">GHS Sent</label>
                     <Input
-                      className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                      className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                       placeholder="61000"
                       value={corpForm.fiatSent}
                       onChange={(e) => setCorpForm({ ...corpForm, fiatSent: e.target.value })}
@@ -165,29 +165,29 @@ export default function Pools() {
                 </div>
                 {corpForm.discountRate && corpForm.marketRate && corpForm.usdcAmount && (
                   <div className="bg-[var(--az-surface-3)] rounded-lg p-3 text-xs space-y-1">
-                    <p className="text-az-text-secondary">Savings vs market:</p>
-                    <p className="text-[var(--az-emerald)] font-semibold">
+                    <p className="text-ink-2">Savings vs market:</p>
+                    <p className="text-[var(--f-ok)] font-semibold">
                       ₵{((parseFloat(corpForm.marketRate) - parseFloat(corpForm.discountRate)) * parseFloat(corpForm.usdcAmount)).toFixed(2)} GHS saved
                     </p>
                   </div>
                 )}
-                <Button type="submit" className="w-full bg-emerald-600 hover:bg-[var(--az-emerald)] text-[var(--az-text-primary)] text-sm" disabled={submitting}>
+                <Button type="submit" className="w-full bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--az-text-primary)] text-sm" disabled={submitting}>
                   {submitting ? 'Logging…' : 'Log Purchase'}
                 </Button>
               </form>
             </div>
 
             {/* Cold Storage Transfer */}
-            <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl p-5">
+            <div className="bg-[var(--az-surface-2)] border border-line rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
                 <ArrowUpDown className="w-4 h-4 text-[var(--az-violet)]" />
-                <h2 className="text-sm font-semibold text-az-text-secondary">Cold Storage Transfer</h2>
+                <h2 className="text-sm font-semibold text-ink-2">Cold Storage Transfer</h2>
               </div>
               <form onSubmit={submitColdStorage} className="space-y-3">
                 <div>
-                  <label className="text-xs text-az-text-secondary block mb-1">Direction</label>
+                  <label className="text-xs text-ink-2 block mb-1">Direction</label>
                   <select
-                    className="w-full bg-[var(--az-surface-3)] border border-az-border rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]"
+                    className="w-full bg-[var(--az-surface-3)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]"
                     value={coldForm.direction}
                     onChange={(e) => setColdForm({ ...coldForm, direction: e.target.value })}
                   >
@@ -196,18 +196,18 @@ export default function Pools() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-az-text-secondary block mb-1">USDC Amount</label>
+                  <label className="text-xs text-ink-2 block mb-1">USDC Amount</label>
                   <Input
-                    className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                    className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                     placeholder="10000"
                     value={coldForm.amount}
                     onChange={(e) => setColdForm({ ...coldForm, amount: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-az-text-secondary block mb-1">Note</label>
+                  <label className="text-xs text-ink-2 block mb-1">Note</label>
                   <Input
-                    className="bg-[var(--az-surface-3)] border-az-border text-[var(--az-text-primary)] text-sm"
+                    className="bg-[var(--az-surface-3)] border-line text-[var(--az-text-primary)] text-sm"
                     placeholder="Routine cold storage rotation"
                     value={coldForm.note}
                     onChange={(e) => setColdForm({ ...coldForm, note: e.target.value })}

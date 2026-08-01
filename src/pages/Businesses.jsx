@@ -12,10 +12,10 @@ import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRi
 import { toast } from 'sonner';
 
 const KYB_COLORS = {
-  VERIFIED:   'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]',
-  PENDING:    'bg-[var(--az-amber-soft)] text-[var(--az-amber)]',
-  REJECTED:   'bg-[var(--az-red-soft)] text-[var(--az-red)]',
-  UNVERIFIED: 'bg-az-text-muted/20 text-az-text-secondary',
+  VERIFIED:   'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]',
+  PENDING:    'bg-[var(--az-amber-soft)] text-[var(--f-warn)]',
+  REJECTED:   'bg-[var(--az-red-soft)] text-[var(--f-bad)]',
+  UNVERIFIED: 'bg-az-text-muted/20 text-ink-2',
 };
 
 function num(v) { const n = Number(v); return Number.isFinite(n) ? n : 0; }
@@ -35,21 +35,21 @@ function BusinessDetailDialog({ bizId, onClose }) {
           <DialogTitle className="text-[var(--az-text-primary)]">Business Details</DialogTitle>
         </DialogHeader>
         {isLoading ? (
-          <p className="text-sm text-[var(--az-text-secondary)] py-6 text-center">Loading…</p>
+          <p className="text-sm text-[var(--f-text-2)] py-6 text-center">Loading…</p>
         ) : !biz ? (
-          <p className="text-sm text-[var(--az-text-muted)] py-6 text-center">Business not found</p>
+          <p className="text-sm text-[var(--f-text-3)] py-6 text-center">Business not found</p>
         ) : (
           <div className="space-y-3 text-sm">
             <div className="flex items-center gap-3">
               {biz.logoUrl
                 ? <img src={biz.logoUrl} alt={biz.businessName} className="w-12 h-12 rounded-xl object-cover" />
-                : <div className="w-12 h-12 rounded-xl bg-[var(--az-border)] flex items-center justify-center"><Building2 className="w-5 h-5 text-[var(--az-text-muted)]" /></div>}
+                : <div className="w-12 h-12 rounded-xl bg-[var(--f-line)] flex items-center justify-center"><Building2 className="w-5 h-5 text-[var(--f-text-3)]" /></div>}
               <div>
                 <p className="font-bold text-[var(--az-text-primary)]">{biz.businessName}</p>
-                <p className="text-xs text-[var(--az-text-muted)] az-mono">{biz.bizId}</p>
+                <p className="text-xs text-[var(--f-text-3)] f-mono">{biz.bizId}</p>
               </div>
             </div>
-            {biz.description && <p className="text-xs text-[var(--az-text-secondary)]">{biz.description}</p>}
+            {biz.description && <p className="text-xs text-[var(--f-text-2)]">{biz.description}</p>}
             <div className="grid grid-cols-2 gap-2 text-xs">
               {[
                 ['Category', biz.category],
@@ -61,13 +61,13 @@ function BusinessDetailDialog({ bizId, onClose }) {
                 ['Total Volume', `${num(biz.totalVolume).toLocaleString()} USDC`],
                 ['Rating', num(biz.averageRating).toFixed(2)],
               ].map(([k, v]) => (
-                <div key={k} className="bg-[var(--az-surface-1)] border border-[var(--az-border)] rounded-lg p-2.5">
-                  <p className="text-[var(--az-text-muted)]">{k}</p>
+                <div key={k} className="bg-[var(--az-surface-1)] border border-[var(--f-line)] rounded-lg p-2.5">
+                  <p className="text-[var(--f-text-3)]">{k}</p>
                   <p className="text-[var(--az-text-primary)] mt-0.5 truncate">{v}</p>
                 </div>
               ))}
             </div>
-            {biz.website && <a href={biz.website} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--az-blue)] hover:underline block">{biz.website}</a>}
+            {biz.website && <a href={biz.website} target="_blank" rel="noopener noreferrer" className="text-xs text-[var(--f-info)] hover:underline block">{biz.website}</a>}
           </div>
         )}
       </DialogContent>
@@ -116,7 +116,7 @@ export default function Businesses() {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-[var(--az-text-primary)]">Businesses</h1>
-        <p className="text-sm text-az-text-secondary mt-1">{total} total businesses</p>
+        <p className="text-sm text-ink-2 mt-1">{total} total businesses</p>
       </div>
 
       {/* Stats */}
@@ -130,12 +130,12 @@ export default function Businesses() {
       {/* Search + filter */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-az-text-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-3" />
           <Input placeholder="Search by name or BIZ id…" value={searchInput} onChange={(e) => setSearchInput(e.target.value)}
-                 className="pl-9 bg-[var(--az-surface-2)] border-az-border text-[var(--az-text-primary)]" />
+                 className="pl-9 bg-[var(--az-surface-2)] border-line text-[var(--az-text-primary)]" />
         </div>
         <select value={kybFilter} onChange={(e) => { setKybFilter(e.target.value); setPage(1); }}
-                className="bg-[var(--az-surface-2)] border border-az-border rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
+                className="bg-[var(--az-surface-2)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--az-text-primary)]">
           <option value="">All KYB</option>
           <option value="VERIFIED">Verified</option>
           <option value="PENDING">Pending</option>
@@ -145,8 +145,8 @@ export default function Businesses() {
       </div>
 
       {/* Table */}
-      <div className="bg-[var(--az-surface-2)] border border-az-border rounded-xl overflow-hidden">
-        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-az-border text-xs text-az-text-muted uppercase tracking-wide">
+      <div className="bg-[var(--az-surface-2)] border border-line rounded-xl overflow-hidden">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 border-b border-line text-xs text-ink-3 uppercase tracking-wide">
           <span className="col-span-3">Business</span>
           <span className="col-span-2">Owner</span>
           <span>KYB</span>
@@ -155,43 +155,43 @@ export default function Businesses() {
           <span>Status</span>
           <span className="col-span-2 text-right">Actions</span>
         </div>
-        {isLoading && <p className="text-az-text-muted text-sm text-center py-8">Loading…</p>}
+        {isLoading && <p className="text-ink-3 text-sm text-center py-8">Loading…</p>}
         {!isLoading && list.length === 0 && (
-          <div className="text-center py-12 text-az-text-muted">
+          <div className="text-center py-12 text-ink-3">
             <Building2 className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No businesses found</p>
           </div>
         )}
         {list.map((b) => (
-          <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-az-border/50 last:border-0 items-center hover:bg-az-card/20 transition-colors">
+          <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-line/50 last:border-0 items-center hover:bg-surface/20 transition-colors">
             <div className="col-span-3 min-w-0">
               <p className="text-sm font-medium text-[var(--az-text-primary)] truncate">{b.businessName}</p>
-              <p className="text-xs text-az-text-muted az-mono truncate">{b.bizId}</p>
+              <p className="text-xs text-ink-3 f-mono truncate">{b.bizId}</p>
             </div>
             <div className="col-span-2 min-w-0">
-              <p className="text-xs text-az-text-secondary truncate">{b.owner?.username || '—'}</p>
-              <p className="text-xs text-az-text-muted truncate">{b.owner?.email || ''}</p>
+              <p className="text-xs text-ink-2 truncate">{b.owner?.username || '—'}</p>
+              <p className="text-xs text-ink-3 truncate">{b.owner?.email || ''}</p>
             </div>
-            <Badge className={`${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED} border-0 text-xs w-fit`}>{b.kybStatus}</Badge>
-            <span className="text-xs text-az-text-secondary text-right az-mono">{num(b.totalEscrows)}</span>
-            <span className="col-span-2 text-xs text-az-text-secondary text-right az-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-            <Badge className={`${b.isSuspended ? 'bg-[var(--az-red-soft)] text-[var(--az-red)]' : 'bg-[var(--az-emerald-soft)] text-[var(--az-emerald)]'} border-0 text-xs w-fit`}>
+            <Tag className={`${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED} border-0 text-xs w-fit`}>{b.kybStatus}</Tag>
+            <span className="text-xs text-ink-2 text-right f-mono">{num(b.totalEscrows)}</span>
+            <span className="col-span-2 text-xs text-ink-2 text-right f-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+            <Tag className={`${b.isSuspended ? 'bg-[var(--az-red-soft)] text-[var(--f-bad)]' : 'bg-[var(--az-emerald-soft)] text-[var(--f-ok)]'} border-0 text-xs w-fit`}>
               {b.isSuspended ? 'Suspended' : 'Active'}
-            </Badge>
+            </Tag>
             <div className="col-span-2 flex gap-1 justify-end">
-              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-az-text-secondary hover:text-[var(--az-text-primary)] hover:bg-az-border" title="View details">
+              <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-ink-2 hover:text-[var(--az-text-primary)] hover:bg-line" title="View details">
                 <Eye className="w-3.5 h-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/business-kyb')} className="h-7 px-2 text-xs text-[var(--az-blue)] hover:text-blue-300 hover:bg-[var(--az-blue-soft)]" title="View KYB">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/business-kyb')} className="h-7 px-2 text-xs text-[var(--f-info)] hover:text-blue-300 hover:bg-[var(--az-blue-soft)]" title="View KYB">
                 <FileCheck className="w-3.5 h-3.5" />
               </Button>
               {b.isSuspended ? (
                 <Button variant="ghost" size="sm" onClick={() => unsuspendMutation.mutate(b.bizId)} disabled={unsuspendMutation.isPending}
-                        className="h-7 px-2 text-xs text-[var(--az-emerald)] hover:text-emerald-300 hover:bg-[var(--az-emerald-soft)]">
+                        className="h-7 px-2 text-xs text-[var(--f-ok)] hover:text-emerald-300 hover:bg-[var(--az-emerald-soft)]">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                 </Button>
               ) : (
-                <Button variant="ghost" size="sm" onClick={() => setSuspendTarget(b)} className="h-7 px-2 text-xs text-[var(--az-red)] hover:text-red-300 hover:bg-[var(--az-red-soft)]" title="Suspend">
+                <Button variant="ghost" size="sm" onClick={() => setSuspendTarget(b)} className="h-7 px-2 text-xs text-[var(--f-bad)] hover:text-red-300 hover:bg-[var(--az-red-soft)]" title="Suspend">
                   <Ban className="w-3.5 h-3.5" />
                 </Button>
               )}
@@ -202,12 +202,12 @@ export default function Businesses() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm">
-        <span className="text-az-text-muted">Page {page} of {totalPages} · {total} total</span>
+        <span className="text-ink-3">Page {page} of {totalPages} · {total} total</span>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="border-az-border text-az-text-secondary h-8">
+          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="border-line text-ink-2 h-8">
             <ChevronLeft className="w-3.5 h-3.5" />
           </Button>
-          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="border-az-border text-az-text-secondary h-8">
+          <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)} className="border-line text-ink-2 h-8">
             <ChevronRight className="w-3.5 h-3.5" />
           </Button>
         </div>
@@ -222,14 +222,14 @@ export default function Businesses() {
             <DialogTitle className="text-[var(--az-text-primary)]">Suspend {suspendTarget?.businessName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <p className="text-sm text-[var(--az-text-secondary)]">This hides the business from new activity until unsuspended. Provide a reason.</p>
+            <p className="text-sm text-[var(--f-text-2)]">This hides the business from new activity until unsuspended. Provide a reason.</p>
             <Textarea placeholder="Reason for suspension (required)…" value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)}
                       className="bg-[#0a0a12] border-[var(--az-border-bright)] text-[var(--az-text-primary)] text-sm" />
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={() => { setSuspendTarget(null); setSuspendReason(''); }} className="text-[var(--az-text-secondary)]">Cancel</Button>
+              <Button variant="ghost" onClick={() => { setSuspendTarget(null); setSuspendReason(''); }} className="text-[var(--f-text-2)]">Cancel</Button>
               <Button onClick={() => suspendMutation.mutate({ bizId: suspendTarget.bizId, reason: suspendReason })}
                       disabled={!suspendReason.trim() || suspendMutation.isPending}
-                      className="bg-[var(--az-red-soft)] text-[var(--az-red)] border border-[var(--az-red-glow)]">
+                      className="bg-[var(--az-red-soft)] text-[var(--f-bad)] border border-[var(--az-red-glow)]">
                 <Ban className="w-4 h-4 mr-2" /> Confirm Suspend
               </Button>
             </div>
