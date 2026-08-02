@@ -245,15 +245,35 @@ export const escrow = {
 // Backend search param is `q`; suspend/unsuspend keyed by public bizId. Detail
 // uses the public profile lookup (no admin-only detail route exists).
 export const businesses = {
-  list: (page = 1, search = '', kybStatus = '') =>
-    request(`/api/admin/businesses?page=${page}&q=${encodeURIComponent(search)}${kybStatus ? `&kybStatus=${kybStatus}` : ''}`),
-  detail: (bizId) => request(`/api/business/${bizId}`),
+  list: (page = 1, search = '', kybStatus = '', category = '') =>
+    request(`/api/admin/businesses?page=${page}&q=${encodeURIComponent(search)}${kybStatus ? `&kybStatus=${kybStatus}` : ''}${category ? `&category=${category}` : ''}`),
+  detail: (bizId) => request(`/api/admin/businesses/${bizId}/detail`),
+  // Category-specific admin read (falls back to public endpoint if admin endpoint missing)
+  orders: (bizId, params = {}) => {
+    const qs = new URLSearchParams({ bizId, ...params }).toString();
+    return request(`/api/admin/businesses/${bizId}/orders?${qs}`);
+  },
+  employees: (bizId) => request(`/api/admin/businesses/${bizId}/employees`),
+  // Hotel-specific
+  hotelRooms: (bizId) => request(`/api/admin/businesses/${bizId}/hotel/rooms`),
+  housekeeping: (bizId) => request(`/api/admin/businesses/${bizId}/hotel/housekeeping`),
+  // Restaurant-specific
+  kitchenOrders: (bizId) => request(`/api/admin/businesses/${bizId}/restaurant/kitchen`),
+  tables: (bizId) => request(`/api/admin/businesses/${bizId}/restaurant/tables`),
+  // Transit-specific
+  fleet: (bizId) => request(`/api/admin/businesses/${bizId}/transit/fleet`),
+  drivers: (bizId) => request(`/api/admin/businesses/${bizId}/transit/drivers`),
+  trips: (bizId) => request(`/api/admin/businesses/${bizId}/transit/trips`),
+  // Finance
+  finance: (bizId) => request(`/api/admin/businesses/${bizId}/finance`),
   suspend: (bizId, reason) =>
     request(`/api/admin/businesses/${bizId}/suspend`, {
       method: 'POST', body: JSON.stringify({ reason }),
     }),
   unsuspend: (bizId) =>
     request(`/api/admin/businesses/${bizId}/unsuspend`, { method: 'POST' }),
+  resetKyb: (bizId) =>
+    request(`/api/admin/businesses/${bizId}/kyb-reset`, { method: 'POST' }),
 };
 
 // ── AI Operations ─────────────────────────────────────────────────────────────

@@ -1,13 +1,13 @@
+const CAT_ICON = { HOTEL: Hotel, RESTAURANT: UtensilsCrossed, TRANSIT: Bus };
+const CAT_COLOR = { HOTEL: 'text-[var(--f-info)]', RESTAURANT: 'text-[var(--f-warn)]', TRANSIT: 'text-[var(--f-ok)]' };
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businesses as bizApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button } from '@/components/forge';
-import { Input } from '@/components/forge';
-import { Textarea } from '@/components/forge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/forge';
-import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Button, Input, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle, Tag } from '@/components/forge';
+import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye, Hotel, UtensilsCrossed, Bus, ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const KYB_COLORS = {
@@ -81,6 +81,7 @@ export default function Businesses() {
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
   const [kybFilter, setKybFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [detailBizId, setDetailBizId] = useState(null);
   const [suspendTarget, setSuspendTarget] = useState(null);
   const [suspendReason, setSuspendReason] = useState('');
@@ -92,8 +93,8 @@ export default function Businesses() {
   }, [searchInput]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-businesses', page, search, kybFilter],
-    queryFn: () => bizApi.list(page, search, kybFilter),
+    queryKey: ['admin-businesses', page, search, kybFilter, categoryFilter],
+    queryFn: () => bizApi.list(page, search, kybFilter, categoryFilter),
     placeholderData: (prev) => prev,
   });
   const list = data?.businesses || [];
@@ -121,9 +122,9 @@ export default function Businesses() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Total Businesses" value={total} icon={Building2} color="blue" />
-        <StatCard label="Verified" value={list.filter((b) => b.kybStatus === 'VERIFIED').length} icon={CheckCircle2} color="emerald" />
-        <StatCard label="Pending KYB" value={list.filter((b) => b.kybStatus === 'PENDING').length} icon={FileCheck} color="amber" />
-        <StatCard label="Suspended" value={list.filter((b) => b.isSuspended).length} icon={Ban} color="red" />
+        <StatCard label="Verified" value={data?.verified ?? list.filter((b) => b.kybStatus === 'VERIFIED').length} icon={CheckCircle2} color="emerald" />
+        <StatCard label="Pending KYB" value={data?.pendingKyb ?? list.filter((b) => b.kybStatus === 'PENDING').length} icon={FileCheck} color="amber" />
+        <StatCard label="Suspended" value={data?.suspended ?? list.filter((b) => b.isSuspended).length} icon={Ban} color="red" />
       </div>
 
       {/* Search + filter */}
@@ -140,6 +141,13 @@ export default function Businesses() {
           <option value="PENDING">Pending</option>
           <option value="REJECTED">Rejected</option>
           <option value="UNVERIFIED">Unverified</option>
+        </select>
+        <select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+                className="bg-[var(--f-surface-raised)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]">
+          <option value="">All Types</option>
+          <option value="HOTEL">Hotels</option>
+          <option value="RESTAURANT">Restaurants</option>
+          <option value="TRANSIT">Transit</option>
         </select>
       </div>
 
@@ -162,21 +170,22 @@ export default function Businesses() {
           </div>
         )}
         {list.map((b) => (
-          <div key={b.id} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-line/50 last:border-0 items-center hover:bg-surface/20 transition-colors">
-            <div className="col-span-3 min-w-0">
-              <p className="text-sm font-medium text-[var(--f-text)] truncate">{b.businessName}</p>
-              <p className="text-xs text-ink-3 f-mono truncate">{b.bizId}</p>
+          <div key={b.id} onClick={() => navigate(`/businesses/${b.bizId}`)} className="grid grid-cols-12 gap-3 px-4 py-3 border-b border-line/50 last:border-0 items-center hover:bg-[var(--f-surface-sunken)] transition-colors cursor-pointer">
+            <div className="col-span-3 min-w-0 flex items-center gap-2">
+              {(() => { const Icon = CAT_ICON[b.category]; return Icon ? <Icon className={`h-4 w-4 shrink-0 ${CAT_COLOR[b.category]||'text-ink-3'}`} /> : <Building2 className="h-4 w-4 shrink-0 text-ink-3" />; })()}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[var(--f-text)] truncate">{b.businessName}</p>
+                <p className="text-xs text-ink-3 font-mono truncate">{b.bizId}</p>
+              </div>
             </div>
             <div className="col-span-2 min-w-0">
               <p className="text-xs text-ink-2 truncate">{b.owner?.username || '—'}</p>
               <p className="text-xs text-ink-3 truncate">{b.owner?.email || ''}</p>
             </div>
-            <Tag className={`${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED} border-0 text-xs w-fit`}>{b.kybStatus}</Tag>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${KYB_COLORS[b.kybStatus] || KYB_COLORS.UNVERIFIED}`}>{b.kybStatus}</span>
             <span className="text-xs text-ink-2 text-right f-mono">{num(b.totalEscrows)}</span>
             <span className="col-span-2 text-xs text-ink-2 text-right f-mono">{num(b.totalVolume).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-            <Tag className={`${b.isSuspended ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]'} border-0 text-xs w-fit`}>
-              {b.isSuspended ? 'Suspended' : 'Active'}
-            </Tag>
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide ${b.isSuspended ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]'}`}>{b.isSuspended ? 'Suspended' : 'Active'}</span>
             <div className="col-span-2 flex gap-1 justify-end">
               <Button variant="ghost" size="sm" onClick={() => setDetailBizId(b.bizId)} className="h-7 px-2 text-xs text-ink-2 hover:text-[var(--f-text)] hover:bg-line" title="View details">
                 <Eye className="w-3.5 h-3.5" />

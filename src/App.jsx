@@ -29,6 +29,7 @@ const BusinessKYB = lazy(() => import('@/pages/BusinessKYB'));
 const EscrowDisputes = lazy(() => import('@/pages/EscrowDisputes'));
 const Businesses = lazy(() => import('@/pages/Businesses'));
 const Storefronts = lazy(() => import('@/pages/Storefronts'));
+const BusinessDetail = lazy(() => import('@/pages/BusinessDetail'));
 
 // Lightweight loading fallback for lazy routes
 function RouteLoader() {
@@ -84,6 +85,7 @@ const AuthenticatedApp = () => {
         <Route path="/business-kyb" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><BusinessKYB /></Suspense></ErrorBoundary>} />
         <Route path="/storefronts" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Storefronts /></Suspense></ErrorBoundary>} />
         <Route path="/businesses" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Businesses /></Suspense></ErrorBoundary>} />
+        <Route path="/businesses/:bizId" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><BusinessDetail /></Suspense></ErrorBoundary>} />
         <Route path="/notifications" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Notifications /></Suspense></ErrorBoundary>} />
         <Route path="/users" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Users /></Suspense></ErrorBoundary>} />
         <Route path="/withdrawals" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Withdrawals /></Suspense></ErrorBoundary>} />
