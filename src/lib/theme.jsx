@@ -6,7 +6,7 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('az-dark-mode');
-      return saved !== null ? (JSON.parse(saved) ? 'dark' : 'light') : 'light';
+      return saved !== null ? (JSON.parse(saved) ? 'dark' : 'light') : 'dark'; // Admin portal defaults dark
     } catch { return 'light'; }
   });
 

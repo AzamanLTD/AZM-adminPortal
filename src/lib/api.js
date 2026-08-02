@@ -247,7 +247,8 @@ export const escrow = {
 export const businesses = {
   list: (page = 1, search = '', kybStatus = '', category = '') =>
     request(`/api/admin/businesses?page=${page}&q=${encodeURIComponent(search)}${kybStatus ? `&kybStatus=${kybStatus}` : ''}${category ? `&category=${category}` : ''}`),
-  detail: (bizId) => request(`/api/admin/businesses/${bizId}/detail`),
+  // Uses public business profile endpoint — admin endpoint may not exist on backend
+  detail: (bizId) => request(`/api/business/${bizId}`).catch(() => request(`/api/admin/businesses/${bizId}/detail`)),
   // Category-specific admin read (falls back to public endpoint if admin endpoint missing)
   orders: (bizId, params = {}) => {
     const qs = new URLSearchParams({ bizId, ...params }).toString();
