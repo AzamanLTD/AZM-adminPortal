@@ -2,31 +2,34 @@ import { useState, useMemo, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, Search, Bell, Sun, Moon } from 'lucide-react';
+import {
+  Menu, Search, Bell, Sun, Moon,
+} from 'lucide-react';
 import { resolveNav } from '@/lib/nav';
 
+// Route → primary query key for hover prefetch
 const ROUTE_QUERIES = {
-  '/': ['admin', 'stats'],
-  '/war-room': ['admin', 'disputes'],
+  '/':              ['admin', 'stats'],
+  '/war-room':      ['admin', 'disputes'],
   '/escrow-disputes': ['admin', 'escrow_disputes'],
-  '/business-kyb': ['admin', 'kyb'],
-  '/users': ['admin', 'users'],
+  '/business-kyb':  ['admin', 'kyb'],
+  '/users':         ['admin', 'users'],
   '/residency-queue': ['admin', 'residency'],
   '/notifications': ['admin', 'notifications'],
-  '/profits': ['admin', 'profits'],
-  '/withdrawals': ['admin', 'withdrawals'],
-  '/pools': ['admin', 'pools'],
-  '/fee-engine': ['admin', 'fee-engine'],
-  '/fee-profiles': ['admin', 'fee-profiles'],
-  '/smart-escrow': ['admin', 'smart-escrow-policy'],
-  '/susu': ['admin', 'susu-groups'],
+  '/profits':       ['admin', 'profits'],
+  '/withdrawals':   ['admin', 'withdrawals'],
+  '/pools':         ['admin', 'pools'],
+  '/fee-engine':    ['admin', 'fee-engine'],
+  '/fee-profiles':  ['admin', 'fee-profiles'],
+  '/smart-escrow':  ['admin', 'smart-escrow-policy'],
+  '/susu':          ['admin', 'susu-groups'],
   '/susu-incidents': ['admin', 'susu-incidents'],
-  '/businesses': ['admin', 'businesses'],
-  '/storefronts': ['admin', 'storefronts'],
-  '/ai-ops': ['admin', 'ai-ops'],
-  '/qr-forge': ['admin', 'qr-forge'],
-  '/audit-log': ['admin', 'audit-log'],
-  '/config': ['admin', 'config'],
+  '/businesses':    ['admin', 'businesses'],
+  '/storefronts':   ['admin', 'storefronts'],
+  '/ai-ops':        ['admin', 'ai-ops'],
+  '/qr-forge':      ['admin', 'qr-forge'],
+  '/audit-log':     ['admin', 'audit-log'],
+  '/config':        ['admin', 'config'],
 };
 
 import { useTheme } from '@/lib/theme';
@@ -42,15 +45,12 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
   const nav = useMemo(() => resolveNav(navProps), [navProps]);
   const qc = useQueryClient();
 
+  // Close mobile drawer on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
-
-  useEffect(() => {
-    const key = ROUTE_QUERIES[location.pathname];
-    if (key) qc.prefetchQuery({ queryKey: key });
-  }, [location.pathname, qc]);
 
   return (
     <div className="f-shell" data-collapsed={collapsed || undefined}>
+      {/* ── Sidebar ── */}
       <aside className="f-rail">
         <div className="f-rail__brand">
           <div className="f-rail__logo" aria-hidden>{brandShort}</div>
@@ -59,7 +59,9 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
         <nav className="f-rail__nav" aria-label="Primary">
           {nav.map(domain => (
             <div key={domain.id} className="f-rail__domain">
-              <div className="f-rail__domain-label">{!collapsed && domain.label}</div>
+              <div className="f-rail__domain-label">
+                {!collapsed && domain.label}
+              </div>
               {domain.groups.map(group => (
                 <div key={group.label} className="f-rail__group">
                   {group.items.map(item => {
@@ -71,7 +73,9 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
                         end={item.to === '/'}>
                         <Icon className="h-4 w-4 shrink-0" aria-hidden />
                         {!collapsed && <span className="f-rail__item-label">{item.label}</span>}
-                        {!collapsed && item.badge != null && item.badge > 0 && <span className="f-rail__badge">{item.badge}</span>}
+                        {!collapsed && item.badge != null && item.badge > 0 && (
+                          <span className="f-rail__badge">{item.badge}</span>
+                        )}
                       </NavLink>
                     );
                   })}
@@ -82,20 +86,31 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
         </nav>
       </aside>
 
+      {/* ── Mobile drawer ── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            <motion.div className="f-scrim md:hidden" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} onClick={() => setMobileOpen(false)} />
-            <motion.aside className="f-rail f-rail--mobile" initial={{ x:'-100%' }} animate={{ x:0 }} exit={{ x:'-100%' }} transition={{ type:'spring', stiffness:400, damping:35 }}>
-              <MobileNav nav={nav} brandName={brandName} brandShort={brandShort} onNavigate={() => setMobileOpen(false)} />
+            <motion.div className="f-scrim md:hidden"
+              initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+              onClick={() => setMobileOpen(false)} />
+            <motion.aside className="f-rail f-rail--mobile"
+              initial={{ x:'-100%' }} animate={{ x:0 }} exit={{ x:'-100%' }}
+              transition={{ type:'spring', stiffness:400, damping:35 }}>
+              <MobileNav nav={nav} brandName={brandName} brandShort={brandShort}
+                         onNavigate={() => setMobileOpen(false)} />
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
+      {/* ── Main column ── */}
       <div className="f-main">
-        <Topbar onMenuClick={() => setMobileOpen(true)} onCollapseToggle={() => setCollapsed(c => !c)} collapsed={collapsed} brandName={brandName} user={user} onLogout={onLogout} onNavigateSettings={onNavigateSettings} />
-        <main className="f-content">{children}</main>
+        <Topbar onMenuClick={() => setMobileOpen(true)} onCollapseToggle={() => setCollapsed(c => !c)}
+                collapsed={collapsed} brandName={brandName}
+                user={user} onLogout={onLogout} onNavigateSettings={onNavigateSettings} />
+        <main className="f-content">
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -104,7 +119,10 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
 function MobileNav({ nav, brandName, brandShort, onNavigate }) {
   return (
     <>
-      <div className="f-rail__brand"><div className="f-rail__logo" aria-hidden>{brandShort}</div><span className="f-rail__name">{brandName}</span></div>
+      <div className="f-rail__brand">
+        <div className="f-rail__logo" aria-hidden>{brandShort}</div>
+        <span className="f-rail__name">{brandName}</span>
+      </div>
       <nav className="f-rail__nav" onClick={onNavigate}>
         {nav.map(domain => (
           <div key={domain.id} className="f-rail__domain">
@@ -113,7 +131,17 @@ function MobileNav({ nav, brandName, brandShort, onNavigate }) {
               <div key={group.label} className="f-rail__group">
                 {group.items.map(item => {
                   const Icon = item.icon;
-                  return <NavLink key={item.to} to={item.to} className={({isActive}) => cn('f-rail__item', isActive && 'is-active')} end={item.to === '/'}><Icon className="h-4 w-4 shrink-0" /><span className="f-rail__item-label">{item.label}</span>{item.badge != null && item.badge > 0 && <span className="f-rail__badge">{item.badge}</span>}</NavLink>;
+                  return (
+                    <NavLink key={item.to} to={item.to}
+                      className={({isActive}) => cn('f-rail__item', isActive && 'is-active')}
+                      end={item.to === '/'}>
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="f-rail__item-label">{item.label}</span>
+                      {item.badge != null && item.badge > 0 && (
+                        <span className="f-rail__badge">{item.badge}</span>
+                      )}
+                    </NavLink>
+                  );
                 })}
               </div>
             ))}
@@ -127,19 +155,34 @@ function MobileNav({ nav, brandName, brandShort, onNavigate }) {
 function Topbar({ onMenuClick, onCollapseToggle, collapsed, brandName, user, onLogout, onNavigateSettings }) {
   const { theme, toggle } = useTheme();
   const { open } = useCommandPalette();
-  useSequence(['g','d']);
+
+  useSequence(['g','d']); // g→d goes to dashboard — wired at App level
 
   return (
     <header className="f-topbar">
       <div className="f-topbar__left">
-        <button className="f-icon-btn md:hidden" onClick={onMenuClick} aria-label="Menu"><Menu className="h-4 w-4" /></button>
-        <button className="f-icon-btn hidden md:flex" onClick={onCollapseToggle} aria-label={collapsed ? 'Expand' : 'Collapse'}><Menu className="h-4 w-4" /></button>
+        <button className="f-icon-btn md:hidden" onClick={onMenuClick} aria-label="Menu">
+          <Menu className="h-4 w-4" />
+        </button>
+        <button className="f-icon-btn hidden md:flex" onClick={onCollapseToggle}
+                aria-label={collapsed ? 'Expand' : 'Collapse'}>
+          <Menu className="h-4 w-4" />
+        </button>
         <Breadcrumb />
       </div>
       <div className="f-topbar__right">
-        <button className="f-cmd-trigger" onClick={open}><Search className="h-3.5 w-3.5" /><span>Search…</span><kbd className="f-kbd">⌘K</kbd></button>
-        <button className="f-icon-btn" onClick={toggle} aria-label="Toggle theme">{theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</button>
-        <button className="f-icon-btn relative" aria-label="Notifications"><Bell className="h-4 w-4" /><span className="f-dot f-dot--warn" aria-hidden /></button>
+        <button className="f-cmd-trigger" onClick={open}>
+          <Search className="h-3.5 w-3.5" />
+          <span>Search…</span>
+          <kbd className="f-kbd">⌘K</kbd>
+        </button>
+        <button className="f-icon-btn" onClick={toggle} aria-label="Toggle theme">
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+        <button className="f-icon-btn relative" aria-label="Notifications">
+          <Bell className="h-4 w-4" />
+          <span className="f-dot f-dot--warn" aria-hidden />
+        </button>
         <ProfileMenu user={user} onLogout={onLogout} onNavigateSettings={onNavigateSettings} />
       </div>
     </header>
@@ -150,7 +193,22 @@ function Breadcrumb() {
   const location = useLocation();
   const segments = location.pathname.split('/').filter(Boolean);
   if (!segments.length) return <span className="f-topbar__crumb">Dashboard</span>;
-  return <nav className="f-topbar__crumb" aria-label="Breadcrumb">{segments.map((seg, i) => <span key={i} className="flex items-center gap-1.5">{i > 0 && <span className="text-ink-3">/</span>}<span className={i === segments.length - 1 ? 'text-ink' : 'text-ink-3'}>{seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ')}</span></span>)}</nav>;
+  return (
+    <nav className="f-topbar__crumb" aria-label="Breadcrumb">
+      {segments.map((seg, i) => (
+        <span key={i} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink-3">/</span>}
+          <span className={i === segments.length - 1 ? 'text-ink' : 'text-ink-3'}>
+            {seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ')}
+          </span>
+        </span>
+      ))}
+    </nav>
+  );
 }
 
-function UserMenu() { return null; }
+function UserMenu() {
+  // Portal-specific auth wired in App.jsx via ForgeLayout props
+  // Falls back to placeholder if no auth passed
+  return null;
+}
