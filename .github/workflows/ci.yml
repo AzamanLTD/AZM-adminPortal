@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -28,7 +30,12 @@ jobs:
       - name: Lint changed JavaScript/TypeScript files
         shell: bash
         run: |
-          files=$(git diff --name-only --diff-filter=ACMR HEAD^ HEAD -- '*.js' '*.jsx' '*.mjs' '*.cjs' '*.ts' '*.tsx')
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          files=$(git diff --name-only --diff-filter=ACMR "$base" "$GITHUB_SHA" -- '*.js' '*.jsx' '*.mjs' '*.cjs' '*.ts' '*.tsx')
           if [ -n "$files" ]; then
             printf '%s\n' "$files" | xargs npx eslint --quiet
           else
