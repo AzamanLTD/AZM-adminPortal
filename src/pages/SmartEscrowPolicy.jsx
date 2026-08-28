@@ -146,7 +146,7 @@ export default function SmartEscrowPolicy() {
         <div className="text-xs text-ink-2 space-y-1">
           <p className="font-semibold text-[var(--f-text)]">Policy is global; merchant availability is separate.</p>
           <p>The merchant's store setting decides whether customers may choose escrow. These values decide the platform fee and lifecycle windows when escrow is used.</p>
-          <p>Existing escrows keep their calculated fee and expiry timestamps. Policy changes apply to new escrow lifecycle events.</p>
+          <p>Escrow fees and expiry windows are applied at their respective lifecycle events. Policy changes do not retroactively alter values already calculated; newly triggered lifecycle events use the current policy.</p>
         </div>
       </div>
 
