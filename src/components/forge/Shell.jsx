@@ -21,6 +21,7 @@ const ROUTE_QUERIES = {
   '/pools':         ['admin', 'pools'],
   '/fee-engine':    ['admin', 'fee-engine'],
   '/fee-profiles':  ['admin', 'fee-profiles'],
+  '/smart-escrow':  ['admin', 'smart-escrow-policy'],
   '/susu':          ['admin', 'susu-groups'],
   '/susu-incidents': ['admin', 'susu-incidents'],
   '/businesses':    ['admin', 'businesses'],

@@ -14,6 +14,7 @@ const Profits = lazy(() => import('@/pages/Profits'));
 const Pools = lazy(() => import('@/pages/Pools'));
 const FeeEngine = lazy(() => import('@/pages/FeeEngine'));
 const FeeProfiles = lazy(() => import('@/pages/FeeProfiles'));
+const SmartEscrowPolicy = lazy(() => import('@/pages/SmartEscrowPolicy'));
 const WarRoom = lazy(() => import('@/pages/WarRoom'));
 const Users = lazy(() => import('@/pages/Users'));
 const Withdrawals = lazy(() => import('@/pages/Withdrawals'));
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
         <Route path="/pools" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Pools /></Suspense></ErrorBoundary>} />
         <Route path="/fee-engine" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><FeeEngine /></Suspense></ErrorBoundary>} />
         <Route path="/fee-profiles" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><FeeProfiles /></Suspense></ErrorBoundary>} />
+        <Route path="/smart-escrow" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><SmartEscrowPolicy /></Suspense></ErrorBoundary>} />
         <Route path="/war-room" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><WarRoom /></Suspense></ErrorBoundary>} />
         <Route path="/escrow-disputes" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><EscrowDisputes /></Suspense></ErrorBoundary>} />
         <Route path="/susu" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><SusuGroups /></Suspense></ErrorBoundary>} />
