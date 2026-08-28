@@ -4,7 +4,7 @@
 import {
   LayoutDashboard, Swords, Lock, FileCheck, Users, Home, Bell,
   TrendingUp, Wallet, Database, Sliders, Zap, PiggyBank, Siren,
-  Building2, Store, Bot, QrCode, FileText, Settings,
+  Building2, Store, Bot, QrCode, FileText, Settings, ShieldCheck,
 } from 'lucide-react';
 
 export const DOMAINS = [
@@ -28,11 +28,12 @@ export const DOMAINS = [
   {
     id:'finance', label:'Finance', icon:Wallet, verticals:null,
     groups:[{ label:'Finance', items:[
-      { to:'/profits',      label:'Revenue',     icon:TrendingUp },
-      { to:'/withdrawals',  label:'Withdrawals', icon:Wallet, count:'withdrawals' },
-      { to:'/pools',        label:'Pool Monitor',icon:Database },
-      { to:'/fee-engine',   label:'Fee Engine',  icon:Sliders },
-      { to:'/fee-profiles', label:'Fee Profiles',icon:Zap },
+      { to:'/profits',          label:'Revenue',        icon:TrendingUp },
+      { to:'/withdrawals',      label:'Withdrawals',    icon:Wallet, count:'withdrawals' },
+      { to:'/pools',            label:'Pool Monitor',   icon:Database },
+      { to:'/fee-engine',       label:'Fee Engine',     icon:Sliders },
+      { to:'/fee-profiles',     label:'Fee Profiles',   icon:Zap },
+      { to:'/smart-escrow',     label:'Smart Escrow',   icon:ShieldCheck },
     ]}],
   },
   {
