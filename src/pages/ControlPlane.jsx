@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Users, Activity, BriefcaseBusiness, Clock3, ShieldCheck } from 'lucide-react';
-import { useControlPlaneActivity, useControlPlaneSummary } from '@/lib/useAdminData';
+import { getControlPlaneActivity, getControlPlaneSummary } from '@/lib/controlPlaneApi';
 
 function Stat({ label, value, icon: Icon }) {
   return (
@@ -22,22 +23,32 @@ function formatDate(value) {
 
 export default function ControlPlane() {
   const [page, setPage] = useState(1);
-  const { data: summary, isLoading: summaryLoading, refetch: refetchSummary } = useControlPlaneSummary();
-  const { data: activity, isLoading: activityLoading, refetch: refetchActivity } = useControlPlaneActivity(page);
+  const summaryQuery = useQuery({
+    queryKey: ['control-plane', 'summary'],
+    queryFn: getControlPlaneSummary,
+    refetchInterval: 30_000,
+  });
+  const activityQuery = useQuery({
+    queryKey: ['control-plane', 'activity', page],
+    queryFn: () => getControlPlaneActivity(page),
+    refetchInterval: 15_000,
+  });
 
-  const staff = summary?.staff || {};
-  const activityStats = summary?.activity || {};
-  const duties = summary?.duties || {};
-  const departments = summary?.departments || [];
-  const events = activity?.events || [];
-  const hasMore = Boolean(activity?.pagination?.hasMore);
+  const summary = summaryQuery.data?.summary || {};
+  const staff = summary.staff || {};
+  const activityStats = summary.activity || {};
+  const duties = summary.duties || {};
+  const departments = summary.departments || [];
+  const events = activityQuery.data?.events || [];
+  const hasMore = Boolean(activityQuery.data?.pagination?.hasMore);
 
   const refresh = () => {
-    refetchSummary();
-    refetchActivity();
+    summaryQuery.refetch();
+    activityQuery.refetch();
   };
 
   const departmentRows = useMemo(() => departments.slice(0, 8), [departments]);
+  const loading = summaryQuery.isLoading || activityQuery.isLoading;
 
   return (
     <div className="space-y-5">
@@ -50,9 +61,15 @@ export default function ControlPlane() {
           </p>
         </div>
         <button onClick={refresh} className="f-icon-btn" title="Refresh control plane">
-          <RefreshCw className={`h-4 w-4 ${summaryLoading || activityLoading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
+
+      {summaryQuery.isError && (
+        <div className="rounded-lg px-4 py-3 text-sm" style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)', border: '1px solid var(--f-line)' }}>
+          Unable to load the control-plane summary. Your account may not have the required staff.view permission.
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Stat label="Active Staff" value={staff.activeStaff} icon={Users} />
@@ -86,21 +103,13 @@ export default function ControlPlane() {
                 </tr>
               </thead>
               <tbody>
-                {activityLoading && (
-                  <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>Loading activity…</td></tr>
-                )}
-                {!activityLoading && !events.length && (
-                  <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>No activity events found.</td></tr>
-                )}
+                {activityQuery.isLoading && <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>Loading activity…</td></tr>}
+                {!activityQuery.isLoading && !events.length && <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>No activity events found.</td></tr>}
                 {events.map((event) => (
                   <tr key={`${event.id}-${event.createdAt}`} style={{ borderBottom: '1px solid var(--f-line)' }}>
                     <td className="py-3 pr-3 font-medium" style={{ color: 'var(--f-text)' }}>{event.eventType || '—'}</td>
-                    <td className="py-3 pr-3" style={{ color: 'var(--f-text-2)' }}>
-                      {event.actorUsername || event.actorEmail || event.staffUsername || 'System'}
-                    </td>
-                    <td className="py-3 pr-3" style={{ color: 'var(--f-text-3)' }}>
-                      {[event.targetType, event.targetId].filter(Boolean).join(':') || '—'}
-                    </td>
+                    <td className="py-3 pr-3" style={{ color: 'var(--f-text-2)' }}>{event.actorUsername || event.actorEmail || event.staffUsername || 'System'}</td>
+                    <td className="py-3 pr-3" style={{ color: 'var(--f-text-3)' }}>{[event.targetType, event.targetId].filter(Boolean).join(':') || '—'}</td>
                     <td className="py-3 whitespace-nowrap" style={{ color: 'var(--f-text-3)' }}>{formatDate(event.createdAt)}</td>
                   </tr>
                 ))}
@@ -119,10 +128,15 @@ export default function ControlPlane() {
           <div>
             <p className="az-section-label">Workforce posture</p>
             <div className="grid grid-cols-2 gap-3 mt-3">
-              <div className="rounded-lg p-3" style={{ background: 'var(--f-surface-sunken)' }}><span className="text-xs" style={{ color: 'var(--f-text-3)' }}>Away</span><p className="text-lg font-bold mt-1">{staff.awayStaff ?? 0}</p></div>
-              <div className="rounded-lg p-3" style={{ background: 'var(--f-surface-sunken)' }}><span className="text-xs" style={{ color: 'var(--f-text-3)' }}>Offline</span><p className="text-lg font-bold mt-1">{staff.offlineStaff ?? 0}</p></div>
-              <div className="rounded-lg p-3" style={{ background: 'var(--f-surface-sunken)' }}><span className="text-xs" style={{ color: 'var(--f-text-3)' }}>Suspended</span><p className="text-lg font-bold mt-1">{staff.suspendedStaff ?? 0}</p></div>
-              <div className="rounded-lg p-3" style={{ background: 'var(--f-surface-sunken)' }}><span className="text-xs" style={{ color: 'var(--f-text-3)' }}>Employees</span><p className="text-lg font-bold mt-1">{staff.activeEmployees ?? 0}</p></div>
+              {[
+                ['Away', staff.awayStaff], ['Offline', staff.offlineStaff],
+                ['Suspended', staff.suspendedStaff], ['Employees', staff.activeEmployees],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg p-3" style={{ background: 'var(--f-surface-sunken)' }}>
+                  <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{label}</span>
+                  <p className="text-lg font-bold mt-1">{value ?? 0}</p>
+                </div>
+              ))}
             </div>
           </div>
 
