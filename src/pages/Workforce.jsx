@@ -1,0 +1,111 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Loader2, Plus, RefreshCw, ShieldCheck, UserCheck, UserX, Users } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button, Card, Input, Tag } from '@/components/forge';
+import { controlPlaneApi } from '@/lib/controlPlaneApi';
+
+const EMPTY_FORM = { userId: '', authorityClass: 'EMPLOYEE', adminType: 'SUPPORT_ADMIN', employeeType: 'CUSTOMER_SUPPORT', departmentId: '', supervisorId: '' };
+
+function tone(value) {
+  if (value === 'ACTIVE' || value === 'ONLINE') return 'success';
+  if (value === 'SUSPENDED' || value === 'AWAY') return 'warning';
+  return 'neutral';
+}
+
+export default function Workforce() {
+  const [staff, setStaff] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [duties, setDuties] = useState([]);
+  const [permissions, setPermissions] = useState([]);
+  const [presence, setPresence] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [departmentName, setDepartmentName] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    setBusy(true);
+    try {
+      const [s, d, du, p, pr] = await Promise.all([
+        controlPlaneApi.staff.list(), controlPlaneApi.departments.list(), controlPlaneApi.duties(), controlPlaneApi.permissions(), controlPlaneApi.presence(),
+      ]);
+      setStaff(s.staff || []); setDepartments(d.departments || []); setDuties(du.duties || []); setPermissions(p.permissions || []); setPresence(pr.presence || []);
+    } catch (err) { toast.error(err.message); } finally { setBusy(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const activeCount = useMemo(() => staff.filter((s) => s.status === 'ACTIVE').length, [staff]);
+  const onlineCount = useMemo(() => presence.filter((s) => s.presence === 'ONLINE').length, [presence]);
+
+  const openDetail = async (id) => {
+    try { setSelected(id); setDetail((await controlPlaneApi.staff.detail(id)).staff ? await controlPlaneApi.staff.detail(id) : null); }
+    catch (err) { toast.error(err.message); }
+  };
+
+  const createStaff = async (event) => {
+    event.preventDefault();
+    try {
+      await controlPlaneApi.staff.create({ ...form, userId: Number(form.userId), departmentId: form.departmentId ? Number(form.departmentId) : null, supervisorId: form.supervisorId ? Number(form.supervisorId) : null });
+      toast.success('Staff profile created'); setForm(EMPTY_FORM); await load();
+    } catch (err) { toast.error(err.message); }
+  };
+
+  const addDepartment = async () => {
+    if (departmentName.trim().length < 2) return toast.error('Department name must be at least 2 characters.');
+    try { await controlPlaneApi.departments.create({ name: departmentName.trim() }); toast.success('Department created'); setDepartmentName(''); await load(); }
+    catch (err) { toast.error(err.message); }
+  };
+
+  const lifecycle = async (id, action) => {
+    const reason = action === 'activate' ? undefined : window.prompt('Reason for this lifecycle change:');
+    if (action !== 'activate' && !reason) return;
+    try {
+      if (action === 'suspend') await controlPlaneApi.staff.suspend(id, reason);
+      else if (action === 'deactivate') await controlPlaneApi.staff.deactivate(id, reason);
+      else await controlPlaneApi.staff.activate(id);
+      toast.success(`Staff ${action}d`); await load(); if (selected === id) await openDetail(id);
+    } catch (err) { toast.error(err.message); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div><h1 className="text-xl font-bold text-[var(--f-text)]">Workforce</h1><p className="text-sm text-ink-2 mt-1">Staff authority, departments, duties, presence and access controls.</p></div>
+        <Button onClick={load} disabled={busy} variant="secondary"><RefreshCw className={busy ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} /> Refresh</Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Metric icon={Users} label="Staff profiles" value={staff.length} />
+        <Metric icon={UserCheck} label="Active staff" value={activeCount} />
+        <Metric icon={ShieldCheck} label="Online now" value={onlineCount} />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.4fr_.8fr] gap-5">
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b border-line flex items-center justify-between"><div><h2 className="font-semibold text-[var(--f-text)]">Staff directory</h2><p className="text-xs text-ink-3 mt-1">Server-authorized workforce profiles</p></div><span className="text-xs text-ink-3">{staff.length} profiles</span></div>
+          <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-left text-xs text-ink-3 border-b border-line"><th className="p-3">Person</th><th className="p-3">Authority</th><th className="p-3">Department</th><th className="p-3">Status</th><th className="p-3">Presence</th><th className="p-3" /></tr></thead><tbody>
+            {staff.map((row) => <tr key={row.id} className="border-b border-line last:border-0 hover:bg-[var(--f-surface-sunken)]"><td className="p-3"><button className="text-left hover:underline" onClick={() => openDetail(row.id)}><div className="font-medium text-[var(--f-text)]">{row.username || row.email}</div><div className="text-xs text-ink-3">{row.email}</div></button></td><td className="p-3"><div>{row.isGlobalSuperAdmin ? 'GLOBAL SUPER ADMIN' : row.authorityClass}</div><div className="text-xs text-ink-3">{row.adminType || row.employeeType || '—'}</div></td><td className="p-3 text-ink-2">{row.departmentName || 'Unassigned'}</td><td className="p-3"><Tag tone={tone(row.status)}>{row.status}</Tag></td><td className="p-3"><Tag tone={tone(row.presence)}>{row.presence}</Tag></td><td className="p-3 text-right">{row.status === 'ACTIVE' ? <Button size="sm" variant="secondary" onClick={() => lifecycle(row.id, 'suspend')}><UserX className="h-3.5 w-3.5" /></Button> : <Button size="sm" variant="secondary" onClick={() => lifecycle(row.id, 'activate')}><UserCheck className="h-3.5 w-3.5" /></Button>}</td></tr>)}
+            {!staff.length && <tr><td colSpan="6" className="p-8 text-center text-ink-3">No staff profiles found.</td></tr>}
+          </tbody></table></div>
+        </Card>
+
+        <Card className="p-4"><h2 className="font-semibold text-[var(--f-text)] flex items-center gap-2"><Plus className="h-4 w-4" /> Add staff profile</h2><p className="text-xs text-ink-3 mt-1 mb-4">Creates a durable access profile for an existing user.</p>
+          <form className="space-y-3" onSubmit={createStaff}><Field label="Existing user ID"><Input required type="number" min="1" value={form.userId} onChange={(e) => setForm({ ...form, userId: e.target.value })} /></Field><Field label="Authority"><select className="w-full az-input" value={form.authorityClass} onChange={(e) => setForm({ ...form, authorityClass: e.target.value })}><option>EMPLOYEE</option><option>ADMIN</option></select></Field>{form.authorityClass === 'ADMIN' ? <Field label="Admin type"><select className="w-full az-input" value={form.adminType} onChange={(e) => setForm({ ...form, adminType: e.target.value })}>{['SUPER_ADMIN','FINANCE_ADMIN','SUPPORT_ADMIN','COMPLIANCE_ADMIN','READ_ONLY_ADMIN'].map((x) => <option key={x}>{x}</option>)}</select></Field> : <Field label="Employee type"><Input value={form.employeeType} onChange={(e) => setForm({ ...form, employeeType: e.target.value })} /></Field>}<Field label="Department"><select className="w-full az-input" value={form.departmentId} onChange={(e) => setForm({ ...form, departmentId: e.target.value })}><option value="">Unassigned</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></Field><Field label="Supervisor user/staff ID"><Input type="number" min="1" value={form.supervisorId} onChange={(e) => setForm({ ...form, supervisorId: e.target.value })} /></Field><Button type="submit" className="w-full"><Plus className="h-4 w-4" /> Create profile</Button></form>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Card className="p-4"><h2 className="font-semibold text-[var(--f-text)]">Departments</h2><div className="flex gap-2 mt-3"><Input placeholder="New department" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} /><Button onClick={addDepartment}>Add</Button></div><div className="mt-4 space-y-2">{departments.map((d) => <div key={d.id} className="flex justify-between rounded-lg border border-line p-3"><span>{d.name}</span><span className="text-xs text-ink-3">{d.staffCount} staff · {d.isActive ? 'Active' : 'Inactive'}</span></div>)}</div></Card>
+        <Card className="p-4"><h2 className="font-semibold text-[var(--f-text)]">Operational catalog</h2><div className="mt-3"><div className="text-xs uppercase tracking-wide text-ink-3 mb-2">Duties</div><div className="flex flex-wrap gap-2">{duties.map((d) => <Tag key={d.id} tone="neutral">{d.name}</Tag>)}</div><div className="text-xs uppercase tracking-wide text-ink-3 mt-5 mb-2">Permissions</div><div className="flex flex-wrap gap-2">{permissions.map((p) => <Tag key={p.id} tone="neutral">{p.key}</Tag>)}</div></div></Card>
+      </div>
+
+      {selected && detail && <Card className="p-5"><div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-semibold text-[var(--f-text)]">{detail.staff?.username || detail.staff?.email}</h2><p className="text-xs text-ink-3">Staff profile #{detail.staff?.id}</p></div><div className="flex gap-2">{detail.staff?.status === 'ACTIVE' && <Button variant="secondary" onClick={() => lifecycle(detail.staff.id, 'deactivate')}>Deactivate</Button>}<Button variant="secondary" onClick={() => setSelected(null)}>Close</Button></div></div><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 text-sm"><Info label="Authority" value={detail.staff?.isGlobalSuperAdmin ? 'GLOBAL SUPER ADMIN' : detail.staff?.authorityClass} /><Info label="Department" value={detail.staff?.departmentName || 'Unassigned'} /><Info label="Status" value={detail.staff?.status} /><Info label="Presence" value={detail.staff?.presence} /></div><div className="mt-5"><div className="text-xs uppercase tracking-wide text-ink-3 mb-2">Granted permissions</div><div className="flex flex-wrap gap-2">{(detail.permissions || []).map((p) => <Tag key={p.key} tone="neutral">{p.key}</Tag>)}</div><div className="text-xs uppercase tracking-wide text-ink-3 mt-4 mb-2">Duty assignments</div><div className="flex flex-wrap gap-2">{(detail.duties || []).map((d) => <Tag key={d.id} tone={d.status === 'ACTIVE' ? 'success' : 'neutral'}>{d.name}</Tag>)}</div></div></Card>}
+    </div>
+  );
+}
+
+function Metric({ icon: Icon, label, value }) { return <Card className="p-4 flex items-center gap-3"><Icon className="h-5 w-5 text-ink-2" /><div><div className="text-xs text-ink-3">{label}</div><div className="text-xl font-bold text-[var(--f-text)]">{value}</div></div></Card>; }
+function Field({ label, children }) { return <label className="block"><span className="text-xs text-ink-2 block mb-1">{label}</span>{children}</label>; }
+function Info({ label, value }) { return <div className="rounded-lg border border-line bg-[var(--f-surface-sunken)] p-3"><div className="text-xs text-ink-3">{label}</div><div className="mt-1 text-sm text-[var(--f-text)]">{value}</div></div>; }
