@@ -4,14 +4,14 @@ import api from '@/lib/api';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { toast } from 'sonner';
-import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2 } from 'lucide-react';
+import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
 
 export default function Config() {
   const qc = useQueryClient();
 
   const { data: vg, isError: vgError, refetch: refetchVg } = useQuery({ queryKey: ['version-gate'], queryFn: () => api.versionGate.get().catch(() => ({ minVersion: '1.0.0', updateUrl: '', message: '', _error: true })) });
   const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => api.payouts.getSettings().catch(() => ({ threshold: 100, maxAmount: 1000, intervalHours: 24, enabled: true, _error: true })) });
-  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03 }, _error: true })) });
+  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK' }, _error: true })) });
 
   const hasAnyError = vgError || poError || gsError;
 
@@ -45,7 +45,7 @@ export default function Config() {
 
   const updateVg = useMutation({ mutationFn: (d) => api.versionGate.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['version-gate'] }); toast.success('Version gate updated'); } });
   const updatePo = useMutation({ mutationFn: (d) => api.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); } });
-  const updateGs = useMutation({ mutationFn: (d) => api.settings.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['global-settings'] }); toast.success('Susu settings updated'); } });
+  const updateGs = useMutation({ mutationFn: (d) => api.settings.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['global-settings'] }); toast.success('Global settings updated'); } });
   const batchProcess = useMutation({ mutationFn: () => api.payouts.batchProcess(), onSuccess: () => toast.success('Payout batch triggered') });
 
   const vgData = { ...vg, ...vgForm };
@@ -56,7 +56,7 @@ export default function Config() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-xl font-bold text-[var(--f-text)]">System Configuration</h1>
-        <p className="text-sm text-ink-2 mt-1">App version gate, payout automation, and system controls.</p>
+        <p className="text-sm text-ink-2 mt-1">App version gate, payout automation, exchange-rate controls, and system security.</p>
       </div>
 
       {hasAnyError && (
@@ -132,6 +132,68 @@ export default function Config() {
         </div>
       </div>
 
+      {/* Mock KotaniPay / USDC-GHS Rate */}
+      <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="w-4 h-4 text-[var(--f-info)]" />
+            <h2 className="text-sm font-semibold text-ink-2">USDC / GHS Conversion Rate</h2>
+          </div>
+          <span className="text-[10px] uppercase tracking-wide text-[var(--f-info)] bg-[var(--f-info-bg)] px-2 py-1 rounded-full">
+            {gsData.liveRateSource || 'AZM_ADMIN_MOCK'}
+          </span>
+        </div>
+        <p className="text-xs text-ink-2">
+          Temporary administrator-controlled rate used as the mock KotaniPay source. Existing transaction quotes keep their issued rate until expiry; new quotes use the latest saved rate.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-ink-2 block mb-1">GHS per 1 USDC</label>
+            <Input
+              type="number"
+              step="0.0001"
+              min="0.000001"
+              value={gsData.liveUsdToGhs ?? ''}
+              onChange={(e) => setGsForm((f) => ({ ...f, liveUsdToGhs: parseFloat(e.target.value) }))}
+              className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]"
+              placeholder="15.20"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-ink-2 block mb-1">Rate Source</label>
+            <select
+              value={gsData.liveRateSource || 'AZM_ADMIN_MOCK'}
+              onChange={(e) => setGsForm((f) => ({ ...f, liveRateSource: e.target.value }))}
+              className="w-full bg-[var(--f-surface-sunken)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]"
+            >
+              <option value="AZM_ADMIN_MOCK">AZM Admin Mock</option>
+              <option value="KOTANI_PAY">KotaniPay</option>
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-xs">
+          <div className="rounded-lg border border-line bg-[var(--f-surface-sunken)] p-3">
+            <span className="text-ink-3 block mb-1">Current conversion</span>
+            <strong className="text-[var(--f-text)]">1 USDC ≈ GHS {Number(gsData.liveUsdToGhs || 0).toFixed(4)}</strong>
+          </div>
+          <div className="rounded-lg border border-line bg-[var(--f-surface-sunken)] p-3">
+            <span className="text-ink-3 block mb-1">Last synchronized</span>
+            <strong className="text-[var(--f-text)]">{gsData.lastRateSync ? new Date(gsData.lastRateSync).toLocaleString() : 'Not synchronized'}</strong>
+          </div>
+        </div>
+        <Button
+          onClick={() => updateGs.mutate({
+            liveUsdToGhs: gsData.liveUsdToGhs,
+            liveRateSource: gsData.liveRateSource || 'AZM_ADMIN_MOCK',
+          })}
+          disabled={!Number.isFinite(Number(gsData.liveUsdToGhs)) || Number(gsData.liveUsdToGhs) <= 0 || updateGs.isPending}
+          className="bg-blue-600 hover:bg-[var(--f-info)] text-[var(--f-text)]"
+        >
+          {updateGs.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+          Save Conversion Rate
+        </Button>
+      </div>
+
       {/* Phase 5: Susu Profit Percentage */}
       <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
         <div className="flex items-center gap-2">
@@ -167,7 +229,6 @@ export default function Config() {
           Save Susu Fee
         </Button>
       </div>
-
 
       {/* 2FA Security */}
       <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-5 space-y-4">
