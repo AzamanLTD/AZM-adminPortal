@@ -10,6 +10,7 @@ import { Toaster } from 'sonner';
 
 // Code-split all authenticated pages with React.lazy
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const ControlPlane = lazy(() => import('@/pages/ControlPlane'));
 const Profits = lazy(() => import('@/pages/Profits'));
 const Pools = lazy(() => import('@/pages/Pools'));
 const FeeEngine = lazy(() => import('@/pages/FeeEngine'));
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route element={<ForgeLayout />}>
         <Route path="/" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Dashboard /></Suspense></ErrorBoundary>} />
+        <Route path="/control-plane" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><ControlPlane /></Suspense></ErrorBoundary>} />
         <Route path="/profits" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Profits /></Suspense></ErrorBoundary>} />
         <Route path="/pools" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><Pools /></Suspense></ErrorBoundary>} />
         <Route path="/fee-engine" element={<ErrorBoundary><Suspense fallback={<RouteLoader />}><FeeEngine /></Suspense></ErrorBoundary>} />
