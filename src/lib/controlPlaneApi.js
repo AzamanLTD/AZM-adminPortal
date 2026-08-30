@@ -47,6 +47,8 @@ export const controlPlaneApi = {
   activity: (page = 1, limit = 50) => request(`/api/admin/control-plane/activity?page=${page}&limit=${limit}`),
   reconciliation: {
     list: (page = 1, limit = 50, status = 'OPEN') => request(`/api/admin/control-plane/exceptions?page=${page}&limit=${limit}&status=${encodeURIComponent(status)}`),
+    claim: (id) => request(`/api/admin/control-plane/exceptions/${id}/claim`, { method: 'POST' }),
+    release: (id) => request(`/api/admin/control-plane/exceptions/${id}/release`, { method: 'POST' }),
     resolve: (id, reason) => request(`/api/admin/control-plane/exceptions/${id}/resolve`, { method: 'POST', body: JSON.stringify({ reason }) }),
   },
 };

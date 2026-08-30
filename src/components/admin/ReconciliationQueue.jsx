@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, LockKeyhole, RefreshCw, UnlockKeyhole } from 'lucide-react';
 import { controlPlaneApi } from '@/lib/controlPlaneApi';
 
 function formatDate(value) {
@@ -9,24 +9,44 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
 }
 
+function claimFrom(item) {
+  return item?.details?.claim || null;
+}
+
 export default function ReconciliationQueue() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('OPEN');
   const [resolvingId, setResolvingId] = useState(null);
   const [reason, setReason] = useState('');
+  const [busyId, setBusyId] = useState(null);
   const qc = useQueryClient();
   const query = useQuery({
     queryKey: ['control-plane', 'reconciliation', status, page],
     queryFn: () => controlPlaneApi.reconciliation.list(page, 25, status),
     refetchInterval: 15_000,
   });
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['control-plane', 'reconciliation'] });
+    qc.invalidateQueries({ queryKey: ['control-plane', 'activity'] });
+  };
+  const claimMutation = useMutation({
+    mutationFn: (id) => controlPlaneApi.reconciliation.claim(id),
+    onMutate: (id) => setBusyId(id),
+    onSettled: () => setBusyId(null),
+    onSuccess: refresh,
+  });
+  const releaseMutation = useMutation({
+    mutationFn: (id) => controlPlaneApi.reconciliation.release(id),
+    onMutate: (id) => setBusyId(id),
+    onSettled: () => setBusyId(null),
+    onSuccess: refresh,
+  });
   const resolveMutation = useMutation({
     mutationFn: ({ id, resolutionReason }) => controlPlaneApi.reconciliation.resolve(id, resolutionReason),
     onSuccess: () => {
       setResolvingId(null);
       setReason('');
-      qc.invalidateQueries({ queryKey: ['control-plane', 'reconciliation'] });
-      qc.invalidateQueries({ queryKey: ['control-plane', 'activity'] });
+      refresh();
     },
   });
 
@@ -62,17 +82,27 @@ export default function ReconciliationQueue() {
           <thead><tr className="text-left" style={{ color: 'var(--f-text-3)', borderBottom: '1px solid var(--f-line)' }}>
             <th className="py-2 pr-3 font-medium">Issue</th><th className="py-2 pr-3 font-medium">Entity</th><th className="py-2 pr-3 font-medium">Reference</th><th className="py-2 pr-3 font-medium">Last seen</th><th className="py-2 font-medium">Action</th>
           </tr></thead>
-          <tbody>{exceptions.map((item) => <tr key={item.id} style={{ borderBottom: '1px solid var(--f-line)' }}>
-            <td className="py-3 pr-3"><div className="font-medium" style={{ color: 'var(--f-text)' }}>{item.reason}</div><div className="text-xs mt-1" style={{ color: 'var(--f-text-3)' }}>{item.status}</div></td>
-            <td className="py-3 pr-3 font-mono text-xs" style={{ color: 'var(--f-text-2)' }}>{item.entityType}:{item.entityId}</td>
-            <td className="py-3 pr-3 font-mono text-xs" style={{ color: 'var(--f-text-3)' }}>{item.reference || '—'}</td>
-            <td className="py-3 pr-3 whitespace-nowrap text-xs" style={{ color: 'var(--f-text-3)' }}>{formatDate(item.lastSeenAt)}</td>
-            <td className="py-3">
-              {item.status === 'OPEN' && resolvingId !== item.id && <button onClick={() => setResolvingId(item.id)} className="az-btn-secondary text-xs">Resolve</button>}
-              {item.status === 'RESOLVED' && <span className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--f-good)' }}><CheckCircle2 className="h-3.5 w-3.5" /> {item.resolvedByUsername || item.resolvedByEmail || 'Resolved'}</span>}
-              {resolvingId === item.id && <div className="flex items-center gap-2 min-w-[280px]"><input autoFocus value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Resolution reason" maxLength={500} className="rounded-md px-2 py-1.5 text-xs flex-1" style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text)', border: '1px solid var(--f-line)' }} /><button disabled={reason.trim().length < 3 || resolveMutation.isPending} onClick={() => resolveMutation.mutate({ id: item.id, resolutionReason: reason.trim() })} className="az-btn-primary text-xs disabled:opacity-40">{resolveMutation.isPending ? 'Saving…' : 'Confirm'}</button><button disabled={resolveMutation.isPending} onClick={() => { setResolvingId(null); setReason(''); }} className="az-btn-secondary text-xs">Cancel</button></div>}
-            </td>
-          </tr>)}</tbody>
+          <tbody>{exceptions.map((item) => {
+            const claim = claimFrom(item);
+            const claimActive = Boolean(claim?.expiresAt && new Date(claim.expiresAt).getTime() > Date.now());
+            const claimLabel = claimActive ? `Claimed • expires ${formatDate(claim.expiresAt)}` : null;
+            return <tr key={item.id} style={{ borderBottom: '1px solid var(--f-line)' }}>
+              <td className="py-3 pr-3"><div className="font-medium" style={{ color: 'var(--f-text)' }}>{item.reason}</div><div className="text-xs mt-1" style={{ color: 'var(--f-text-3)' }}>{item.status}</div></td>
+              <td className="py-3 pr-3 font-mono text-xs" style={{ color: 'var(--f-text-2)' }}>{item.entityType}:{item.entityId}</td>
+              <td className="py-3 pr-3 font-mono text-xs" style={{ color: 'var(--f-text-3)' }}>{item.reference || '—'}</td>
+              <td className="py-3 pr-3 whitespace-nowrap text-xs" style={{ color: 'var(--f-text-3)' }}>{formatDate(item.lastSeenAt)}</td>
+              <td className="py-3">
+                {item.status === 'OPEN' && resolvingId !== item.id && <div className="flex flex-wrap items-center gap-2">
+                  {!claimActive && <button disabled={busyId === item.id} onClick={() => claimMutation.mutate(item.id)} className="az-btn-secondary text-xs inline-flex items-center gap-1"><LockKeyhole className="h-3.5 w-3.5" /> {busyId === item.id ? 'Working…' : 'Claim'}</button>}
+                  {claimActive && <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md" style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text-2)' }}><LockKeyhole className="h-3.5 w-3.5" /> {claimLabel}</span>}
+                  {claimActive && <button disabled={busyId === item.id} onClick={() => releaseMutation.mutate(item.id)} className="az-btn-secondary text-xs inline-flex items-center gap-1"><UnlockKeyhole className="h-3.5 w-3.5" /> Release</button>}
+                  <button onClick={() => setResolvingId(item.id)} className="az-btn-primary text-xs">Resolve</button>
+                </div>}
+                {item.status === 'RESOLVED' && <span className="inline-flex items-center gap-1 text-xs" style={{ color: 'var(--f-good)' }}><CheckCircle2 className="h-3.5 w-3.5" /> {item.resolvedByUsername || item.resolvedByEmail || 'Resolved'}</span>}
+                {resolvingId === item.id && <div className="flex items-center gap-2 min-w-[280px]"><input autoFocus value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Resolution reason" maxLength={500} className="rounded-md px-2 py-1.5 text-xs flex-1" style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text)', border: '1px solid var(--f-line)' }} /><button disabled={reason.trim().length < 3 || resolveMutation.isPending} onClick={() => resolveMutation.mutate({ id: item.id, resolutionReason: reason.trim() })} className="az-btn-primary text-xs disabled:opacity-40">{resolveMutation.isPending ? 'Saving…' : 'Confirm'}</button><button disabled={resolveMutation.isPending} onClick={() => { setResolvingId(null); setReason(''); }} className="az-btn-secondary text-xs">Cancel</button></div>}
+              </td>
+            </tr>;
+          })}</tbody>
         </table>
       </div>}
 
