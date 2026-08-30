@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api, { clearAccessToken } from './api';
-import { connectAdminSocket } from './adminSocket';
+import { connectAdminSocket, disconnectAdminSocket } from './adminSocket';
 
 // Decode JWT payload for display/role hints only. Authentication and role
 // authorization are performed by the backend session endpoint.
@@ -40,8 +40,8 @@ export const AuthProvider = ({ children }) => {
 
     // Session restoration does not pass through api.auth.login(), so it must
     // explicitly establish the realtime handshake after the fresh access JWT
-    // has been validated. Without this, a hard refresh leaves REST healthy but
-    // silently disables every admin realtime projection until the next login.
+    // has been validated. connectAdminSocket also rotates credentials on an
+    // already-connected singleton when the backend issues a fresh access JWT.
     connectAdminSocket(token);
 
     setUser({
@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }) => {
       applySession(session);
     } catch (error) {
       clearAccessToken();
+      disconnectAdminSocket();
       setUser(null);
       setIsAuthenticated(false);
       setAuthError({ type: 'auth_required', message: error.message || 'Please log in' });
@@ -90,6 +91,10 @@ export const AuthProvider = ({ children }) => {
     try {
       await api.auth.logout();
     } finally {
+      // Revoke the REST session and immediately tear down the authenticated
+      // admin_spy socket. Keeping it alive after logout would leave the old
+      // authenticated connection subscribed to privileged realtime data.
+      disconnectAdminSocket();
       setUser(null);
       setIsAuthenticated(false);
       setAuthError({ type: 'auth_required', message: 'Logged out' });
