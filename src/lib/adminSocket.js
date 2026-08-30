@@ -6,7 +6,16 @@ let socket = null;
 
 export function connectAdminSocket(token) {
   if (!token) return null;
-  if (socket?.connected) return socket;
+  if (socket?.connected) {
+    // Session restoration can rotate the short-lived access JWT while the
+    // singleton socket is still connected. Reconnect with the fresh token so
+    // the backend's Socket.IO JWT middleware never relies on a stale session.
+    if (socket.auth?.token !== token) {
+      socket.auth = { ...(socket.auth || {}), token };
+      socket.disconnect().connect();
+    }
+    return socket;
+  }
   if (socket) disconnectAdminSocket();
 
   socket = io(BASE_URL, {
@@ -26,6 +35,7 @@ export function connectAdminSocket(token) {
 
 export function updateAdminSocketToken(token) {
   if (!token || !socket) return;
+  if (socket.auth?.token === token) return;
   socket.auth = { ...(socket.auth || {}), token };
   if (socket.connected) socket.disconnect().connect();
 }
