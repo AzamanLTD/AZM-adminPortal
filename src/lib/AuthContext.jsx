@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import api from './api';
+import api, { clearAccessToken } from './api';
 
 // Decode JWT payload for display/role hints only. Authentication and role
 // authorization are performed by the backend session endpoint.
@@ -36,7 +36,12 @@ export const AuthProvider = ({ children }) => {
     if (String(sessionUser.role || payload?.role || '').toUpperCase() !== 'ADMIN') {
       throw new Error('Access denied. Admin credentials required.');
     }
-    setUser({ role: 'ADMIN', id: payload?.id ?? sessionUser.id, username: payload?.username ?? sessionUser.username, ...sessionUser });
+    setUser({
+      role: 'ADMIN',
+      id: payload?.id ?? sessionUser.id,
+      username: payload?.username ?? sessionUser.username,
+      ...sessionUser,
+    });
     setIsAuthenticated(true);
     setAuthError(null);
   }, []);
@@ -49,10 +54,10 @@ export const AuthProvider = ({ children }) => {
       const session = await api.auth.restore();
       applySession(session);
     } catch (error) {
-      api.clearAccessToken?.();
+      clearAccessToken();
       setUser(null);
       setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: 'Please log in' });
+      setAuthError({ type: 'auth_required', message: error.message || 'Please log in' });
     } finally {
       setIsLoadingAuth(false);
     }
