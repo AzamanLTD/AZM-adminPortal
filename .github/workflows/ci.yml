@@ -5,13 +5,20 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: admin-portal-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,20 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint changed JavaScript/TypeScript files
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-          fi
-          files=$(git diff --name-only --diff-filter=ACMR "$base" "$GITHUB_SHA" -- '*.js' '*.jsx' '*.mjs' '*.cjs' '*.ts' '*.tsx')
-          if [ -n "$files" ]; then
-            printf '%s\n' "$files" | xargs npx eslint --quiet
-          else
-            echo "No changed JavaScript/TypeScript files to lint."
-          fi
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
