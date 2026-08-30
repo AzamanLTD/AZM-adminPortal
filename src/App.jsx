@@ -7,6 +7,7 @@ import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Login from '@/pages/Login';
 import { Toaster } from 'sonner';
+import { useAdminRealtime } from '@/hooks/useAdminRealtime';
 
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const ControlPlane = lazy(() => import('@/pages/ControlPlane'));
@@ -40,6 +41,8 @@ function RouteLoader() {
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isAuthenticated } = useAuth();
+  useAdminRealtime();
+
   if (isLoadingAuth) return <div className="fixed inset-0 flex items-center justify-center bg-bg"><div className="text-center"><div className="h-8 w-8 rounded-md bg-surface-sunken animate-pulse mx-auto" /><p className="text-sm text-ink-3 mt-4">Verifying credentials</p></div></div>;
   if (!isAuthenticated) return <Routes><Route path="/login" element={<Login />} /><Route path="*" element={<Navigate to="/login" replace />} /></Routes>;
 
