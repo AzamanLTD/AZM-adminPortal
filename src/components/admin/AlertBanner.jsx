@@ -7,7 +7,7 @@
 // handled centrally rather than by a second socket with stale credentials.
 // =============================================================================
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, AlertOctagon, AlertTriangle, Bell, Info } from 'lucide-react';
@@ -56,7 +56,6 @@ const nextId = () => `${Date.now()}_${_seq++}`;
 export default function AlertBanner() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState([]);
-  const audioRef = useRef(null);
 
   const playAlertSound = useCallback(() => {
     try {
