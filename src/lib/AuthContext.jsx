@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import api, { clearAccessToken } from './api';
+import { connectAdminSocket } from './adminSocket';
 
 // Decode JWT payload for display/role hints only. Authentication and role
 // authorization are performed by the backend session endpoint.
@@ -36,6 +37,13 @@ export const AuthProvider = ({ children }) => {
     if (String(sessionUser.role || payload?.role || '').toUpperCase() !== 'ADMIN') {
       throw new Error('Access denied. Admin credentials required.');
     }
+
+    // Session restoration does not pass through api.auth.login(), so it must
+    // explicitly establish the realtime handshake after the fresh access JWT
+    // has been validated. Without this, a hard refresh leaves REST healthy but
+    // silently disables every admin realtime projection until the next login.
+    connectAdminSocket(token);
+
     setUser({
       role: 'ADMIN',
       id: payload?.id ?? sessionUser.id,
