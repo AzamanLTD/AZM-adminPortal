@@ -45,8 +45,11 @@ export const controlPlaneApi = {
   duties: () => request('/api/admin/control-plane/duties'),
   presence: () => request('/api/admin/control-plane/presence'),
   activity: (page = 1, limit = 50) => request(`/api/admin/control-plane/activity?page=${page}&limit=${limit}`),
+  reconciliation: {
+    list: (page = 1, limit = 50, status = 'OPEN') => request(`/api/admin/control-plane/exceptions?page=${page}&limit=${limit}&status=${encodeURIComponent(status)}`),
+    resolve: (id, reason) => request(`/api/admin/control-plane/exceptions/${id}/resolve`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  },
 };
 
-// Backward-compatible named helpers used by the executive command center.
 export function getControlPlaneSummary() { return request('/api/admin/control-plane/summary'); }
 export function getControlPlaneActivity(page = 1, limit = 50) { return controlPlaneApi.activity(page, limit); }
