@@ -83,10 +83,6 @@ export function useAdminRealtime() {
       invalidateFinancialViews();
     };
 
-    // Withdrawal settlement/admin alerts already have explicit handlers above.
-    // The escrow set mirrors the backend/client event vocabulary so Admin stays
-    // converged with Business Portal and Flutter without creating a second
-    // realtime transport or state store.
     const escrowEvents = [
       'escrow_funded',
       'escrow_settled',
@@ -94,6 +90,7 @@ export function useAdminRealtime() {
       'escrow_disputed',
       'escrow_resolved',
       'escrow_terms_updated',
+      'escrow_refunded',
       'invoice_paid',
     ];
     const orderEvents = [
