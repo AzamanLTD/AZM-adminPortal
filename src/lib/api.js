@@ -1,58 +1,141 @@
+import { connectAdminSocket, updateAdminSocketToken, disconnectAdminSocket } from './adminSocket';
+
 /**
  * Central API layer for the Admin Dashboard.
- * Update BASE_URL to point to your backend.
- * All functions return the response data directly or throw on error.
+ *
+ * Access JWTs live only in memory. The refresh credential is kept by the
+ * backend in the `azm_admin_refresh` HttpOnly cookie and is never exposed to
+ * JavaScript storage. Every authenticated request and the Admin Socket.IO
+ * handshake therefore use the same current access-token generation.
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://azm-backend.onrender.com';
 const REQUEST_TIMEOUT_MS = 30_000;
+let accessToken = null;
+let refreshPromise = null;
 
-async function request(path, options = {}) {
-  const token = localStorage.getItem('admin_token');
+export function setAccessToken(token) {
+  accessToken = token || null;
+  if (accessToken) updateAdminSocketToken(accessToken);
+}
+
+export function getAccessToken() { return accessToken; }
+
+export function clearAccessToken() {
+  accessToken = null;
+  disconnectAdminSocket();
+}
+
+async function fetchWithTimeout(path, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(options.headers || {}),
-  };
-
-  let res;
   try {
-    res = await fetch(`${BASE_URL}${path}`, {
-      ...options,
-      credentials: 'include',
-      headers,
-      signal: controller.signal,
-    });
+    return await fetch(`${BASE_URL}${path}`, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timeout);
   }
+}
 
-  // Access tokens are short-lived (15m). When one expires mid-session, every
-  // call 401s. Rather than let the UI fill with errors / empty lists, clear the
-  // dead token and bounce to login — once, and never from the login page or the
-  // login call itself (which would loop).
-  if (res.status === 401 && !path.includes('/auth/login')) {
-    localStorage.removeItem('admin_token');
-    if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-      window.location.assign('/login');
+async function refreshSession() {
+  if (!refreshPromise) {
+    refreshPromise = fetchWithTimeout('/api/auth/admin-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.accessToken) throw new Error(data.message || 'Session refresh failed');
+        setAccessToken(data.accessToken);
+        return data;
+      })
+      .finally(() => { refreshPromise = null; });
+  }
+  return refreshPromise;
+}
+
+export async function restoreAdminSession() {
+  return refreshSession();
+}
+
+export async function logoutAdminSession() {
+  try {
+    await fetchWithTimeout('/api/auth/admin-session/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+  } finally {
+    clearAccessToken();
+  }
+}
+
+async function request(path, options = {}) {
+  const isLoginCall = path === '/api/auth/admin-session/login';
+  const isSessionCall = path.startsWith('/api/auth/admin-session');
+
+  async function send(token) {
+    // Caller headers remain available for non-security concerns. Authentication
+    // is computed last so stale caller input can never replace the live session.
+    const headers = new Headers(options.headers || {});
+    headers.set('Content-Type', 'application/json');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    else headers.delete('Authorization');
+
+    return fetchWithTimeout(path, {
+      ...options,
+      credentials: 'include',
+      headers,
+    });
+  }
+
+  let res = await send(accessToken);
+
+  if (res.status === 401 && !isLoginCall && !isSessionCall) {
+    try {
+      await refreshSession();
+      res = await send(accessToken);
+    } catch (_) {
+      clearAccessToken();
     }
-    throw new Error('Session expired. Please log in again.');
   }
 
+  const data = await res.json().catch(() => ({ message: res.statusText }));
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || 'Request failed');
+    if (res.status === 401 && !isLoginCall && !isSessionCall) {
+      clearAccessToken();
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        window.location.assign('/login');
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+    const error = new Error(data.message || data.error || 'Request failed');
+    error.statusCode = res.status;
+    if (res.status === 402) {
+      error.violations = data.violations;
+      error.tier = data.tier;
+      error.stakedBalance = data.stakedBalance;
+    }
+    throw error;
   }
-  return res.json();
+  return data;
 }
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const auth = {
-  login: (email, password) =>
-    request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
-  logout: () => request('/api/auth/logout', { method: 'POST' }),
+  login: async (email, password) => {
+    const data = await request('/api/auth/admin-session/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    if (data.accessToken) {
+      setAccessToken(data.accessToken);
+      connectAdminSocket(data.accessToken);
+    }
+    return data;
+  },
+  restore: refreshSession,
+  logout: logoutAdminSession,
 };
 
 // ── Admin Stats & Health ──────────────────────────────────────────────────────
@@ -90,7 +173,7 @@ export const trades = {
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 export const users = {
-  list: (page = 1, search = '') => request(`/api/admin/users?page=${page}&search=${search}`),
+  list: (page = 1, search = '') => request(`/api/admin/users?page=${page}&search=${encodeURIComponent(search)}`),
   ban: (id, duration) => request(`/api/admin/users/${id}/ban`, { method: 'POST', body: JSON.stringify({ duration }) }),
   changeRole: (id, role) => request(`/api/admin/users/${id}/role`, { method: 'POST', body: JSON.stringify({ role }) }),
   setRiskTier: (id, tier) => request(`/api/admin/users/${id}/risk-tier`, { method: 'POST', body: JSON.stringify({ tier }) }),
@@ -218,17 +301,17 @@ export const twoFactor = {
 
 export const paymentHealth = { get: () => request('/api/admin/payment-providers/health') };
 
-export default {
-  auth, admin, settings, feeProfiles, trades, users, kyc, withdrawals,
-  payouts, vendors, tradeAccounts, warRoom, susuIncidents, susuAdmin,
-  proofOfResidency, versionGate, auditLog, aiOps, twoFactor,
-  businessKyb, escrow, businesses, paymentHealth,
-};
-
 export const storefronts = {
   list: (page = 1, limit = 20) => request(`/api/admin/storefront?page=${page}&limit=${limit}`),
   disable: (businessProfileId) => request(`/api/admin/storefront/${businessProfileId}/disable`, { method: 'PATCH' }),
   enable: (businessProfileId) => request(`/api/admin/storefront/${businessProfileId}/enable`, { method: 'PATCH' }),
   revert: (businessProfileId, versionId) => request(`/api/admin/storefront/${businessProfileId}/revert/${versionId}`, { method: 'POST' }),
   getMedia: (businessProfileId) => request(`/api/admin/storefront/${businessProfileId}/media`),
+};
+
+export default {
+  auth, admin, settings, feeProfiles, trades, users, kyc, withdrawals,
+  payouts, vendors, tradeAccounts, warRoom, susuIncidents, susuAdmin,
+  proofOfResidency, versionGate, auditLog, aiOps, twoFactor,
+  businessKyb, escrow, businesses, paymentHealth, storefronts,
 };

@@ -1,7 +1,8 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import api from './api';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import api, { clearAccessToken } from './api';
 
-// Decode JWT payload (no verification — the backend already verified it).
+// Decode JWT payload for display/role hints only. Authentication and role
+// authorization are performed by the backend session endpoint.
 function decodeJwtPayload(token) {
   try {
     const base64Url = token.split('.')[1];
@@ -27,95 +28,64 @@ export const AuthProvider = ({ children }) => {
   const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
 
-  useEffect(() => {
-    checkAuth();
+  const applySession = useCallback((session) => {
+    const token = session?.accessToken;
+    if (!token) throw new Error('No access token returned from server');
+    const payload = decodeJwtPayload(token);
+    const sessionUser = session.user || payload || {};
+    if (String(sessionUser.role || payload?.role || '').toUpperCase() !== 'ADMIN') {
+      throw new Error('Access denied. Admin credentials required.');
+    }
+    setUser({
+      role: 'ADMIN',
+      id: payload?.id ?? sessionUser.id,
+      username: payload?.username ?? sessionUser.username,
+      ...sessionUser,
+    });
+    setIsAuthenticated(true);
+    setAuthError(null);
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     setIsLoadingAuth(true);
-    const token = localStorage.getItem('admin_token');
-
-    if (!token) {
-      setIsLoadingAuth(false);
+    try {
+      // No localStorage token is trusted. The backend validates and rotates the
+      // HttpOnly refresh cookie, then returns a short-lived access JWT.
+      const session = await api.auth.restore();
+      applySession(session);
+    } catch (error) {
+      clearAccessToken();
+      setUser(null);
       setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: 'Please log in' });
-      return;
-    }
-
-    // Decode JWT locally — trust it immediately without a network round-trip.
-    // This makes the dashboard load instantly (same pattern as Vercel/Sentry).
-    // The actual data endpoints will 401 if the token is truly invalid.
-    const payload = decodeJwtPayload(token);
-
-    if (!payload) {
-      // Malformed token
-      localStorage.removeItem('admin_token');
+      setAuthError({ type: 'auth_required', message: error.message || 'Please log in' });
+    } finally {
       setIsLoadingAuth(false);
-      setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: 'Invalid session. Please log in again.' });
-      return;
     }
+  }, [applySession]);
 
-    // Check token expiry
-    if (payload.exp && Date.now() / 1000 > payload.exp) {
-      localStorage.removeItem('admin_token');
-      setIsLoadingAuth(false);
-      setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: 'Session expired. Please log in again.' });
-      return;
-    }
-
-    // Token looks valid — authenticate from JWT payload, let dashboard load data async
-    const role = payload.role;
-    if (role !== 'ADMIN') {
-      localStorage.removeItem('admin_token');
-      setIsLoadingAuth(false);
-      setIsAuthenticated(false);
-      setAuthError({ type: 'auth_required', message: 'Access denied. Admin credentials required.' });
-      return;
-    }
-
-    setIsAuthenticated(true);
-    setUser({ role: 'ADMIN', id: payload.id, username: payload.username });
-    setAuthError(null);
-    setIsLoadingAuth(false);
-  };
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const login = async (email, password) => {
     try {
       const data = await api.auth.login(email, password);
       if (!data.success) throw new Error(data.message || 'Login failed');
-
-      const token = data.accessToken || data.token;
-      if (!token) throw new Error('No token returned from server');
-
-      // Check role from user object first, fall back to JWT payload
-      let role = data.user?.role;
-      if (!role) {
-        const payload = decodeJwtPayload(token);
-        role = payload?.role;
-      }
-
-      if (role !== 'ADMIN') {
-        throw new Error('Access denied. Admin credentials required.');
-      }
-
-      localStorage.setItem('admin_token', token);
-      const payload = decodeJwtPayload(token);
-      setUser({ role: 'ADMIN', id: payload?.id, username: payload?.username, ...data.user });
-      setIsAuthenticated(true);
-      setAuthError(null);
+      applySession(data);
       return { success: true };
     } catch (error) {
       return { success: false, message: error.message };
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('admin_token');
-    setUser(null);
-    setIsAuthenticated(false);
-    setAuthError({ type: 'auth_required', message: 'Logged out' });
+  const logout = async () => {
+    try {
+      await api.auth.logout();
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      setAuthError({ type: 'auth_required', message: 'Logged out' });
+    }
   };
 
   return (
