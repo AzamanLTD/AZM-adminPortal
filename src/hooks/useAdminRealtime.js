@@ -4,11 +4,8 @@ import { getAdminSocket } from '@/lib/adminSocket';
 
 /**
  * Global admin realtime reconciliation boundary.
- *
- * The backend remains authoritative. Socket events are invalidation signals,
- * never a second source of financial truth. A settlement event therefore
- * refreshes the admin queues/statistics rather than patching financial values
- * directly into React Query caches.
+ * Backend/domain state remains authoritative. Socket events only invalidate
+ * projections so every consumer refetches the canonical server state.
  */
 export function useAdminRealtime() {
   const qc = useQueryClient();
@@ -32,17 +29,22 @@ export function useAdminRealtime() {
 
     const handleAdminAlert = (payload) => {
       if (!payload?.type) return;
-      if (['WITHDRAWAL_SETTLED', 'WITHDRAWAL_FAILED', 'LIQUIDITY_LOW', 'PROFIT_LIQUIDATION'].includes(payload.type)) {
-        invalidateFinancialViews();
-      }
+      if (['WITHDRAWAL_SETTLED', 'WITHDRAWAL_FAILED', 'LIQUIDITY_LOW', 'PROFIT_LIQUIDATION'].includes(payload.type)) invalidateFinancialViews();
+    };
+
+    const handleReconciliationException = (payload) => {
+      if (!payload?.id) return;
+      qc.invalidateQueries({ queryKey: ['control-plane', 'reconciliation'] });
     };
 
     socket.on('withdrawal_settled', handleSettlement);
     socket.on('admin_alert', handleAdminAlert);
+    socket.on('reconciliation_exception', handleReconciliationException);
 
     return () => {
       socket.off('withdrawal_settled', handleSettlement);
       socket.off('admin_alert', handleAdminAlert);
+      socket.off('reconciliation_exception', handleReconciliationException);
     };
   }, [qc, socket]);
 }
