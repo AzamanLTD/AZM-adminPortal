@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCw, Users, Activity, BriefcaseBusiness, Clock3, ShieldCheck } from 'lucide-react';
 import { getControlPlaneActivity, getControlPlaneSummary } from '@/lib/controlPlaneApi';
+import ReconciliationQueue from '@/components/admin/ReconciliationQueue';
 
 function Stat({ label, value, icon: Icon }) {
   return (
@@ -77,6 +78,8 @@ export default function ControlPlane() {
         <Stat label="Active Admins" value={staff.activeAdmins} icon={ShieldCheck} />
         <Stat label="Active Duties" value={duties.activeDuties} icon={Clock3} />
       </div>
+
+      <ReconciliationQueue />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <section className="lg:col-span-2 rounded-xl p-4" style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
