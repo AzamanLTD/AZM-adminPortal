@@ -34,10 +34,6 @@ export function useAdminRealtime() {
     };
 
     const invalidateOrderViews = () => {
-      // Order/escrow events can change the platform's operational picture even
-      // when the admin portal is not viewing a particular order. Invalidate
-      // only admin projections; individual business/customer clients remain
-      // responsible for their scoped order caches.
       qc.invalidateQueries({ queryKey: ['admin', 'stats'] });
       qc.invalidateQueries({ queryKey: ['admin', 'health'] });
       qc.invalidateQueries({ queryKey: ['admin', 'audit-log'] });
@@ -53,6 +49,9 @@ export function useAdminRealtime() {
       if ([
         'WITHDRAWAL_SETTLED',
         'WITHDRAWAL_FAILED',
+        'WITHDRAWAL_AUTO_REVERSED',
+        'WITHDRAWAL_REVERSAL_FAILED',
+        'PAYOUTS_NEED_MANUAL_REVIEW',
         'LIQUIDITY_LOW',
         'PROFIT_LIQUIDATION',
       ].includes(payload.type)) {
@@ -67,8 +66,6 @@ export function useAdminRealtime() {
     };
 
     const handleEscrowEvent = (payload) => {
-      // Escrow events are convergence signals. Do not patch cached financial
-      // values from socket payloads; refetch the authoritative admin APIs.
       if (!payload || typeof payload !== 'object') return;
       invalidateEscrowViews();
     };
@@ -83,10 +80,6 @@ export function useAdminRealtime() {
       invalidateFinancialViews();
     };
 
-    // Withdrawal settlement/admin alerts already have explicit handlers above.
-    // The escrow set mirrors the backend/client event vocabulary so Admin stays
-    // converged with Business Portal and Flutter without creating a second
-    // realtime transport or state store.
     const escrowEvents = [
       'escrow_funded',
       'escrow_settled',
@@ -94,6 +87,7 @@ export function useAdminRealtime() {
       'escrow_disputed',
       'escrow_resolved',
       'escrow_terms_updated',
+      'escrow_refunded',
       'invoice_paid',
     ];
     const orderEvents = [
