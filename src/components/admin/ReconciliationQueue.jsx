@@ -42,7 +42,7 @@ export default function ReconciliationQueue() {
     onSuccess: refresh,
   });
   const resolveMutation = useMutation({
-    mutationFn: ({ id, resolutionReason }) => controlPlaneApi.reconciliation.resolve(id, resolutionReason),
+    mutationFn: /** @param {{ id: string | number, resolutionReason: string }} data */ ({ id, resolutionReason }) => controlPlaneApi.reconciliation.resolve(id, resolutionReason),
     onSuccess: () => {
       setResolvingId(null);
       setReason('');
