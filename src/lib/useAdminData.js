@@ -115,8 +115,17 @@ export function useWithdrawals() {
   return useQuery({
     queryKey: ['admin', 'withdrawals'],
     queryFn: async () => {
-      const data = await api.withdrawals.pending();
-      return data.withdrawals || [];
+      const response = await financialApi.withdrawals.pending();
+      const { pending, frozen, counts, pagination } = response.data;
+      return Object.assign(
+        pending.map((withdrawal) => ({
+          ...withdrawal,
+          requestedAt: withdrawal.createdAt,
+          method: withdrawal.payoutMethod,
+          wallet: withdrawal.destination,
+        })),
+        { frozen, counts, pagination },
+      );
     },
     refetchInterval: 30000,
   });
@@ -175,135 +184,5 @@ export function usePendingKyc() {
       return data?.applications || data?.data || (Array.isArray(data) ? data : []);
     },
     refetchInterval: 60000,
-  });
-}
-
-export function useAuditLog(page = 1, filters = {}) {
-  return useQuery({
-    queryKey: ['admin', 'audit-log', page, filters],
-    queryFn: async () => {
-      const data = await api.auditLog.list(page, filters);
-      return data;
-    },
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PRIVATE SUSU ECOSYSTEM — Admin Portal (Phase 5 / Workstream E)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function useSusuList(status) {
-  return useQuery({
-    queryKey: ['admin', 'susu', 'list', status || 'all'],
-    queryFn: async () => {
-      const data = await api.susuAdmin.list(status);
-      return data.data?.susus || [];
-    },
-    refetchInterval: 30000,
-  });
-}
-
-export function useSusuDetail(id) {
-  return useQuery({
-    queryKey: ['admin', 'susu', 'detail', id],
-    enabled: !!id,
-    queryFn: async () => {
-      const data = await api.susuAdmin.detail(id);
-      return data.data?.susu || null;
-    },
-  });
-}
-
-export function useSusuMember(userId) {
-  return useQuery({
-    queryKey: ['admin', 'susu', 'member', userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const data = await api.susuAdmin.member(userId);
-      return data.data || null;
-    },
-  });
-}
-
-export function useResolveSusu() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, action, notes, alertId }) => api.susuAdmin.resolve(id, action, notes, alertId),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'susu'] });
-      qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] });
-    },
-  });
-}
-
-export function useSusuIncidents(acknowledged) {
-  return useQuery({
-    queryKey: ['admin', 'susu-incidents', acknowledged === undefined ? 'all' : String(acknowledged)],
-    queryFn: async () => {
-      const data = await api.susuIncidents.alerts(acknowledged);
-      return data.data?.alerts || [];
-    },
-    refetchInterval: 20000,
-  });
-}
-
-export function useAcknowledgeIncident() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id) => api.susuIncidents.acknowledge(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] }),
-  });
-}
-
-export function usePoRQueue() {
-  return useQuery({
-    queryKey: ['admin', 'por-queue'],
-    queryFn: async () => {
-      const data = await api.proofOfResidency.queue();
-      return data.data?.queue || [];
-    },
-    refetchInterval: 30000,
-  });
-}
-
-export function usePoRApprove() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (userId) => api.proofOfResidency.approve(userId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
-  });
-}
-
-export function usePoRReject() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ userId, reason }) => api.proofOfResidency.reject(userId, reason),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ESCROW DISPUTES + BUSINESS KYB — Admin Portal (WS1/WS2)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function useEscrowDisputes(status) {
-  return useQuery({
-    queryKey: ['escrow-disputes', status || 'all'],
-    queryFn: async () => {
-      const data = await api.escrow.disputes(status);
-      return data.disputes || [];
-    },
-    refetchInterval: 30_000,
-  });
-}
-
-export function useBusinessKybQueue(status = 'PENDING') {
-  return useQuery({
-    queryKey: ['biz-kyb', status],
-    queryFn: async () => {
-      const data = await api.businessKyb.queue(status);
-      return data.businesses || [];
-    },
-    staleTime: 60_000,
   });
 }
