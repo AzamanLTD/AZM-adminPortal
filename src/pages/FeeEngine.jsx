@@ -8,6 +8,7 @@ import api from '@/lib/api';
 import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';
 
 /** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */
+/** @typedef {Record<string, string | number>} FeeForm */
 
 function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
@@ -422,7 +423,7 @@ export default function FeeEngine() {
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
 
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState(/** @type {FeeForm} */ ({}));
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
