@@ -1,39 +1,217 @@
 import { z } from 'zod';
-export const idSchema = z.union([z.string().min(1), z.number().int().positive()]);
-export const tradeIdSchema = idSchema; export const userIdSchema = idSchema;
-export const reasonSchema = z.object({ reason:z.string().trim().max(2000).optional() }).strict();
-export const forceTradeActionSchema = z.object({ tradeId:tradeIdSchema, reason:z.string().trim().max(2000).optional() }).strict();
+
+/**
+ * Canonical request contracts for Admin financial actions.
+ * These schemas describe fields already sent by the existing Admin API layer.
+ * Response schemas are added only after the Backend producer has been audited.
+ */
+
+export const idSchema = z.union([
+  z.string().min(1),
+  z.number().int().positive(),
+]);
+
+export const tradeIdSchema = idSchema;
+export const userIdSchema = idSchema;
+
+export const reasonSchema = z.object({
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
+export const forceTradeActionSchema = z.object({
+  tradeId: tradeIdSchema,
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
 export const forceReleaseSchema = forceTradeActionSchema;
-export const adminCreditSchema = z.object({ amount:z.union([z.number().finite(),z.string().min(1)]), reason:z.string().trim().max(2000).optional() }).strict();
-export const escrowResolveSchema = z.object({ disputeId:idSchema, ruling:z.string().min(1), rulingNotes:z.string().trim().max(5000).optional(), payerPct:z.number().min(0).max(100), payeePct:z.number().min(0).max(100) });
-const disputeParticipantSchema = z.object({ id:idSchema, username:z.string().nullable().optional(), email:z.string().nullable().optional() }).passthrough();
-const disputeMessageSchema = z.object({ id:idSchema.optional(), sender:z.string().optional(), text:z.string().optional() }).passthrough();
-export const disputeListResponseSchema = z.object({ success:z.literal(true), disputes:z.array(z.object({ id:idSchema,status:z.string(),user:disputeParticipantSchema,vendor:disputeParticipantSchema,messages:z.array(disputeMessageSchema) }).passthrough()), pagination:z.unknown().optional() }).passthrough();
-const escrowParticipantSchema = z.object({ id:idSchema, username:z.string().nullable().optional() }).passthrough();
-const escrowTicketSchema = z.object({ id:idSchema, name:z.string().nullable().optional(), status:z.string().optional() }).passthrough();
-const escrowDisputeSchema = z.object({ id:idSchema, escrowId:idSchema,status:z.string(),reason:z.string().nullable().optional(),ruling:z.string().nullable().optional(),rulingNotes:z.string().nullable().optional(),payerPct:z.number().nullable().optional(),payeePct:z.number().nullable().optional(),createdAt:z.string().optional(),resolvedAt:z.string().nullable().optional(),raisedBy:escrowParticipantSchema.nullable().optional(),assignedTo:escrowParticipantSchema.nullable().optional(),escrow:z.object({ id:idSchema,ticketId:idSchema,status:z.string(),amountUsdc:z.union([z.number().finite(),z.string().min(1)]),feeUsdc:z.union([z.number().finite(),z.string().min(1)]),fundedAt:z.string().nullable().optional(),payer:escrowParticipantSchema.nullable().optional(),payee:escrowParticipantSchema.nullable().optional(),ticket:escrowTicketSchema.nullable().optional() }).passthrough() }).passthrough();
-const cursorPaginationSchema = z.object({ nextCursor:idSchema.nullable(),hasMore:z.boolean(),limit:z.number().int().positive(),page:z.number().int().positive().optional(),total:z.number().int().nonnegative().optional() }).passthrough();
-export const escrowDisputeListResponseSchema = z.object({ success:z.literal(true),disputes:z.array(escrowDisputeSchema),pagination:cursorPaginationSchema }).passthrough();
-const withdrawalUserSchema = z.object({ id:idSchema.optional(),username:z.string().nullable().optional(),email:z.string().nullable().optional(),kycStatus:z.string().nullable().optional(),banStatus:z.string().nullable().optional(),strikeCount:z.number().int().nonnegative().optional(),tradesCompleted:z.number().int().nonnegative().optional() }).passthrough();
-const withdrawalSchema = z.object({ id:idSchema,amount:z.union([z.number().finite(),z.string().min(1)]),payoutMethod:z.string(),network:z.string().nullable().optional(),destination:z.string(),totalGasFee:z.union([z.number().finite(),z.string().min(1)]).nullable().optional(),vendorGasShare:z.union([z.number().finite(),z.string().min(1)]).nullable().optional(),adminGasShare:z.union([z.number().finite(),z.string().min(1)]).nullable().optional(),status:z.string(),userId:idSchema,createdAt:z.string(),updatedAt:z.string(),user:withdrawalUserSchema.nullable().optional() }).passthrough();
-const withdrawalPaginationSchema = z.object({ nextCursor:idSchema.nullable(),hasMore:z.boolean(),limit:z.number().int().positive(),page:z.number().int().positive().optional(),total:z.number().int().nonnegative().optional() }).passthrough();
-export const withdrawalPendingResponseSchema = z.object({ success:z.literal(true),data:z.object({ pending:z.array(withdrawalSchema),frozen:z.array(withdrawalSchema),counts:z.object({pending:z.number().int().nonnegative(),frozen:z.number().int().nonnegative()}).passthrough(),pagination:withdrawalPaginationSchema }).passthrough() }).passthrough();
-const payoutSettingsSchema = z.object({autoPayoutEnabled:z.boolean(),autoPayoutThresholdUsdc:z.number().finite().nonnegative(),autoPayoutMaxAmountUsdc:z.number().finite().nonnegative(),autoPayoutIntervalMs:z.number().int().min(10000)}).strict();
-export const payoutSettingsResponseSchema = z.object({success:z.literal(true),settings:payoutSettingsSchema,pool:z.object({balance:z.number().finite().nonnegative(),alertThreshold:z.number().finite().nonnegative()}).strict()}).strict();
-export const payoutSettingsUpdateSchema = z.object({autoPayoutEnabled:z.boolean().optional(),autoPayoutThresholdUsdc:z.number().finite().nonnegative().optional(),autoPayoutMaxAmountUsdc:z.number().finite().nonnegative().optional(),autoPayoutIntervalMs:z.number().int().min(10000).optional()}).strict().refine(value=>Object.keys(value).length>0,{message:'At least one payout setting is required.'});
-/** @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput */
-/** @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput */
-/** @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput */
-/** @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput */
-/** @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput */
-/** @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse */
-/** @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse */
-/** @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse */
-/** @typedef {import('zod').infer<typeof payoutSettingsResponseSchema>} PayoutSettingsResponse */
-/** @typedef {import('zod').infer<typeof payoutSettingsUpdateSchema>} PayoutSettingsUpdate */
-/** @typedef {{ statusCode?: number, violations?: unknown, tier?: unknown, stakedBalance?: unknown }} AdminApiErrorDetails */
+
+export const adminCreditSchema = z.object({
+  amount: z.union([z.number().finite(), z.string().min(1)]),
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
+export const escrowResolveSchema = z.object({
+  disputeId: idSchema,
+  ruling: z.string().min(1),
+  rulingNotes: z.string().trim().max(5000).optional(),
+  payerPct: z.number().min(0).max(100),
+  payeePct: z.number().min(0).max(100),
+});
+
+const disputeParticipantSchema = z.object({
+  id: idSchema,
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+}).passthrough();
+
+const disputeMessageSchema = z.object({
+  id: idSchema.optional(),
+  sender: z.string().optional(),
+  text: z.string().optional(),
+}).passthrough();
+
+export const disputeListResponseSchema = z.object({
+  success: z.literal(true),
+  disputes: z.array(z.object({
+    id: idSchema,
+    status: z.string(),
+    user: disputeParticipantSchema,
+    vendor: disputeParticipantSchema,
+    messages: z.array(disputeMessageSchema),
+  }).passthrough()),
+  pagination: z.unknown().optional(),
+}).passthrough();
+
+const escrowParticipantSchema = z.object({
+  id: idSchema,
+  username: z.string().nullable().optional(),
+}).passthrough();
+
+const escrowTicketSchema = z.object({
+  id: idSchema,
+  name: z.string().nullable().optional(),
+  status: z.string().optional(),
+}).passthrough();
+
+const escrowDisputeSchema = z.object({
+  id: idSchema,
+  escrowId: idSchema,
+  status: z.string(),
+  reason: z.string().nullable().optional(),
+  ruling: z.string().nullable().optional(),
+  rulingNotes: z.string().nullable().optional(),
+  payerPct: z.number().nullable().optional(),
+  payeePct: z.number().nullable().optional(),
+  createdAt: z.string().optional(),
+  resolvedAt: z.string().nullable().optional(),
+  raisedBy: escrowParticipantSchema.nullable().optional(),
+  assignedTo: escrowParticipantSchema.nullable().optional(),
+  escrow: z.object({
+    id: idSchema,
+    ticketId: idSchema,
+    status: z.string(),
+    amountUsdc: z.union([z.number().finite(), z.string().min(1)]),
+    feeUsdc: z.union([z.number().finite(), z.string().min(1)]),
+    fundedAt: z.string().nullable().optional(),
+    payer: escrowParticipantSchema.nullable().optional(),
+    payee: escrowParticipantSchema.nullable().optional(),
+    ticket: escrowTicketSchema.nullable().optional(),
+  }).passthrough(),
+}).passthrough();
+
+const cursorPaginationSchema = z.object({
+  nextCursor: idSchema.nullable(),
+  hasMore: z.boolean(),
+  limit: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+export const escrowDisputeListResponseSchema = z.object({
+  success: z.literal(true),
+  disputes: z.array(escrowDisputeSchema),
+  pagination: cursorPaginationSchema,
+}).passthrough();
+
+const withdrawalUserSchema = z.object({
+  id: idSchema.optional(),
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  kycStatus: z.string().nullable().optional(),
+  banStatus: z.string().nullable().optional(),
+  strikeCount: z.number().int().nonnegative().optional(),
+  tradesCompleted: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+const withdrawalSchema = z.object({
+  id: idSchema,
+  amount: z.union([z.number().finite(), z.string().min(1)]),
+  payoutMethod: z.string(),
+  network: z.string().nullable().optional(),
+  destination: z.string(),
+  totalGasFee: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  vendorGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  adminGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  status: z.string(),
+  userId: idSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  user: withdrawalUserSchema.nullable().optional(),
+}).passthrough();
+
+const withdrawalPaginationSchema = z.object({
+  nextCursor: idSchema.nullable(),
+  hasMore: z.boolean(),
+  limit: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+export const withdrawalPendingResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    pending: z.array(withdrawalSchema),
+    frozen: z.array(withdrawalSchema),
+    counts: z.object({
+      pending: z.number().int().nonnegative(),
+      frozen: z.number().int().nonnegative(),
+    }).passthrough(),
+    pagination: withdrawalPaginationSchema,
+  }).passthrough(),
+}).passthrough();
+
+const payoutSettingsSchema = z.object({
+  autoPayoutEnabled: z.boolean(),
+  autoPayoutThresholdUsdc: z.number().finite().nonnegative(),
+  autoPayoutMaxAmountUsdc: z.number().finite().nonnegative(),
+  autoPayoutIntervalMs: z.number().int().min(10000),
+}).strict();
+
+export const payoutSettingsResponseSchema = z.object({
+  success: z.literal(true),
+  settings: payoutSettingsSchema,
+  pool: z.object({
+    balance: z.number().finite().nonnegative(),
+    alertThreshold: z.number().finite().nonnegative(),
+  }).strict(),
+}).strict();
+
+export const payoutSettingsUpdateSchema = z.object({
+  autoPayoutEnabled: z.boolean().optional(),
+  autoPayoutThresholdUsdc: z.number().finite().nonnegative().optional(),
+  autoPayoutMaxAmountUsdc: z.number().finite().nonnegative().optional(),
+  autoPayoutIntervalMs: z.number().int().min(10000).optional(),
+}).strict().refine((value) => Object.keys(value).length > 0, {
+  message: 'At least one payout setting is required.',
+});
+
+/**
+ * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
+ * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
+ * @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput
+ * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
+ * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
+ * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
+ * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
+ * @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse
+ * @typedef {import('zod').infer<typeof payoutSettingsResponseSchema>} PayoutSettingsResponse
+ * @typedef {import('zod').infer<typeof payoutSettingsUpdateSchema>} PayoutSettingsUpdate
+ */
+
+/** @typedef {{
+ * statusCode?: number,
+ * violations?: unknown,
+ * tier?: unknown,
+ * stakedBalance?: unknown
+ * }} AdminApiErrorDetails */
+
 /** @typedef {Error & AdminApiErrorDetails} AdminApiError */
-/** @param {unknown} error @returns {error is AdminApiError} */
+
 export function isAdminApiError(error) {
-  return error instanceof Error && (typeof error.statusCode === 'number' || 'violations' in error || 'tier' in error || 'stakedBalance' in error);
+  return error instanceof Error && (
+    typeof error.statusCode === 'number' ||
+    'violations' in error ||
+    'tier' in error ||
+    'stakedBalance' in error
+  );
 }

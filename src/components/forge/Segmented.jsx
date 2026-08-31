@@ -2,8 +2,7 @@ import { motion, LayoutGroup } from 'framer-motion';
 import { spring } from '@/lib/motion';
 import { useId } from 'react';
 
-/** @param {{ options: Array<{ value: string, label: string }>, value: string, onChange: (value: string) => void, ariaLabel?: string }} props */
-export function Segmented({ options, value, onChange, ariaLabel = 'Options' }) {
+export function Segmented({ options, value, onChange, ariaLabel }) {
   const gid = useId();
   return (
     <LayoutGroup id={gid}>

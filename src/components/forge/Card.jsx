@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-export function Card({ className = '', children, raised = false, flush = false, ...props }) {
+export function Card({ className, children, raised, flush, ...props }) {
   return (
     <div className={cn('f-card', raised && 'f-card--raised', flush && 'f-card--flush', className)}
          {...props}>
@@ -9,14 +9,14 @@ export function Card({ className = '', children, raised = false, flush = false, 
   );
 }
 
-export function CardHead({ className = '', children, ...props }) {
+export function CardHead({ className, children, ...props }) {
   return <div className={cn('f-card__head', className)} {...props}>{children}</div>;
 }
 
-export function CardTitle({ className = '', children }) {
+export function CardTitle({ className, children }) {
   return <div className={cn('f-card__title', className)}>{children}</div>;
 }
 
-export function CardBody({ className = '', children, ...props }) {
+export function CardBody({ className, children, ...props }) {
   return <div className={cn('f-card__body', className)} {...props}>{children}</div>;
 }

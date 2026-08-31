@@ -14,7 +14,6 @@ export function ScrollArea({ children, className = '', ...props }) {
   );
 }
 
-/** @param {{ orientation?: 'horizontal'|'vertical', className?: string }} props */
 export function ScrollBar({ orientation = 'vertical', className = '' }) {
   return (
     <ScrollAreaPrimitive.ScrollAreaScrollbar
