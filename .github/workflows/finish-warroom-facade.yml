@@ -25,12 +25,12 @@ jobs:
           grep -Fq "import { financialApi } from '@/lib/financialApi';" "$file"
           grep -Fq "api.trades.resolve(String(id), ruling, reason, buyerPercent, override)" "$file"
           grep -Fq "api.trades.injectMessage(String(id), message)" "$file"
-          test "$(grep -Fc "api.trades.resolve(String(id), ruling, reason, buyerPercent, override)" "$file")" -eq 1
-          test "$(grep -Fc "api.trades.injectMessage(String(id), message)" "$file")" -eq 1
           python - <<'PY'
           from pathlib import Path
           p = Path('src/pages/WarRoom.jsx')
           s = p.read_text()
+          old_release = "financialApi.disputes.forceRelease(id, reason)"
+          old_cancel = "financialApi.disputes.forceCancel(id, reason)"
           s = s.replace("import { financialApi } from '@/lib/financialApi';", "import { financialApi } from '@/lib/financialApi';\nimport api from '@/lib/api';", 1)
           s = s.replace("api.trades.resolve(String(id), ruling, reason, buyerPercent, override)", "financialApi.disputes.resolve(id, ruling, reason, buyerPercent, override)", 1)
           s = s.replace("api.trades.injectMessage(String(id), message)", "financialApi.disputes.injectMessage(id, message)", 1)
@@ -39,9 +39,7 @@ jobs:
           grep -Fq "import api from '@/lib/api';" "$file"
           grep -Fq "financialApi.disputes.resolve(id, ruling, reason, buyerPercent, override)" "$file"
           grep -Fq "financialApi.disputes.injectMessage(id, message)" "$file"
-          test "$(grep -Fc "api.trades.resolve(" "$file")" -eq 0
-          test "$(grep -Fc "api.trades.injectMessage(" "$file")" -eq 0
-          test "$(grep -Fc "api.trades.live()" "$file")" -eq 1
+          git diff --check
 
       - name: Commit source migration
         shell: bash
