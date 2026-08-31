@@ -3,8 +3,7 @@ import { z } from 'zod';
 /**
  * Canonical request contracts for Admin financial actions.
  * These schemas describe fields already sent by the existing Admin API layer.
- * Response schemas are intentionally deferred until their consumers are
- * audited against the Backend controllers, avoiding invented contracts.
+ * Response schemas are added only after the Backend producer has been audited.
  */
 
 export const idSchema = z.union([
@@ -39,12 +38,44 @@ export const escrowResolveSchema = z.object({
   payeePct: z.number().min(0).max(100),
 });
 
+const disputeParticipantSchema = z.object({
+  id: idSchema,
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+}).passthrough();
+
+const disputeMessageSchema = z.object({
+  id: idSchema.optional(),
+  sender: z.string().optional(),
+  text: z.string().optional(),
+}).passthrough();
+
+/**
+ * Producer-backed contract for GET /api/admin/disputes.
+ * The Backend controller returns `success`, `disputes`, and a pagination
+ * envelope; each dispute includes the participants and messages used by the
+ * War Room consumer. Additional provider fields remain open so the contract
+ * protects the fields the consumer relies on without inventing a full Trade model.
+ */
+export const disputeListResponseSchema = z.object({
+  success: z.literal(true),
+  disputes: z.array(z.object({
+    id: idSchema,
+    status: z.string(),
+    user: disputeParticipantSchema,
+    vendor: disputeParticipantSchema,
+    messages: z.array(disputeMessageSchema),
+  }).passthrough()),
+  pagination: z.unknown().optional(),
+}).passthrough();
+
 /**
  * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
  * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
  * @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput
  * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
  * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
+ * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
  */
 
 /** @typedef {{

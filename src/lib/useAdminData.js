@@ -4,6 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from './api';
+import { financialApi } from './financialApi';
 
 export function useStats() {
   return useQuery({
@@ -103,7 +104,7 @@ export function useDisputes() {
   return useQuery({
     queryKey: ['admin', 'disputes'],
     queryFn: async () => {
-      const data = await api.trades.disputes();
+      const data = await financialApi.disputes.list();
       return data.disputes || [];
     },
     refetchInterval: 20000,

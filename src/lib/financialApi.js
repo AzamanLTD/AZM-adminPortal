@@ -1,6 +1,7 @@
 import { escrow, feeProfiles, payouts, settings, trades, admin, users, withdrawals } from './api';
 import {
   adminCreditSchema,
+  disputeListResponseSchema,
   escrowResolveSchema,
   forceReleaseSchema,
   forceTradeActionSchema,
@@ -34,7 +35,10 @@ export const financialApi = {
   },
 
   disputes: {
-    list: (page = 1) => trades.disputes(page),
+    list: async (page = 1) => {
+      const data = await trades.disputes(page);
+      return parse(disputeListResponseSchema, data);
+    },
     forceRelease: (tradeId, reason) => {
       const input = parse(forceReleaseSchema, { tradeId, reason });
       return trades.forceRelease(input.tradeId, input.reason);
@@ -43,6 +47,10 @@ export const financialApi = {
       const input = parse(forceTradeActionSchema, { tradeId, reason });
       return trades.forceCancel(input.tradeId, input.reason);
     },
+    resolve: (tradeId, ruling, reason, buyerPercent, override) =>
+      trades.resolve(tradeId, ruling, reason, buyerPercent, override),
+    injectMessage: (tradeId, message) => trades.injectMessage(tradeId, message),
+    resolutions: () => trades.resolutions(),
   },
 
   withdrawals: {
