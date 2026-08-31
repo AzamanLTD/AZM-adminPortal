@@ -1,69 +1,50 @@
+import { z } from 'zod';
+
 /**
- * Canonical client-side contracts for Admin financial API boundaries.
- *
- * This file intentionally contains only shapes established by the existing
- * Admin API call sites and Backend force-release contract. Endpoint-specific
- * response models are introduced incrementally as their consumers are audited.
+ * Canonical request contracts for Admin financial actions.
+ * These schemas describe fields already sent by the existing Admin API layer.
+ * Response schemas are intentionally deferred until their consumers are
+ * audited against the Backend controllers, avoiding invented contracts.
  */
 
-/** @typedef {'DISPUTED'|'PAID'|'COMPLETED'|'CANCELLED'} TradeStatus */
+export const tradeIdSchema = z.union([
+  z.string().min(1),
+  z.number().int().positive(),
+]);
+
+export const reasonSchema = z.object({
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
+export const forceTradeActionSchema = z.object({
+  tradeId: tradeIdSchema,
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
+export const forceReleaseSchema = forceTradeActionSchema;
+
+export const adminCreditSchema = z.object({
+  amount: z.union([z.number().finite(), z.string().min(1)]),
+  reason: z.string().trim().max(2000).optional(),
+}).strict();
+
+/**
+ * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
+ * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
+ * @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput
+ * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
+ */
 
 /** @typedef {{
- *  statusCode?: number,
- *  violations?: unknown,
- *  tier?: unknown,
- *  stakedBalance?: unknown
+ * statusCode?: number,
+ * violations?: unknown,
+ * tier?: unknown,
+ * stakedBalance?: unknown
  * }} AdminApiErrorDetails */
 
-/**
- * @typedef {Error & AdminApiErrorDetails} AdminApiError
- */
-
-/** @typedef {{tradeId: number|string, reason?: string}} ForceTradeActionInput */
-
-/** @typedef {{
- *  tradeId: number|string,
- *  reason?: string,
- *  adminNotes?: string
- * }} ForceReleaseInput */
-
-/** @typedef {{
- *  success: boolean,
- *  message: string,
- *  data?: unknown
- * }} ForceTradeActionResponse */
-
-/** @typedef {{
- *  success: boolean,
- *  trades: unknown[],
- *  pagination?: unknown
- * }} LiveTradesResponse */
-
-/** @typedef {{
- *  success: boolean,
- *  message?: string,
- *  data?: unknown,
- *  pagination?: unknown
- * }} FinancialApiResponse */
-
-/** @typedef {{
- *  amount: number|string,
- *  reason?: string
- * }} AdminCreditInput */
-
-/** @typedef {{
- *  reason?: string
- * }} ReasonInput */
-
-/** @typedef {{
- *  id: number|string,
- *  amount?: number|string,
- *  status?: string,
- *  reason?: string
- * }} FinancialRecord */
+/** @typedef {Error & AdminApiErrorDetails} AdminApiError */
 
 /**
- * Runtime guard for the error contract produced by src/lib/api.js.
  * @param {unknown} error
  * @returns {error is AdminApiError}
  */
