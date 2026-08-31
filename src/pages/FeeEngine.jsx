@@ -208,7 +208,7 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
   // Calculate projected revenue with new fees
   // Current p2p fee vs new p2p fee — impact on trade fee revenue
   const currentP2pFee = liveSettings.p2pFeePct;
-  const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;
+  const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;
   const feeDelta = currentP2pFee - oldP2pFee;
 
   // Estimate trade fee revenue portion
