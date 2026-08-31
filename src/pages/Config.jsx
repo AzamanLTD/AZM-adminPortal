@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { financialApi } from '@/lib/financialApi';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ export default function Config() {
   const qc = useQueryClient();
 
   const { data: vg, isError: vgError, refetch: refetchVg } = useQuery({ queryKey: ['version-gate'], queryFn: () => api.versionGate.get().catch(() => ({ minVersion: '1.0.0', updateUrl: '', message: '', _error: true })) });
-  const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => api.payouts.getSettings().catch(() => ({ threshold: 100, maxAmount: 1000, intervalHours: 24, enabled: true, _error: true })) });
+  const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => financialApi.payouts.settings().catch(() => ({ settings: { autoPayoutThresholdUsdc: 100, autoPayoutMaxAmountUsdc: 1000, autoPayoutIntervalMs: 86400000, autoPayoutEnabled: true }, pool: { balance: 0, alertThreshold: 0 }, _error: true })) });
   const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => api.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK' }, _error: true })) });
 
   const hasAnyError = vgError || poError || gsError;
@@ -44,13 +45,14 @@ export default function Config() {
   });
 
   const updateVg = useMutation({ mutationFn: (d) => api.versionGate.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['version-gate'] }); toast.success('Version gate updated'); } });
-  const updatePo = useMutation({ mutationFn: (d) => api.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); } });
+  const updatePo = useMutation({ mutationFn: (d) => financialApi.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); }, onError: (e) => toast.error(e.message || 'Failed to update payout settings') });
   const updateGs = useMutation({ mutationFn: (d) => api.settings.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['global-settings'] }); toast.success('Global settings updated'); } });
-  const batchProcess = useMutation({ mutationFn: () => api.payouts.batchProcess(), onSuccess: () => toast.success('Payout batch triggered') });
+  const batchProcess = useMutation({ mutationFn: () => financialApi.payouts.batchProcess(), onSuccess: () => toast.success('Payout batch triggered') });
 
   const vgData = { ...vg, ...vgForm };
-  const poData = { ...po, ...poForm };
+  const poData = { ...(po?.settings || {}), ...poForm };
   const gsData = { ...(gs?.settings || {}), ...gsForm };
+  const intervalHours = Number(poData.autoPayoutIntervalMs || 0) / 3600000;
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -103,33 +105,34 @@ export default function Config() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-ink-2 block mb-1">Auto-payout Threshold ($)</label>
-            <Input type="number" value={poData.threshold || ''} onChange={(e) => setPoForm((f) => ({ ...f, threshold: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+            <label className="text-xs text-ink-2 block mb-1">Auto-payout Threshold (USDC)</label>
+            <Input type="number" min="0" value={poData.autoPayoutThresholdUsdc ?? ''} onChange={(e) => setPoForm((f) => ({ ...f, autoPayoutThresholdUsdc: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
-            <label className="text-xs text-ink-2 block mb-1">Max Amount per Payout ($)</label>
-            <Input type="number" value={poData.maxAmount || ''} onChange={(e) => setPoForm((f) => ({ ...f, maxAmount: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+            <label className="text-xs text-ink-2 block mb-1">Max Amount per Payout (USDC)</label>
+            <Input type="number" min="0" value={poData.autoPayoutMaxAmountUsdc ?? ''} onChange={(e) => setPoForm((f) => ({ ...f, autoPayoutMaxAmountUsdc: parseFloat(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Interval (hours)</label>
-            <Input type="number" value={poData.intervalHours || ''} onChange={(e) => setPoForm((f) => ({ ...f, intervalHours: parseInt(e.target.value) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+            <Input type="number" min="0.0027778" step="0.1" value={intervalHours} onChange={(e) => setPoForm((f) => ({ ...f, autoPayoutIntervalMs: Math.round(parseFloat(e.target.value) * 3600000) }))} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
           </div>
           <div>
             <label className="text-xs text-ink-2 block mb-1">Enabled</label>
-            <select value={poData.enabled ? 'true' : 'false'} onChange={(e) => setPoForm((f) => ({ ...f, enabled: e.target.value === 'true' }))} className="w-full bg-[var(--f-surface-sunken)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]">
+            <select value={poData.autoPayoutEnabled ? 'true' : 'false'} onChange={(e) => setPoForm((f) => ({ ...f, autoPayoutEnabled: e.target.value === 'true' }))} className="w-full bg-[var(--f-surface-sunken)] border border-line rounded-lg px-3 py-2 text-sm text-[var(--f-text)]">
               <option value="true">Enabled</option>
               <option value="false">Disabled</option>
             </select>
           </div>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => updatePo.mutate(poData)} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)]">
-            Save Payout Settings
+          <Button onClick={() => updatePo.mutate({ autoPayoutEnabled: poData.autoPayoutEnabled, autoPayoutThresholdUsdc: poData.autoPayoutThresholdUsdc, autoPayoutMaxAmountUsdc: poData.autoPayoutMaxAmountUsdc, autoPayoutIntervalMs: poData.autoPayoutIntervalMs })} disabled={updatePo.isPending} className="bg-emerald-600 hover:bg-[var(--f-ok)] text-[var(--f-text)]">
+            {updatePo.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Payout Settings'}
           </Button>
-          <Button variant="outline" onClick={() => batchProcess.mutate()} className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
-            Trigger Batch Now
+          <Button variant="outline" onClick={() => batchProcess.mutate()} disabled={batchProcess.isPending} className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
+            {batchProcess.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Trigger Batch Now'}
           </Button>
         </div>
+        {po?.pool && <div className="grid grid-cols-2 gap-3 text-xs"><div className="rounded-lg border border-line bg-[var(--f-surface-sunken)] p-3"><span className="text-ink-3 block mb-1">Payout pool balance</span><strong className="text-[var(--f-text)]">{Number(po.pool.balance || 0).toFixed(2)} USDC</strong></div><div className="rounded-lg border border-line bg-[var(--f-surface-sunken)] p-3"><span className="text-ink-3 block mb-1">Alert threshold</span><strong className="text-[var(--f-text)]">{Number(po.pool.alertThreshold || 0).toFixed(2)} USDC</strong></div></div>}
       </div>
 
       {/* Mock KotaniPay / USDC-GHS Rate */}
