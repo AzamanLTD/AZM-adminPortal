@@ -258,7 +258,7 @@ function DisputeCard({ dispute, allDisputes }) {
       if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
       const data = err?.response?.data || err?.data || {};
       if (data.code === 'EXTREME_RULING_REQUIRES_OVERRIDE') {
-        setExtremeRulingPending({ tradeId: String(dispute.id), ruling, reason, buyerPercent: parseInt(buyerPct) });
+        setExtremeRulingPending({ tradeId: String(dispute.id), ruling, reason, buyerPercent: buyerPct });
         return;
       }
       toast.error(data.message || err.message || 'Failed to resolve dispute');
@@ -272,7 +272,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const handleResolve = () => {
-    resolve.mutate({ id: String(dispute.id), ruling, reason, buyerPercent: parseInt(buyerPct) });
+    resolve.mutate({ id: String(dispute.id), ruling, reason, buyerPercent: buyerPct });
   };
 
   const handleConfirmExtreme = () => {

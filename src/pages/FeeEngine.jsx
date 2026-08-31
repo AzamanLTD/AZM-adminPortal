@@ -7,7 +7,9 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';
 
-function pct(v) { return (parseFloat(v) * 100).toFixed(2); }
+/** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */
+
+function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
 
 function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning = '' }) {
@@ -208,7 +210,7 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
   // Calculate projected revenue with new fees
   // Current p2p fee vs new p2p fee — impact on trade fee revenue
   const currentP2pFee = liveSettings.p2pFeePct;
-  const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;
+  const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;
   const feeDelta = currentP2pFee - oldP2pFee;
 
   // Estimate trade fee revenue portion
@@ -412,9 +414,10 @@ function ChangeHistory() {
 }
 
 export default function FeeEngine() {
-  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();
-  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */
-  const serverSettings = serverSettingsRaw;
+  const globalSettings = useGlobalSettings();
+  const { isLoading } = globalSettings;
+  /** @type {AdminSettings | undefined} */
+  const serverSettings = globalSettings.data;
   const { mutate: updateSettings, isPending } = useUpdateSettings();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
