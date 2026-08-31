@@ -41,7 +41,7 @@ export function useGlobalSettings() {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data) => api.settings.update(data),
+    mutationFn: /** @param {Record<string, unknown>} data */ (data) => api.settings.update(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'settings'] }),
   });
 }
@@ -59,7 +59,7 @@ export function useFeeProfiles() {
 export function useCreateFeeProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data) => api.feeProfiles.create(data),
+    mutationFn: /** @param {Record<string, unknown>} data */ (data) => api.feeProfiles.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }),
   });
 }
@@ -67,7 +67,7 @@ export function useCreateFeeProfile() {
 export function useUpdateFeeProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }) => api.feeProfiles.update(id, data),
+    mutationFn: /** @param {{ id: string | number, [key: string]: unknown }} data */ ({ id, ...data }) => api.feeProfiles.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }),
   });
 }
@@ -75,7 +75,7 @@ export function useUpdateFeeProfile() {
 export function useDeleteFeeProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => api.feeProfiles.delete(id),
+    mutationFn: /** @param {string | number} id */ (id) => api.feeProfiles.delete(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }),
   });
 }
@@ -237,7 +237,7 @@ export function useSusuMember(userId) {
 export function useResolveSusu() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, action, notes, alertId }) => api.susuAdmin.resolve(id, action, notes, alertId),
+    mutationFn: /** @param {{ id: string | number, action: string, notes?: string, alertId?: string | number }} data */ ({ id, action, notes, alertId }) => api.susuAdmin.resolve(id, action, notes, alertId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'susu'] });
       qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] });
@@ -259,7 +259,7 @@ export function useSusuIncidents(acknowledged) {
 export function useAcknowledgeIncident() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id) => api.susuIncidents.acknowledge(id),
+    mutationFn: /** @param {string | number} id */ (id) => api.susuIncidents.acknowledge(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] }),
   });
 }
@@ -278,7 +278,7 @@ export function usePoRQueue() {
 export function usePoRApprove() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (userId) => api.proofOfResidency.approve(userId),
+    mutationFn: /** @param {string | number} userId */ (userId) => api.proofOfResidency.approve(userId),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
   });
 }
@@ -286,7 +286,7 @@ export function usePoRApprove() {
 export function usePoRReject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, reason }) => api.proofOfResidency.reject(userId, reason),
+    mutationFn: /** @param {{ userId: string | number, reason: string }} data */ ({ userId, reason }) => api.proofOfResidency.reject(userId, reason),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
   });
 }
