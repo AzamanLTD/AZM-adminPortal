@@ -20,14 +20,17 @@ export default function FeeProfiles() {
   const [showForm, setShowForm] = useState(false);
 
   const createMutation = useMutation({
+    /** @param {Record<string, unknown>} d */
     mutationFn: (d) => financialApi.fees.create(d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile created'); setShowForm(false); },
   });
   const updateMutation = useMutation({
+    /** @param {{ id: string | number, [key: string]: unknown }} data */
     mutationFn: ({ id, ...d }) => financialApi.fees.update(id, d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile updated'); setEditing(null); },
   });
   const deleteMutation = useMutation({
+    /** @param {string | number} id */
     mutationFn: (id) => financialApi.fees.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile deactivated'); },
   });
@@ -47,8 +50,8 @@ export default function FeeProfiles() {
     else createMutation.mutate(payload);
   }
 
-  const adminPct = parseFloat(form.adminSplitPct || 0);
-  const vendorPct = parseFloat(form.vendorSplitPct || 0);
+  const adminPct = parseFloat(String(form.adminSplitPct || '0'));
+  const vendorPct = parseFloat(String(form.vendorSplitPct || '0'));
   const splitValid = Math.abs(adminPct + vendorPct - 100) < 0.01;
 
   return (
