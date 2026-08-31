@@ -5,8 +5,8 @@
  * - Risk score per withdrawal (KYC, ban status, strike count, amount, trade history)
  * - Batch select + approve-all for low-risk withdrawals
  * - Detail drawer with full user context (KYC, strikes, trade history)
- * - Summary stats bar (total pending, total value, by type)
- * - Filter by type (ALL/FIAT/CRYPTO) and risk level
+ * - Summary stats bar (total pending, total value, risk breakdown)
+ * - Filter by risk level
  * - Sort by risk (highest first) by default
  *
  * Reference: Stripe payout review, Coinbase withdrawal review, Wise compliance queue
@@ -19,15 +19,10 @@ import { Button } from '@/components/forge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
   ShieldCheck, ShieldAlert, ChevronRight, X,
-  TrendingUp, User, CheckSquare, Square
+  TrendingUp, CheckSquare, Square
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
-
-const TYPE_COLORS = {
-  FIAT: 'bg-[var(--f-info-bg)] text-[var(--f-info)]',
-  CRYPTO: 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)]',
-};
 
 /* ── Risk scoring engine ───────────────────────────────────────────────── */
 function computeRiskScore(w) {
@@ -75,8 +70,8 @@ function computeRiskScore(w) {
   }
 
   // Time waiting (longer = more pressure to process)
-  const waitHours = w.requestedAt
-    ? (Date.now() - new Date(w.requestedAt).getTime()) / 36e5
+  const waitHours = w.createdAt
+    ? (Date.now() - new Date(w.createdAt).getTime()) / 36e5
     : 0;
   if (waitHours > 24) {
     score -= 5; // reduce risk slightly — they've been waiting, likely legitimate
@@ -131,11 +126,8 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           <div className="bg-[var(--f-surface-sunken)] border border-line rounded-xl p-4">
             <p className="text-xs text-ink-3 uppercase tracking-wide mb-1">Amount</p>
             <p className="text-2xl font-bold text-[var(--f-ok)]">
-              ${Number(withdrawal.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {withdrawal.currency}
+              ${Number(withdrawal.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC
             </p>
-            {withdrawal.type === 'FIAT' && (
-              <p className="text-sm text-ink-2 mt-1">≈ ₵{(Number(withdrawal.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
-            )}
           </div>
 
           {/* User info */}
@@ -206,19 +198,17 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
             <h3 className="text-xs font-semibold text-ink-2 uppercase tracking-wide">Payment Details</h3>
             <div className="bg-[var(--f-surface-sunken)] border border-line rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-3">Type</span>
-                <Tag className={`border-0 text-xs ${TYPE_COLORS[withdrawal.type] || 'bg-surface-sunken text-ink-2'}`}>
-                  {withdrawal.type}
-                </Tag>
+                <span className="text-sm text-ink-3">Method</span>
+                <span className="text-sm font-medium text-[var(--f-text)]">{withdrawal.payoutMethod || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-3">Method</span>
-                <span className="text-sm font-medium text-[var(--f-text)]">{withdrawal.method || withdrawal.wallet || '—'}</span>
+                <span className="text-sm text-ink-3">Destination</span>
+                <span className="text-sm font-medium text-[var(--f-text)] truncate ml-2">{withdrawal.destination || '—'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-ink-3">Requested</span>
                 <span className="text-sm text-ink-2">
-                  {withdrawal.requestedAt ? new Date(withdrawal.requestedAt).toLocaleString() : '—'}
+                  {withdrawal.createdAt ? new Date(withdrawal.createdAt).toLocaleString() : '—'}
                 </span>
               </div>
             </div>
@@ -259,7 +249,6 @@ export default function Withdrawals() {
   const [rejectTarget, setRejectTarget] = useState(null);
   const [detailTarget, setDetailTarget] = useState(null);
   const [selected, setSelected] = useState(new Set());
-  const [filterType, setFilterType] = useState('ALL');
   const [filterRisk, setFilterRisk] = useState('ALL');
   const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
@@ -319,19 +308,16 @@ export default function Withdrawals() {
   // Filter + sort (highest risk first)
   const filtered = useMemo(() => {
     let result = withdrawals;
-    if (filterType !== 'ALL') result = result.filter(w => w.type === filterType);
     if (filterRisk !== 'ALL') result = result.filter(w => w.risk.level === filterRisk);
     return result.sort((a, b) => b.risk.score - a.risk.score);
-  }, [withdrawals, filterType, filterRisk]);
+  }, [withdrawals, filterRisk]);
 
   // Summary stats
   const summary = useMemo(() => {
     const total = filtered.length;
     const totalValue = filtered.reduce((sum, w) => sum + (Number(w.amount) || 0), 0);
     const highRisk = filtered.filter(w => w.risk.level === 'HIGH').length;
-    const fiatCount = filtered.filter(w => w.type === 'FIAT').length;
-    const cryptoCount = filtered.filter(w => w.type === 'CRYPTO').length;
-    return { total, totalValue, highRisk, fiatCount, cryptoCount };
+    return { total, totalValue, highRisk };
   }, [filtered]);
 
   // Batch selection
@@ -423,32 +409,11 @@ export default function Withdrawals() {
           </div>
           <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-ok)]'}`}>{summary.highRisk}</p>
         </div>
-        <div className="bg-[var(--f-surface-raised)] border border-line rounded-xl p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <User className="w-3.5 h-3.5 text-[var(--f-tint-color)]" />
-            <span className="text-xs text-ink-3 uppercase">FIAT / Crypto</span>
-          </div>
-          <p className="text-xl font-bold text-[var(--f-text)]">{summary.fiatCount} <span className="text-ink-3 text-sm">/</span> {summary.cryptoCount}</p>
-        </div>
       </div>
 
       {/* Filters + batch bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          {/* Type filter */}
-          <div className="flex items-center gap-1 bg-[var(--f-surface-raised)] border border-line rounded-lg p-0.5">
-            {['ALL', 'FIAT', 'CRYPTO'].map(type => (
-              <button
-                key={type}
-                onClick={() => setFilterType(type)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  filterType === type ? 'bg-[var(--f-surface-sunken)] text-[var(--f-text)]' : 'text-ink-3 hover:text-ink-2'
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
           {/* Risk filter */}
           <div className="flex items-center gap-1 bg-[var(--f-surface-raised)] border border-line rounded-lg p-0.5">
             {['ALL', 'HIGH', 'MEDIUM', 'LOW'].map(risk => (
@@ -533,22 +498,17 @@ export default function Withdrawals() {
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-semibold text-[var(--f-text)]">{w.userName || w.user?.username || 'Unknown'}</span>
-                  <Tag className={`border-0 text-xs ${TYPE_COLORS[w.type] || 'bg-surface-sunken text-ink-2'}`}>{w.type}</Tag>
+                  <Tag className="border-0 text-xs bg-[var(--f-surface-sunken)] text-ink-2">{w.payoutMethod}</Tag>
                   <span className="text-sm font-bold text-[var(--f-ok)]">
-                    ${Number(w.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} {w.currency}
+                    ${Number(w.amount).toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC
                   </span>
-                  {w.type === 'FIAT' && (
-                    <span className="text-xs text-ink-3">
-                      ₵{(Number(w.amount) * rate).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                    </span>
-                  )}
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${riskStyle.badge} font-medium`}>
                     {w.risk.score}
                   </span>
                 </div>
                 <div className="flex gap-3 mt-1 text-xs text-ink-3">
-                  <span>{w.method || w.wallet || '—'}</span>
-                  <span>{w.requestedAt ? new Date(w.requestedAt).toLocaleString() : ''}</span>
+                  <span>{w.payoutMethod || '—'}</span>
+                  <span>{w.createdAt ? new Date(w.createdAt).toLocaleString() : ''}</span>
                   {w.user?.kycStatus !== 'VERIFIED' && (
                     <span className="text-[var(--f-warn)]">KYC: {w.user?.kycStatus || 'UNVERIFIED'}</span>
                   )}
