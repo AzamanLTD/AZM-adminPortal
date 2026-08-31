@@ -136,7 +136,7 @@ export default function Storefronts() {
                     <History className="w-4 h-4" />
                   </Button>
 
-                  <Tag variant={disabled ? 'destructive' : 'success'}>
+                  <Tag tone={disabled ? 'bad' : 'ok'}>
                     {disabled ? 'Disabled' : 'Active'}
                   </Tag>
 
@@ -221,7 +221,7 @@ export default function Storefronts() {
                     {item.url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                       <video src={item.url} controls className="w-full h-24 object-cover" />
                     ) : (
-                      <img src={item.url} alt="" className="w-full h-24 object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                      <img src={item.url} alt="" className="w-full h-24 object-cover" onError={(e) => { const image = e.currentTarget; image.style.display = 'none'; const fallback = image.nextElementSibling; if (fallback instanceof HTMLElement) fallback.style.display = 'flex'; }} />
                     )}
                     <div className="p-2 bg-surface/50">
                       <p className="text-xs text-ink-2 truncate">{item.widgetType?.replace(/_/g, ' ') || 'media'}</p>

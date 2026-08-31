@@ -175,13 +175,13 @@ export default function QrForge() {
   });
 
   const updateCampaignMut = useMutation({
-    mutationFn: ({ id, data }) => updateCampaign(id, data),
+    mutationFn: /** @param {{ id: string | number, data: Record<string, unknown> }} vars */ ({ id, data }) => updateCampaign(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['qr-campaigns'] }); toast.success('Campaign updated'); },
     onError: (e) => toast.error(e.message),
   });
 
   const deleteCampaignMut = useMutation({
-    mutationFn: deleteCampaign,
+    mutationFn: /** @param {string | number} id */ (id) => deleteCampaign(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['qr-campaigns'] }); toast.success('Campaign deleted'); },
     onError: (e) => toast.error(e.message),
   });
@@ -203,7 +203,7 @@ export default function QrForge() {
   const [editUrlValue, setEditUrlValue] = useState('');
   const [editCampaignId, setEditCampaignId] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteCampaign, setDeleteCampaign] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     if (dest && !editUrl) {
@@ -799,7 +799,7 @@ export default function QrForge() {
                       {c.isActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => {
-                      setDeleteCampaign(c);
+                      setDeleteTarget(c);
                       setDeleteOpen(true);
                     }} className="text-[var(--f-bad)] hover:text-red-300">
                       <Trash2 className="w-3.5 h-3.5" />

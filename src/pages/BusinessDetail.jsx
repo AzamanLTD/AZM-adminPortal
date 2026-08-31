@@ -12,10 +12,9 @@ import { businesses as bizApi } from '@/lib/api';
 import { Button } from '@/components/forge';
 import {
   ArrowLeft, Building2, ChevronRight, Hotel, UtensilsCrossed, Bus,
-  Users, Wallet, ReceiptText, MapPin, Globe, Star, TrendingUp,
+  Users, Wallet, ReceiptText, MapPin, Star, TrendingUp,
   Clock, CheckCircle2, XCircle, AlertTriangle, RefreshCw, BedDouble,
   ChefHat, Route, UserCog, Truck, CalendarCheck, BarChart3, Ban,
-  Package,
 } from 'lucide-react';
 
 const fmt = (n, opts = {}) =>
@@ -314,13 +313,13 @@ export default function BusinessDetail() {
 
   const biz = data?.business || data?.data || data;
   const suspendMut = useMutation({
-    mutationFn: ({ reason }) => bizApi.suspend(bizId, reason),
-    onSuccess: () => { qc.invalidateQueries(['admin-business-detail', bizId]); toast.success('Business suspended'); },
+    mutationFn: /** @param {{ reason: string }} data */ ({ reason }) => bizApi.suspend(bizId, reason),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-business-detail', bizId] }); toast.success('Business suspended'); },
     onError: (e) => toast.error(e.message || 'Failed'),
   });
   const unsuspendMut = useMutation({
     mutationFn: () => bizApi.unsuspend(bizId),
-    onSuccess: () => { qc.invalidateQueries(['admin-business-detail', bizId]); toast.success('Business reinstated'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-business-detail', bizId] }); toast.success('Business reinstated'); },
     onError: (e) => toast.error(e.message || 'Failed'),
   });
 

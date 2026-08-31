@@ -78,7 +78,7 @@ function EscrowDisputeCard({ dispute }) {
 
   const resolveMutation = useMutation({
     mutationFn: /** @param {{ ruling: string, notes: string, payerPct: number, payeePct: number }} data */ ({ ruling, notes, payerPct, payeePct }) =>
-      financialApi.escrow.resolve(dispute.id, ruling, notes, payerPct, payeePct),
+      financialApi.escrow.resolve(String(dispute.id), ruling, notes, payerPct, payeePct),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['escrow-disputes'] }); toast.success('Ruling issued — funds moved'); setExtremeModalPending(null); },
     onError: (err) => toast.error(err.message || 'Resolution failed'),
   });
