@@ -3,7 +3,7 @@ import { SlaTimer } from "@/components/forge/SlaTimer";
 import { useState, useMemo } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { financialApi } from '@/lib/financialApi';
 import { Button } from '@/components/forge';
 import { Tag } from '@/components/forge';
 import { Input } from '@/components/forge';
@@ -190,7 +190,7 @@ function DisputeCard({ dispute, allDisputes }) {
   );
 
   const forceRelease = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(String(id), reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.disputes.forceRelease(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -218,7 +218,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const forceCancel = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(String(id), reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.disputes.forceCancel(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
