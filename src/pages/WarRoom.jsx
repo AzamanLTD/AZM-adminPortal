@@ -3,6 +3,7 @@ import { SlaTimer } from "@/components/forge/SlaTimer";
 import { useState, useMemo } from 'react';
 import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { financialApi } from '@/lib/financialApi';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
 import { Tag } from '@/components/forge';
@@ -190,7 +191,7 @@ function DisputeCard({ dispute, allDisputes }) {
   );
 
   const forceRelease = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(String(id), reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.disputes.forceRelease(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -218,7 +219,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const forceCancel = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(String(id), reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.disputes.forceCancel(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -238,7 +239,7 @@ function DisputeCard({ dispute, allDisputes }) {
 
   const resolve = useMutation({
     mutationFn: /** @param {{ id: string | number, ruling: string, reason: string, buyerPercent: number, override?: boolean }} data */ ({ id, ruling, reason, buyerPercent, override }) =>
-      api.trades.resolve(String(id), ruling, reason, buyerPercent, override),
+      financialApi.disputes.resolve(id, ruling, reason, buyerPercent, override),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -266,7 +267,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const inject = useMutation({
-    mutationFn: /** @param {{ id: string | number, message: string }} data */ ({ id, message }) => api.trades.injectMessage(String(id), message),
+    mutationFn: /** @param {{ id: string | number, message: string }} data */ ({ id, message }) => financialApi.disputes.injectMessage(id, message),
     onSuccess: () => { toast.success('Message injected'); setInjectMsg(''); },
     onError: (e) => toast.error(e.message || 'Inject failed'),
   });

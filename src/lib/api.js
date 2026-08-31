@@ -165,8 +165,8 @@ export const feeProfiles = {
 export const trades = {
   live: (page = 1) => request(`/api/admin/trades/live?page=${page}`),
   disputes: (page = 1) => request(`/api/admin/disputes?page=${page}`),
-  forceRelease: (tradeId, reason) => request('/api/admin/disputes/force-release', { method: 'POST', body: JSON.stringify({ tradeId, reason }) }),
-  forceCancel: (tradeId, reason) => request('/api/admin/disputes/force-cancel', { method: 'POST', body: JSON.stringify({ tradeId, reason }) }),
+  forceRelease: (tradeId, reason) => request('/api/admin/disputes/force-release', { method: 'POST', body: JSON.stringify({ tradeId, adminNotes: reason }) }),
+  forceCancel: (tradeId, reason) => request('/api/admin/disputes/force-cancel', { method: 'POST', body: JSON.stringify({ tradeId, adminNotes: reason }) }),
   resolve: (tradeId, ruling, reason, buyerPercent, override) => request(`/api/admin/disputes/${tradeId}/resolve`, { method: 'POST', body: JSON.stringify({ ruling, reason, buyerPercent, ...(override ? { override: true } : {}) }) }),
   resolutions: () => request('/api/admin/disputes/resolutions'),
   injectMessage: (tradeId, message) => request('/api/admin/chat/inject', { method: 'POST', body: JSON.stringify({ tradeId, message }) }),
