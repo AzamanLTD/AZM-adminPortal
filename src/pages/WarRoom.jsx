@@ -190,7 +190,7 @@ function DisputeCard({ dispute, allDisputes }) {
   );
 
   const forceRelease = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(id, reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(String(id), reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -218,7 +218,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const forceCancel = useMutation({
-    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(id, reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(String(id), reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);

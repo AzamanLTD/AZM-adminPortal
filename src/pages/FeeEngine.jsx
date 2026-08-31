@@ -179,6 +179,7 @@ function WithdrawalCalculator({ settings, rate }) {
 
 
 // ─── PROJECTED REVENUE IMPACT ────────────────────────────────────────────────
+/** @param {{ form: Record<string, string | number>, dirty: boolean, liveSettings: { p2pFeePct: number, bankMargin: number, thirdPartyMargin: number, vendorShareUnder1k: number, vendorShareOver1k: number, tierThreshold: string | number, fiatWithdrawalFeePct: number, cryptoWithdrawalFeePct: number, cryptoPlatformFeePct: number } }} props */
 function ProjectedRevenue({ form, dirty, liveSettings }) {
   const { data: profitData, isLoading } = useQuery({
     queryKey: ['admin', 'profit-breakdown'],
