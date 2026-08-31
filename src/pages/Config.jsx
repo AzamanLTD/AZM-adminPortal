@@ -12,7 +12,7 @@ export default function Config() {
 
   const { data: vg, isError: vgError, refetch: refetchVg } = useQuery({ queryKey: ['version-gate'], queryFn: () => api.versionGate.get().catch(() => ({ minVersion: '1.0.0', updateUrl: '', message: '', _error: true })) });
   const { data: po, isError: poError, refetch: refetchPo } = useQuery({ queryKey: ['payout-settings'], queryFn: () => financialApi.payouts.settings().catch(() => ({ settings: { autoPayoutThresholdUsdc: 100, autoPayoutMaxAmountUsdc: 1000, autoPayoutIntervalMs: 86400000, autoPayoutEnabled: true }, pool: { balance: 0, alertThreshold: 0 }, _error: true })) });
-  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK' }, _error: true })) });
+  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true })) });
 
   const hasAnyError = vgError || poError || gsError;
 
@@ -33,20 +33,20 @@ export default function Config() {
   });
 
   const verify2FA = useMutation({
-    mutationFn: (token) => api.twoFactor.verify(token),
+    mutationFn: /** @param {string} token */ (token) => api.twoFactor.verify(token),
     onSuccess: () => { setTwoFASetup(null); setTwoFAToken(''); refetch2FA(); qc.invalidateQueries({ queryKey: ['2fa', 'status'] }); toast.success('2FA enabled successfully'); },
     onError: (e) => toast.error(e.message || 'Invalid token'),
   });
 
   const disable2FA = useMutation({
-    mutationFn: (token) => api.twoFactor.disable(token),
+    mutationFn: /** @param {string} token */ (token) => api.twoFactor.disable(token),
     onSuccess: () => { setTwoFADisableToken(''); refetch2FA(); qc.invalidateQueries({ queryKey: ['2fa', 'status'] }); toast.success('2FA disabled'); },
     onError: (e) => toast.error(e.message || 'Invalid token'),
   });
 
-  const updateVg = useMutation({ mutationFn: (d) => api.versionGate.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['version-gate'] }); toast.success('Version gate updated'); } });
-  const updatePo = useMutation({ mutationFn: (d) => financialApi.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); }, onError: (e) => toast.error(e.message || 'Failed to update payout settings') });
-  const updateGs = useMutation({ mutationFn: (d) => financialApi.settings.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['global-settings'] }); toast.success('Global settings updated'); } });
+  const updateVg = useMutation({ mutationFn: /** @param {{ minVersion?: string, updateUrl?: string, message?: string }} d */ (d) => api.versionGate.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['version-gate'] }); toast.success('Version gate updated'); } });
+  const updatePo = useMutation({ mutationFn: /** @param {{ autoPayoutEnabled?: boolean, autoPayoutThresholdUsdc?: number, autoPayoutMaxAmountUsdc?: number, autoPayoutIntervalMs?: number }} d */ (d) => financialApi.payouts.updateSettings(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-settings'] }); toast.success('Payout settings updated'); }, onError: (e) => toast.error(e.message || 'Failed to update payout settings') });
+  const updateGs = useMutation({ mutationFn: /** @param {{ liveUsdToGhs?: number, liveRateSource?: string, susuProfitPct?: number }} d */ (d) => financialApi.settings.update(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['global-settings'] }); toast.success('Global settings updated'); } });
   const batchProcess = useMutation({ mutationFn: () => financialApi.payouts.batchProcess(), onSuccess: () => toast.success('Payout batch triggered') });
 
   const vgData = { ...vg, ...vgForm };
@@ -65,9 +65,9 @@ export default function Config() {
         <div className="bg-[var(--f-warn-bg)] border border-amber-500/30 rounded-xl p-3 flex items-center gap-3 text-sm">
           <span className="text-[var(--f-warn)]">⚠ Some settings failed to load. Values shown may be defaults.</span>
           <div className="flex gap-2 ml-auto">
-            {vgError && <Button variant="ghost" size="sm" onClick={refetchVg} className="h-7 text-xs">Retry VG</Button>}
-            {poError && <Button variant="ghost" size="sm" onClick={refetchPo} className="h-7 text-xs">Retry PO</Button>}
-            {gsError && <Button variant="ghost" size="sm" onClick={refetchGs} className="h-7 text-xs">Retry GS</Button>}
+            {vgError && <Button variant="ghost" size="sm" onClick={() => refetchVg()} className="h-7 text-xs">Retry VG</Button>}
+            {poError && <Button variant="ghost" size="sm" onClick={() => refetchPo()} className="h-7 text-xs">Retry PO</Button>}
+            {gsError && <Button variant="ghost" size="sm" onClick={() => refetchGs()} className="h-7 text-xs">Retry GS</Button>}
           </div>
         </div>
       )}

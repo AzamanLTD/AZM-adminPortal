@@ -27,8 +27,8 @@ export const financialApi = {
   profitBreakdown: () => admin.profitBreakdown(),
 
   settings: {
-    get: async () => parse(adminSettingsResponseSchema, await settings.get()),
-    update: (data) => settings.update(parse(adminSettingsUpdateSchema, data)),
+    get: /** @returns {Promise<import('./settingsTypes').AdminSettingsResponse>} */ async () => parse(adminSettingsResponseSchema, await settings.get()),
+    update: /** @param {import('./settingsTypes').AdminSettingsUpdate} data */ (data) => settings.update(parse(adminSettingsUpdateSchema, data)),
   },
 
   fees: {

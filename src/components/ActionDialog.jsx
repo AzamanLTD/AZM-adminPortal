@@ -21,6 +21,20 @@ import { AlertTriangle } from 'lucide-react';
  *   inputType: 'text' | 'textarea' | 'select'
  *   options: [{ value, label }] (only for inputType='select')
  */
+/** @param {{
+ * open: boolean,
+ * title?: string,
+ * label?: string,
+ * placeholder?: string,
+ * confirmLabel?: string,
+ * variant?: 'default' | 'destructive',
+ * onConfirm: (value: string) => void,
+ * onCancel: () => void,
+ * isPending?: boolean,
+ * inputType?: 'text' | 'textarea' | 'select',
+ * options?: Array<{ value: string, label: string }>,
+ * defaultValue?: string
+ * }} props */
 export default function ActionDialog({
   open,
   title,

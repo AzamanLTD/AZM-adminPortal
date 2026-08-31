@@ -5,9 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businesses as bizApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button, Input, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle, Tag } from '@/components/forge';
-import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye, Hotel, UtensilsCrossed, Bus, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button, Input, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/forge';
+import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye, Hotel, UtensilsCrossed, Bus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const KYB_COLORS = {
@@ -102,12 +101,12 @@ export default function Businesses() {
   const totalPages = data?.pagination?.totalPages || 1;
 
   const suspendMutation = useMutation({
-    mutationFn: ({ bizId, reason }) => bizApi.suspend(bizId, reason),
+    mutationFn: /** @param {{ bizId: string | number, reason: string }} data */ ({ bizId, reason }) => bizApi.suspend(bizId, reason),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-businesses'] }); toast.success('Business suspended'); setSuspendTarget(null); setSuspendReason(''); },
     onError: (e) => toast.error(e.message || 'Suspend failed'),
   });
   const unsuspendMutation = useMutation({
-    mutationFn: (bizId) => bizApi.unsuspend(bizId),
+    mutationFn: /** @param {string | number} bizId */ (bizId) => bizApi.unsuspend(bizId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-businesses'] }); toast.success('Business unsuspended'); },
     onError: (e) => toast.error(e.message || 'Unsuspend failed'),
   });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalSettings, useUpdateSettings, useStats } from '@/lib/useAdminData';
-import { Button } from '@/components/forge';
+import { Button, ConfirmDestructive } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -10,7 +10,7 @@ import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarCha
 function pct(v) { return (parseFloat(v) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
 
-function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning }) {
+function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning = '' }) {
   return (
     <div className="flex items-start gap-4 py-4 border-b border-line last:border-0">
       <div className="flex-1 min-w-0">
@@ -30,15 +30,6 @@ function SettingRow({ label, description, value, onChange, min = 0, max = 100, u
         />
         <span className="text-sm text-ink-2">{unit}</span>
       </div>
-      <ConfirmDialog
-        open={!!removeKey}
-        title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
-        confirmLabel="Remove"
-        variant="destructive"
-        onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
-      />
     </div>
   );
 }
@@ -121,15 +112,6 @@ function P2PCalculator({ settings, rate }) {
           <p className="text-xs text-ink-3">GHS {(totalPlatform * rate).toFixed(2)}</p>
         </div>
       </div>
-      <ConfirmDialog
-        open={!!removeKey}
-        title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
-        confirmLabel="Remove"
-        variant="destructive"
-        onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
-      />
     </div>
   );
 }
@@ -191,15 +173,6 @@ function WithdrawalCalculator({ settings, rate }) {
       {type === 'crypto' && cryptoPlatform === 0 && (
         <p className="text-xs text-[var(--f-warn)]">Platform crypto fee is 0% — you only earn gas. Set a platform fee below if desired.</p>
       )}
-      <ConfirmDialog
-        open={!!removeKey}
-        title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
-        confirmLabel="Remove"
-        variant="destructive"
-        onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
-      />
     </div>
   );
 }
@@ -438,7 +411,9 @@ function ChangeHistory() {
 }
 
 export default function FeeEngine() {
-  const { data: serverSettings, isLoading } = useGlobalSettings();
+  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();
+  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */
+  const serverSettings = serverSettingsRaw;
   const { mutate: updateSettings, isPending } = useUpdateSettings();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
@@ -607,15 +582,6 @@ export default function FeeEngine() {
 
       {/* Payment Methods Management */}
       <PaymentMethodsManager settings={serverSettings} onSave={(data) => updateSettings(data, { onSuccess: () => toast.success('Payment methods updated'), onError: (e) => toast.error(e.message) })} />
-      <ConfirmDialog
-        open={!!removeKey}
-        title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
-        confirmLabel="Remove"
-        variant="destructive"
-        onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
-      />
 
       {/* Projected Revenue Impact */}
       <ProjectedRevenue form={form} dirty={dirty} liveSettings={liveSettings} />
@@ -778,14 +744,14 @@ function PaymentMethodsManager({ settings, onSave }) {
           </div>
         </div>
       )}
-      <ConfirmDialog
+      <ConfirmDestructive
         open={!!removeKey}
         title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
         confirmLabel="Remove"
-        variant="destructive"
+        loading={false}
         onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
+        onClose={() => setRemoveKey(null)}
       />
     </div>
   );

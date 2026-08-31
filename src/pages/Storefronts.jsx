@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { storefronts as sfApi } from '@/lib/api';
 import { Button } from '@/components/forge';
+import { Tag } from '@/components/forge';
 import StatCard from '@/components/admin/StatCard';
 import { Store, ChevronLeft, ChevronRight, Lock, Unlock, History, Image as ImageIcon, X, RotateCcw, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,7 +21,7 @@ export default function Storefronts() {
   });
 
   const disableMutation = useMutation({
-    mutationFn: sfApi.disable,
+    mutationFn: /** @param {string | number} businessProfileId */ (businessProfileId) => sfApi.disable(businessProfileId),
     onSuccess: () => {
       toast.success('Storefront disabled');
       queryClient.invalidateQueries({ queryKey: ['admin-storefronts'] });
@@ -29,7 +30,7 @@ export default function Storefronts() {
   });
 
   const enableMutation = useMutation({
-    mutationFn: sfApi.enable,
+    mutationFn: /** @param {string | number} businessProfileId */ (businessProfileId) => sfApi.enable(businessProfileId),
     onSuccess: () => {
       toast.success('Storefront enabled');
       queryClient.invalidateQueries({ queryKey: ['admin-storefronts'] });
@@ -38,7 +39,7 @@ export default function Storefronts() {
   });
 
   const revertMutation = useMutation({
-    mutationFn: ({ businessProfileId, versionId }) => sfApi.revert(businessProfileId, versionId),
+    mutationFn: /** @param {{ businessProfileId: string | number, versionId: string | number }} data */ ({ businessProfileId, versionId }) => sfApi.revert(businessProfileId, versionId),
     onSuccess: () => {
       toast.success('Storefront force-reverted');
       setRevertTarget(null);
@@ -135,7 +136,7 @@ export default function Storefronts() {
                     <History className="w-4 h-4" />
                   </Button>
 
-                  <Tag variant={disabled ? 'destructive' : 'success'}>
+                  <Tag tone={disabled ? 'bad' : 'ok'}>
                     {disabled ? 'Disabled' : 'Active'}
                   </Tag>
 
@@ -220,7 +221,7 @@ export default function Storefronts() {
                     {item.url.match(/\.(mp4|mov|avi|webm)$/i) ? (
                       <video src={item.url} controls className="w-full h-24 object-cover" />
                     ) : (
-                      <img src={item.url} alt="" className="w-full h-24 object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                      <img src={item.url} alt="" className="w-full h-24 object-cover" onError={(e) => { const image = e.currentTarget; image.style.display = 'none'; const fallback = image.nextElementSibling; if (fallback instanceof HTMLElement) fallback.style.display = 'flex'; }} />
                     )}
                     <div className="p-2 bg-surface/50">
                       <p className="text-xs text-ink-2 truncate">{item.widgetType?.replace(/_/g, ' ') || 'media'}</p>

@@ -11,12 +11,10 @@ import {
 import { Button } from '@/components/forge';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area,
 } from 'recharts';
 import {
-  TrendingUp, Users, Activity, AlertTriangle, Wallet, ShieldCheck,
-  Clock, Server, Lock, Building2, CheckCircle, ArrowRight, RefreshCw,
-  TrendingDown, Zap, Radio, Shield, FileCheck, ReceiptText, ArrowUpRight,
+  TrendingUp, Users, Activity, AlertTriangle, Wallet, ShieldCheck, Lock, Building2, CheckCircle, ArrowRight, RefreshCw,
+  TrendingDown, Zap, Radio, Shield, FileCheck, ArrowUpRight,
 } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,6 +47,7 @@ function useTokenVar(name, fallback) {
 const TIME_RANGES = ['24h','7d','30d','90d'];
 
 // ── Chart tooltip ─────────────────────────────────────────────────────────────
+/** @param {{ active?: boolean, payload?: Array<{ color?: string, fill?: string, name?: string, value?: number | string }>, label?: string }} props */
 function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
@@ -67,6 +66,7 @@ function ChartTip({ active, payload, label }) {
 }
 
 // ── KPI Tile — the orange accent stat card ─────────────────────────────────
+/** @param {{ label: string, value: string | number, sub?: string, icon?: any, accent?: boolean, trend?: 'up' | 'down', loading?: boolean, onClick?: () => void }} props */
 function KpiTile({ label, value, sub, icon: Icon, accent = false, trend, loading = false, onClick }) {
   if (loading) return (
     <div className="az-stat-card space-y-3">
@@ -221,7 +221,7 @@ export default function Dashboard() {
             </span>
           </div>
           <PillTabs value={range} onChange={setRange} options={TIME_RANGES} />
-          <button onClick={refetch} className="f-icon-btn">
+          <button onClick={() => refetch()} className="f-icon-btn">
             <RefreshCw className="h-4 w-4" />
           </button>
         </div>

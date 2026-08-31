@@ -5,6 +5,7 @@ import { useDisputes } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
+import { Tag } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Textarea } from '@/components/forge';
 import {
@@ -189,7 +190,7 @@ function DisputeCard({ dispute, allDisputes }) {
   );
 
   const forceRelease = useMutation({
-    mutationFn: ({ id, reason }) => api.trades.forceRelease(id, reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -200,6 +201,7 @@ function DisputeCard({ dispute, allDisputes }) {
       return { prev };
     },
     onSuccess: () => { toast.success('Escrow released to buyer'); qc.invalidateQueries({ queryKey: ['admin', 'disputes'] }); },
+    /** @param {Error & { statusCode?: number }} e */
     onError: async (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
       if (e?.statusCode === 409) {
@@ -216,7 +218,7 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const forceCancel = useMutation({
-    mutationFn: ({ id, reason }) => api.trades.forceCancel(id, reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -227,6 +229,7 @@ function DisputeCard({ dispute, allDisputes }) {
       return { prev };
     },
     onSuccess: () => { toast.success('Trade cancelled, escrow returned to vendor'); qc.invalidateQueries({ queryKey: ['admin', 'disputes'] }); },
+    /** @param {Error & { statusCode?: number }} e */
     onError: (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
       toast.error(e.message || 'Force cancel failed');
@@ -234,8 +237,8 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const resolve = useMutation({
-    mutationFn: ({ id, ruling, reason, buyerPercent, override }) =>
-      api.trades.resolve(id, ruling, reason, buyerPercent, override),
+    mutationFn: /** @param {{ id: string | number, ruling: string, reason: string, buyerPercent: number, override?: boolean }} data */ ({ id, ruling, reason, buyerPercent, override }) =>
+      api.trades.resolve(String(id), ruling, reason, buyerPercent, override),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'disputes'] });
       const prev = qc.getQueryData(['admin', 'disputes']);
@@ -250,6 +253,7 @@ function DisputeCard({ dispute, allDisputes }) {
       setExtremeRulingPending(null);
       qc.invalidateQueries({ queryKey: ['admin', 'disputes'] });
     },
+    /** @param {Error & { response?: { data?: any }, data?: any }} err */
     onError: (err, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
       const data = err?.response?.data || err?.data || {};
@@ -262,13 +266,13 @@ function DisputeCard({ dispute, allDisputes }) {
   });
 
   const inject = useMutation({
-    mutationFn: ({ id, message }) => api.trades.injectMessage(id, message),
+    mutationFn: /** @param {{ id: string | number, message: string }} data */ ({ id, message }) => api.trades.injectMessage(String(id), message),
     onSuccess: () => { toast.success('Message injected'); setInjectMsg(''); },
     onError: (e) => toast.error(e.message || 'Inject failed'),
   });
 
   const handleResolve = () => {
-    resolve.mutate({ id: dispute.id, ruling, reason, buyerPercent: parseInt(buyerPct) });
+    resolve.mutate({ id: String(dispute.id), ruling, reason, buyerPercent: parseInt(buyerPct) });
   };
 
   const handleConfirmExtreme = () => {

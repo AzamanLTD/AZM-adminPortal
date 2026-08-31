@@ -38,7 +38,7 @@ function timeAgo(d) {
   return `${Math.floor(months / 12)}y ago`;
 }
 
-function StatTile({ label, value, icon: Icon, color }) {
+function StatTile({ label, value, icon: Icon, color = '' }) {
   return (
     <div className="bg-surface rounded-xl p-3 border border-line/50">
       <div className="flex items-center gap-2 mb-1">

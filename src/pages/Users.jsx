@@ -5,6 +5,7 @@ import { useUsers } from '@/lib/useAdminData';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { Button } from '@/components/forge';
+import { Tag } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Search, ShieldCheck, ShieldX, UserX, UserCheck, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,12 +14,12 @@ import ActionDialog from '@/components/ActionDialog';
 const KYC_COLORS = { VERIFIED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]', PENDING: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)]', REJECTED: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]', NONE: 'bg-surface-sunken text-ink-2' };
 const RISK_COLORS = { STANDARD: 'bg-surface-sunken text-ink-2', TRUSTED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]', HIGH_RISK: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' };
 
-function KYCPanel({ userId }) {
+function KYCPanel() {
   const { data, isLoading } = useQuery({ queryKey: ['kyc', 'pending'], queryFn: () => api.kyc.pending() });
   const pending = data?.applications || data || [];
   const qc = useQueryClient();
-  const approve = useMutation({ mutationFn: (id) => api.kyc.approve(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC approved'); }, onError: (e) => toast.error(e.message || 'Failed to approve KYC') });
-  const reject = useMutation({ mutationFn: ({ id, reason }) => api.kyc.reject(id, reason), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC rejected'); }, onError: (e) => toast.error(e.message || 'Failed to reject KYC') });
+  const approve = useMutation({ mutationFn: /** @param {string | number} id */ (id) => api.kyc.approve(id), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC approved'); }, onError: (e) => toast.error(e.message || 'Failed to approve KYC') });
+  const reject = useMutation({ mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.kyc.reject(id, reason), onSuccess: () => { qc.invalidateQueries({ queryKey: ['kyc'] }); toast.success('KYC rejected'); }, onError: (e) => toast.error(e.message || 'Failed to reject KYC') });
 
   const [rejectDialog, setRejectDialog] = useState(null);
 
@@ -78,22 +79,22 @@ export default function Users() {
   const qc = useQueryClient();
 
   const banUser = useMutation({
-    mutationFn: ({ id, duration }) => api.users.ban(id, duration),
+    mutationFn: /** @param {{ id: string | number, duration: string }} data */ ({ id, duration }) => api.users.ban(id, duration),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('User banned'); },
     onError: (e) => toast.error(e.message || 'Failed to ban user'),
   });
   const changeRole = useMutation({
-    mutationFn: ({ id, role }) => api.users.changeRole(id, role),
+    mutationFn: /** @param {{ id: string | number, role: string }} data */ ({ id, role }) => api.users.changeRole(id, role),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Role updated'); },
     onError: (e) => toast.error(e.message || 'Failed to update role'),
   });
   const setRisk = useMutation({
-    mutationFn: ({ id, tier }) => api.users.setRiskTier(id, tier),
+    mutationFn: /** @param {{ id: string | number, tier: string }} data */ ({ id, tier }) => api.users.setRiskTier(id, tier),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Risk tier updated'); },
     onError: (e) => toast.error(e.message || 'Failed to update risk tier'),
   });
   const creditUser = useMutation({
-    mutationFn: ({ id, amount }) => api.users.credit(id, amount),
+    mutationFn: /** @param {{ id: string | number, amount: number }} data */ ({ id, amount }) => api.users.credit(id, amount),
     onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success(data.message || 'Balance credited'); },
     onError: (e) => toast.error(e.message),
   });
@@ -247,7 +248,7 @@ function VendorPanel() {
   const apps = data?.applications || data || [];
   const qc = useQueryClient();
   const review = useMutation({
-    mutationFn: ({ id, action, reason }) => api.vendors.review(id, action, reason),
+    mutationFn: /** @param {{ id: string | number, action: string, reason: string }} data */ ({ id, action, reason }) => api.vendors.review(id, action, reason),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['vendor'] }); toast.success('Vendor application reviewed'); },
     onError: (e) => toast.error(e.message || 'Failed to review application'),
   });
@@ -295,12 +296,12 @@ function TradeAccountsPanel() {
   const accounts = data?.accounts || data || [];
   const qc = useQueryClient();
   const reject = useMutation({
-    mutationFn: ({ id, reason }) => api.users.reviewTradeAccount(id, 'REJECT', reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.users.reviewTradeAccount(id, 'REJECT', reason),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account rejected'); },
     onError: (e) => toast.error(e.message || 'Failed to reject'),
   });
   const approve = useMutation({
-    mutationFn: ({ id }) => api.users.reviewTradeAccount(id, 'APPROVE'),
+    mutationFn: /** @param {{ id: string | number }} data */ ({ id }) => api.users.reviewTradeAccount(id, 'APPROVE'),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'trade-accounts'] }); toast.success('Trade account approved'); },
     onError: (e) => toast.error(e.message || 'Failed to approve'),
   });
