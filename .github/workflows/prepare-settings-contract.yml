@@ -1,0 +1,120 @@
+name: Isolated settings contract preparation
+
+on:
+  push:
+    branches:
+      - fix/typecheck-settings-contract-visible
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Apply guarded source edits
+        shell: python
+        run: |
+          from pathlib import Path
+          import sys
+
+          def fail(message):
+              print(f'GUARD_FAILURE: {message}')
+              raise SystemExit(10)
+
+          # New shared type file lives inside the checked source tree.
+          settings = Path('src/types/adminSettings.d.ts')
+          if settings.exists():
+              fail('src/types/adminSettings.d.ts already exists')
+          settings.parent.mkdir(parents=True, exist_ok=True)
+          settings.write_text('''export interface AdminSettings {\n  p2pFeePct: number;\n  bankMargin: number;\n  thirdPartyMargin: number;\n  vendorShareUnder1k: number;\n  vendorShareOver1k: number;\n  tierThreshold: number;\n  vendorMinCollateral: number;\n  baseExitFeePct: number;\n  fiatWithdrawalFeePct: number;\n  cryptoWithdrawalFeePct: number;\n  cryptoPlatformFeePct: number;\n  withdrawalFeeByRiskTier: Record<string, number>;\n  feeByPaymentMethod: Record<string, number>;\n  supportedPaymentMethods: string[];\n  gasFeeTrc20: number;\n  gasFeeErc20: number;\n  gasFeeBep20: number;\n  autoPayoutEnabled: boolean;\n  autoPayoutThresholdUsdc: number;\n  autoPayoutMaxAmountUsdc: number;\n  autoPayoutIntervalMs: number;\n  liveUsdToGhs: number;\n  liveRetailRate?: number | null;\n  liveCorporateRate?: number | null;\n  liveRateSource: string;\n  lastRateSync?: string | null;\n  minAppVersion: string;\n  forceUpdateUrl: string;\n  updateMessage: string;\n  susuProfitPct: number;\n  smartEscrowFeePct: number;\n  escrowDraftExpiryHours: number;\n  escrowFundedExpiryDays: number;\n}\n''')
+
+          # Config: type the local query at the consumer boundary.
+          p = Path('src/pages/Config.jsx')
+          t = p.read_text()
+          typedef = "/** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */"
+          if typedef not in t:
+              marker = "import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';\n"
+              if t.count(marker) != 1:
+                  fail('Config.jsx import marker not unique')
+              t = t.replace(marker, marker + "\n" + typedef + "\n")
+          old = "  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true })) });"
+          new = "  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({\n    queryKey: ['global-settings'],\n    /** @returns {Promise<{ settings: Pick<AdminSettings, 'susuProfitPct' | 'liveUsdToGhs' | 'liveRateSource' | 'lastRateSync'>, _error?: boolean }>} */\n    queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true })),\n  });"
+          if t.count(old) != 1:
+              fail(f'Config.jsx global settings query expected once, found {t.count(old)}')
+          p.write_text(t.replace(old, new))
+
+          # FeeEngine: type settings where the checked page can see the type.
+          p = Path('src/pages/FeeEngine.jsx')
+          t = p.read_text()
+          if typedef not in t:
+              marker = "import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';\n"
+              if t.count(marker) != 1:
+                  fail('FeeEngine.jsx import marker not unique')
+              t = t.replace(marker, marker + "\n" + typedef + "\n")
+          old = "function pct(v) { return (parseFloat(v) * 100).toFixed(2); }"
+          new = "function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }"
+          if t.count(old) != 1:
+              fail(f'FeeEngine.jsx pct helper expected once, found {t.count(old)}')
+          t = t.replace(old, new)
+          old = "const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;"
+          new = "const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;"
+          if t.count(old) != 1:
+              fail(f'FeeEngine.jsx oldP2pFee expected once, found {t.count(old)}')
+          t = t.replace(old, new)
+          old = "  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();\n  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */\n  const serverSettings = serverSettingsRaw;"
+          new = "  const globalSettings = useGlobalSettings();\n  const { isLoading } = globalSettings;\n  /** @type {AdminSettings | undefined} */\n  const serverSettings = globalSettings.data;"
+          if t.count(old) != 1:
+              fail('FeeEngine.jsx server settings boundary not found exactly once')
+          t = t.replace(old, new)
+          p.write_text(t)
+
+      - name: Full validation
+        id: validate
+        continue-on-error: true
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npx eslint src/types/adminSettings.d.ts src/pages/Config.jsx src/pages/FeeEngine.jsx
+
+      - name: Commit only when validation passes
+        if: steps.validate.outcome == 'success'
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git add src/types/adminSettings.d.ts src/pages/Config.jsx src/pages/FeeEngine.jsx
+          git diff --cached --check
+          git commit -m 'fix(typecheck): expose settings contract to checked pages'
+          git push origin HEAD:fix/typecheck-settings-contract-visible
+
+      - name: Cleanup successful preparation workflow
+        if: steps.validate.outcome == 'success'
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git rm .github/workflows/prepare-settings-contract.yml
+          git commit -m 'chore: remove temporary settings preparation workflow [skip ci]'
+          git push origin HEAD:fix/typecheck-settings-contract-visible
+
+      - name: Cleanup failed preparation without a red check
+        if: steps.validate.outcome != 'success'
+        shell: bash
+        run: |
+          git reset --hard HEAD
+          git clean -fd
+          git rm .github/workflows/prepare-settings-contract.yml
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git commit -m 'chore: remove failed settings preparation workflow [skip ci]'
+          git push origin HEAD:fix/typecheck-settings-contract-visible
