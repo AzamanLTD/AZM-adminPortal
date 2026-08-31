@@ -10,6 +10,7 @@ import {
   ChevronDown, ChevronUp, ExternalLink, Wallet, Swords, PiggyBank,
   ShieldCheck, Store, Home, Server, Circle,
 } from 'lucide-react';
+import { Tag } from '@/components/forge';
 
 const SOURCE_META = {
   WITHDRAWAL: { label: 'Withdrawal', icon: Wallet,      color: 'bg-[var(--f-info-bg)] text-[var(--f-info)]' },
