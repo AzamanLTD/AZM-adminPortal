@@ -208,10 +208,10 @@ export const payoutSettingsUpdateSchema = z.object({
 /** @typedef {Error & AdminApiErrorDetails} AdminApiError */
 
 export function isAdminApiError(error) {
-  return error instanceof Error && (
-    typeof error.statusCode === 'number' ||
-    'violations' in error ||
-    'tier' in error ||
-    'stakedBalance' in error
-  );
+  if (!(error instanceof Error)) return false;
+  const details = /** @type {AdminApiErrorDetails} */ (error);
+  return typeof details.statusCode === 'number' ||
+    'violations' in details ||
+    'tier' in details ||
+    'stakedBalance' in details;
 }
