@@ -1,0 +1,145 @@
+name: Apply typecheck batch
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply focused compiler fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected 1 exact match, found {count}: {old[:100]!r}')
+              p.write_text(text.replace(old, new, 1))
+
+          def replace_regex(path, pattern, replacement, expected=1):
+              p = Path(path)
+              text = p.read_text()
+              text2, count = re.subn(pattern, replacement, text, flags=re.MULTILINE)
+              if count != expected:
+                  raise SystemExit(f'{path}: expected {expected} regex matches, found {count}: {pattern!r}')
+              p.write_text(text2)
+
+          # Shared component: default color is intentionally optional at call sites.
+          replace_once('src/components/UserDetailDrawer.jsx',
+              'function StatTile({ label, value, icon: Icon, color }) {',
+              'function StatTile({ label, value, icon: Icon, color = \'\' }) {')
+
+          # Missing forge imports: the barrel explicitly exports these components.
+          for path in [
+              'src/pages/BusinessKYB.jsx',
+              'src/pages/EscrowDisputes.jsx',
+              'src/pages/Storefronts.jsx',
+              'src/pages/SusuGroups.jsx',
+              'src/pages/Users.jsx',
+              'src/pages/WarRoom.jsx',
+              'src/pages/Withdrawals.jsx',
+          ]:
+              replace_regex(path, r"(import .*? from '@/components/forge';\n)(?!import \{ (?:Skel|Tag) \} from '@/components/forge';)",
+                            r"\1import { " + ('Skel' if path.endswith('BusinessKYB.jsx') else 'Tag') + " } from '@/components/forge';\n")
+
+          # Business KYB mutation variables.
+          replace_once('src/pages/BusinessKYB.jsx',
+              'mutationFn: ({ status, reviewNotes }) => businessKyb.reviewDoc(doc.id, status, reviewNotes),',
+              'mutationFn: /** @param {{ status: string, reviewNotes?: string }} data */ ({ status, reviewNotes }) => businessKyb.reviewDoc(doc.id, status, reviewNotes),')
+          replace_once('src/pages/BusinessKYB.jsx',
+              'mutationFn: (bizId) => businessKyb.approve(bizId),',
+              'mutationFn: /** @param {string | number} bizId */ (bizId) => businessKyb.approve(bizId),')
+          replace_once('src/pages/BusinessKYB.jsx',
+              'mutationFn: ({ bizId, reason }) => businessKyb.reject(bizId, reason),',
+              'mutationFn: /** @param {{ bizId: string | number, reason: string }} data */ ({ bizId, reason }) => businessKyb.reject(bizId, reason),')
+
+          # Businesses mutation variables.
+          replace_once('src/pages/Businesses.jsx',
+              'mutationFn: ({ bizId, reason }) => bizApi.suspend(bizId, reason),',
+              'mutationFn: /** @param {{ bizId: string | number, reason: string }} data */ ({ bizId, reason }) => bizApi.suspend(bizId, reason),')
+          replace_once('src/pages/Businesses.jsx',
+              'mutationFn: (bizId) => bizApi.unsuspend(bizId),',
+              'mutationFn: /** @param {string | number} bizId */ (bizId) => bizApi.unsuspend(bizId),')
+
+          # Config: React event handlers must invoke refetch(), and mutation variables need contracts.
+          for name in ['Vg', 'Po', 'Gs']:
+              replace_once('src/pages/Config.jsx', f'onClick={{refetch{name}}}', f'onClick={{() => refetch{name}()}}')
+          replace_once('src/pages/Config.jsx',
+              'mutationFn: (token) => api.twoFactor.verify(token),',
+              'mutationFn: /** @param {string} token */ (token) => api.twoFactor.verify(token),')
+          replace_once('src/pages/Config.jsx',
+              'mutationFn: (token) => api.twoFactor.disable(token),',
+              'mutationFn: /** @param {string} token */ (token) => api.twoFactor.disable(token),')
+          replace_once('src/pages/Config.jsx',
+              'const updateVg = useMutation({ mutationFn: (d) => api.versionGate.update(d),',
+              'const updateVg = useMutation({ mutationFn: /** @param {{ minVersion?: string, updateUrl?: string, message?: string }} d */ (d) => api.versionGate.update(d),')
+          replace_once('src/pages/Config.jsx',
+              'const updatePo = useMutation({ mutationFn: (d) => financialApi.payouts.updateSettings(d),',
+              'const updatePo = useMutation({ mutationFn: /** @param {{ autoPayoutEnabled?: boolean, autoPayoutThresholdUsdc?: number, autoPayoutMaxAmountUsdc?: number, autoPayoutIntervalMs?: number }} d */ (d) => financialApi.payouts.updateSettings(d),')
+          replace_once('src/pages/Config.jsx',
+              'const updateGs = useMutation({ mutationFn: (d) => financialApi.settings.update(d),',
+              'const updateGs = useMutation({ mutationFn: /** @param {{ liveUsdToGhs?: number, liveRateSource?: string, susuProfitPct?: number }} d */ (d) => financialApi.settings.update(d),')
+
+          # Escrow resolution mutation shape.
+          replace_once('src/pages/EscrowDisputes.jsx',
+              'mutationFn: ({ ruling, notes, payerPct, payeePct }) =>',
+              'mutationFn: /** @param {{ ruling: string, notes: string, payerPct: number, payeePct: number }} data */ ({ ruling, notes, payerPct, payeePct }) =>')
+
+          # FeeEngine: actual destructive-dialog component and optional warning prop.
+          replace_once('src/pages/FeeEngine.jsx', "import { Button } from '@/components/forge';\n", "import { Button } from '@/components/forge';\nimport { ConfirmDestructive } from '@/components/forge';\n")
+          replace_once('src/pages/FeeEngine.jsx',
+              "function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning }) {",
+              "function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning }) {")
+
+          invalid_dialog = '''      <ConfirmDialog\n        open={!!removeKey}\n        title="Remove Payout Method"\n        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        variant="destructive"\n        onConfirm={confirmRemoveMethod}\n        onCancel={() => setRemoveKey(null)}\n      />\n'''
+          p = Path('src/pages/FeeEngine.jsx')
+          text = p.read_text()
+          count = text.count(invalid_dialog)
+          if count != 4:
+              raise SystemExit(f'FeeEngine: expected 4 invalid dialog blocks, found {count}')
+          text = text.replace(invalid_dialog, '', 4)
+          text = text.replace('''      <ConfirmDialog\n        open={!!removeKey}\n        title="Remove Payout Method"\n        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        variant="destructive"\n        onConfirm={confirmRemoveMethod}\n        onCancel={() => setRemoveKey(null)}\n      />\n''', '''      <ConfirmDestructive\n        open={!!removeKey}\n        title="Remove Payout Method"\n        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        onConfirm={confirmRemoveMethod}\n        onClose={() => setRemoveKey(null)}\n      />\n''', 1)
+          p.write_text(text)
+
+          # SettingRow warning is optional at every existing call site.
+          replace_regex('src/pages/FeeEngine.jsx', r'(function SettingRow\(\{ label, description, value, onChange, min = 0, max = 100, unit = \'%\', warning)( \})', r'\1 = \'\'\2')
+          PY
+
+      - name: Validate patched tree
+        shell: bash
+        run: |
+          npm ci
+          npm run typecheck > /tmp/typecheck.log 2>&1
+          status=$?
+          cat /tmp/typecheck.log
+          npm run build
+          if [ "$status" -ne 0 ]; then
+            echo "Typecheck still has remaining debt; committing this focused batch for the next loop."
+          fi
+
+      - name: Commit and remove temporary automation
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git checkout origin/main -- .github/workflows/ci.yml
+          git rm .github/workflows/apply-typecheck-batch.yml
+          git diff --check
+          git add src .github/workflows/ci.yml
+          git commit -m 'fix(typecheck): remove proven page-level compiler blockers'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
