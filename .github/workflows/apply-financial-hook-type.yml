@@ -1,0 +1,42 @@
+name: Apply guarded financial hook type fix
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Type the global settings hook
+        shell: bash
+        run: |
+          npm ci
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/lib/useAdminData.js')
+          text = p.read_text()
+          old = "export function useGlobalSettings() {\n  return useQuery({"
+          new = "/** @returns {import('@tanstack/react-query').UseQueryResult<import('./settingsTypes').AdminSettings, Error>} */\nexport function useGlobalSettings() {\n  return useQuery({"
+          if text.count(old) != 1:
+              raise SystemExit(f'useGlobalSettings anchor count={text.count(old)}')
+          p.write_text(text.replace(old, new, 1))
+          PY
+          npx eslint --quiet src/lib/useAdminData.js
+          npm run build
+          git diff --check
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git checkout origin/main -- .github/workflows/ci.yml
+          git rm .github/workflows/apply-financial-hook-type.yml
+          git add src .github/workflows/ci.yml
+          git commit -m 'fix(typecheck): type global settings hook [skip ci]'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
