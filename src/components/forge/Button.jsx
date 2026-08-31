@@ -8,14 +8,28 @@ const VARIANT = {
 const SIZE = { sm:'f-btn--sm', md:'', lg:'f-btn--lg' };
 
 /**
+ * @typedef {import('react').ButtonHTMLAttributes<HTMLButtonElement> & {
+ *   variant?: 'primary'|'secondary'|'ghost'|'danger',
+ *   size?: 'sm'|'md'|'lg',
+ *   icon?: import('lucide-react').LucideIcon,
+ *   iconRight?: import('lucide-react').LucideIcon,
+ *   loading?: boolean,
+ *   block?: boolean,
+ * }} ButtonProps
+ */
+
+/**
  * The only button in the product.
  * Deliberately NOT a motion.button: the press is pure CSS, so a table with
  * 400 row-actions costs zero listeners and zero React re-renders.
+ *
+ * @param {ButtonProps} props
+ * @param {import('react').ForwardedRef<HTMLButtonElement>} ref
  */
-export const Button = forwardRef(function Button(
-  { variant='secondary', size='md', icon:Icon, iconRight:IconRight,
-    loading=false, block=false, className, children, ...props }, ref) {
-
+function Button({
+  variant='secondary', size='md', icon:Icon, iconRight:IconRight,
+  loading=false, block=false, className='', children, ...props
+}, ref) {
   const iconOnly = !children && (Icon || IconRight);
   return (
     <button
@@ -33,4 +47,7 @@ export const Button = forwardRef(function Button(
       {IconRight && !loading && <IconRight className="h-3.5 w-3.5 shrink-0" aria-hidden />}
     </button>
   );
-});
+}
+
+export const ButtonWithRef = forwardRef(Button);
+export { ButtonWithRef as Button };
