@@ -1,6 +1,6 @@
 import { useSusuMember } from '@/lib/useAdminData';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, Tag,
 } from '@/components/forge';
 import {
   Fingerprint, AlertTriangle,
