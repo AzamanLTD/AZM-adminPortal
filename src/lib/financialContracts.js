@@ -7,10 +7,13 @@ import { z } from 'zod';
  * audited against the Backend controllers, avoiding invented contracts.
  */
 
-export const tradeIdSchema = z.union([
+export const idSchema = z.union([
   z.string().min(1),
   z.number().int().positive(),
 ]);
+
+export const tradeIdSchema = idSchema;
+export const userIdSchema = idSchema;
 
 export const reasonSchema = z.object({
   reason: z.string().trim().max(2000).optional(),
@@ -28,11 +31,20 @@ export const adminCreditSchema = z.object({
   reason: z.string().trim().max(2000).optional(),
 }).strict();
 
+export const escrowResolveSchema = z.object({
+  disputeId: idSchema,
+  ruling: z.string().min(1),
+  rulingNotes: z.string().trim().max(5000).optional(),
+  payerPct: z.number().min(0).max(100),
+  payeePct: z.number().min(0).max(100),
+});
+
 /**
  * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
  * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
  * @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput
  * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
+ * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
  */
 
 /** @typedef {{
