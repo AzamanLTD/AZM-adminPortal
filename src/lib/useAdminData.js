@@ -32,8 +32,8 @@ export function useGlobalSettings() {
   return useQuery({
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
-      const data = await api.settings.get();
-      return data.settings || data;
+      const data = await financialApi.settings.get();
+      return data.settings;
     },
   });
 }

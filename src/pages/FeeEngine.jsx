@@ -580,14 +580,6 @@ export default function FeeEngine() {
 
       {/* Payment Methods Management */}
       <PaymentMethodsManager settings={serverSettings} onSave={(data) => updateSettings(data, { onSuccess: () => toast.success('Payment methods updated'), onError: (e) => toast.error(e.message) })} />
-      <ConfirmDestructive
-        open={!!removeKey}
-        title="Remove Payout Method"
-        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
-        confirmLabel="Remove"
-        onConfirm={confirmRemoveMethod}
-        onClose={() => setRemoveKey(null)}
-      />
 
       {/* Projected Revenue Impact */}
       <ProjectedRevenue form={form} dirty={dirty} liveSettings={liveSettings} />
@@ -750,14 +742,14 @@ function PaymentMethodsManager({ settings, onSave }) {
           </div>
         </div>
       )}
-      <ConfirmDialog
+      <ConfirmDestructive
         open={!!removeKey}
         title="Remove Payout Method"
-        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
+        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}
         confirmLabel="Remove"
-        variant="destructive"
+        loading={false}
         onConfirm={confirmRemoveMethod}
-        onCancel={() => setRemoveKey(null)}
+        onClose={() => setRemoveKey(null)}
       />
     </div>
   );

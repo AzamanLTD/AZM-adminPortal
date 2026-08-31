@@ -21,7 +21,7 @@ export default function Storefronts() {
   });
 
   const disableMutation = useMutation({
-    mutationFn: sfApi.disable,
+    mutationFn: /** @param {string | number} businessProfileId */ (businessProfileId) => sfApi.disable(businessProfileId),
     onSuccess: () => {
       toast.success('Storefront disabled');
       queryClient.invalidateQueries({ queryKey: ['admin-storefronts'] });
@@ -30,7 +30,7 @@ export default function Storefronts() {
   });
 
   const enableMutation = useMutation({
-    mutationFn: sfApi.enable,
+    mutationFn: /** @param {string | number} businessProfileId */ (businessProfileId) => sfApi.enable(businessProfileId),
     onSuccess: () => {
       toast.success('Storefront enabled');
       queryClient.invalidateQueries({ queryKey: ['admin-storefronts'] });
@@ -39,7 +39,7 @@ export default function Storefronts() {
   });
 
   const revertMutation = useMutation({
-    mutationFn: ({ businessProfileId, versionId }) => sfApi.revert(businessProfileId, versionId),
+    mutationFn: /** @param {{ businessProfileId: string | number, versionId: string | number }} data */ ({ businessProfileId, versionId }) => sfApi.revert(businessProfileId, versionId),
     onSuccess: () => {
       toast.success('Storefront force-reverted');
       setRevertTarget(null);

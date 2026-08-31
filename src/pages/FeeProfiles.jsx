@@ -172,11 +172,11 @@ export default function FeeProfiles() {
                 </div>
                 <div>
                   <label className="text-xs text-ink-2 block mb-1">Admin Split %</label>
-                  <Input type="number" step="0.01" value={form.adminSplitPct} onChange={(e) => { setF('adminSplitPct', e.target.value); setF('vendorSplitPct', (100 - parseFloat(e.target.value || 0)).toFixed(2)); }} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+                  <Input type="number" step="0.01" value={form.adminSplitPct} onChange={(e) => { setF('adminSplitPct', e.target.value); setF('vendorSplitPct', (100 - parseFloat(String(e.target.value || '0'))).toFixed(2)); }} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
                 </div>
                 <div>
                   <label className="text-xs text-ink-2 block mb-1">Vendor Split % (auto)</label>
-                  <Input type="number" step="0.01" value={form.vendorSplitPct} onChange={(e) => { setF('vendorSplitPct', e.target.value); setF('adminSplitPct', (100 - parseFloat(e.target.value || 0)).toFixed(2)); }} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+                  <Input type="number" step="0.01" value={form.vendorSplitPct} onChange={(e) => { setF('vendorSplitPct', e.target.value); setF('adminSplitPct', (100 - parseFloat(String(e.target.value || '0'))).toFixed(2)); }} className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
                 </div>
               </div>
               {!splitValid && <p className="text-xs text-[var(--f-bad)]">Admin + Vendor must sum to 100%</p>}
