@@ -14,7 +14,7 @@
 import { useState, useMemo } from 'react';
 import { useWithdrawals, useStats } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { financialApi } from '@/lib/financialApi';
 import { Button } from '@/components/forge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
@@ -253,7 +253,7 @@ export default function Withdrawals() {
   const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
   const approve = useMutation({
-    mutationFn: (id) => api.withdrawals.approve(id),
+    mutationFn: (id) => financialApi.withdrawals.approve(id),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
       const prev = qc.getQueryData(['admin', 'withdrawals']);
@@ -275,7 +275,7 @@ export default function Withdrawals() {
   });
 
   const reject = useMutation({
-    mutationFn: ({ id, reason }) => api.withdrawals.reject(id, reason),
+    mutationFn: ({ id, reason }) => financialApi.withdrawals.reject(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
       const prev = qc.getQueryData(['admin', 'withdrawals']);
@@ -343,7 +343,7 @@ export default function Withdrawals() {
       const results = [];
       for (const id of ids) {
         try {
-          await api.withdrawals.approve(id);
+          await financialApi.withdrawals.approve(id);
           results.push({ id, ok: true });
         } catch (e) {
           results.push({ id, ok: false, error: e.message });
