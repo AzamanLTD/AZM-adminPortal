@@ -1,0 +1,123 @@
+name: Isolated Zod settings type validation
+
+on:
+  push:
+    branches:
+      - fix/typecheck-zod-settings-boundary
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Apply exact source edits
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def fail(message):
+              print(f'GUARD_FAILURE: {message}')
+              raise SystemExit(10)
+
+          p = Path('src/types/adminSettings.d.ts')
+          if p.exists():
+              fail('adminSettings.d.ts already exists')
+          p.parent.mkdir(parents=True, exist_ok=True)
+          p.write_text("""import { z } from 'zod';
+          import { adminSettingsSchema } from '@/lib/settingsContracts';
+
+          export type AdminSettings = z.infer<typeof adminSettingsSchema>;
+          """.replace('          ', ''))
+
+          p = Path('src/pages/Config.jsx')
+          t = p.read_text()
+          typedef = "/** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */"
+          marker = "import { Smartphone, Zap, Bot, DollarSign, Shield, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';\n"
+          if t.count(marker) != 1:
+              fail('Config import marker not unique')
+          t = t.replace(marker, marker + "\n" + typedef + "\n")
+          old = "  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({ queryKey: ['global-settings'], queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true })) });"
+          new = "  const { data: gs, isError: gsError, refetch: refetchGs } = useQuery({\n    queryKey: ['global-settings'],\n    /** @returns {Promise<{ settings: AdminSettings, _error?: boolean }>} */\n    queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true })),\n  });"
+          if t.count(old) != 1:
+              fail(f'Config global settings query not found exactly once ({t.count(old)})')
+          p.write_text(t.replace(old, new))
+
+          p = Path('src/pages/FeeEngine.jsx')
+          t = p.read_text()
+          marker = "import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';\n"
+          if t.count(marker) != 1:
+              fail('FeeEngine import marker not unique')
+          t = t.replace(marker, marker + "\n" + typedef + "\n")
+          old = "function pct(v) { return (parseFloat(v) * 100).toFixed(2); }"
+          if t.count(old) != 1:
+              fail(f'FeeEngine pct helper not unique ({t.count(old)})')
+          t = t.replace(old, "function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }")
+          old = "const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;"
+          if t.count(old) != 1:
+              fail(f'FeeEngine oldP2pFee not unique ({t.count(old)})')
+          t = t.replace(old, "const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;")
+          old = "  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();\n  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */\n  const serverSettings = serverSettingsRaw;"
+          new = "  const globalSettings = useGlobalSettings();\n  const { isLoading } = globalSettings;\n  /** @type {AdminSettings | undefined} */\n  const serverSettings = globalSettings.data;"
+          if t.count(old) != 1:
+              fail('FeeEngine server settings boundary not found exactly once')
+          p.write_text(t.replace(old, new))
+
+      - name: Run full validation (report-only)
+        id: validation
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck
+          tc=$?
+          npm run build
+          build=$?
+          npx eslint src/types/adminSettings.d.ts src/pages/Config.jsx src/pages/FeeEngine.jsx
+          lint=$?
+          echo "TYPECHECK_EXIT=$tc"
+          echo "BUILD_EXIT=$build"
+          echo "LINT_EXIT=$lint"
+          test $tc -eq 0 && test $build -eq 0 && test $lint -eq 0
+
+      - name: Commit only after full validation
+        if: steps.validation.outcome == 'success'
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git add src/types/adminSettings.d.ts src/pages/Config.jsx src/pages/FeeEngine.jsx
+          git diff --cached --check
+          git commit -m 'fix(typecheck): align settings type with runtime schema'
+          git push origin HEAD:fix/typecheck-zod-settings-boundary
+
+      - name: Cleanup failed validation
+        if: steps.validation.outcome != 'success'
+        shell: bash
+        run: |
+          git reset --hard HEAD
+          git clean -fd
+          git rm .github/workflows/prepare-zod-settings-boundary.yml
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git commit -m 'chore: remove failed isolated settings validation [skip ci]'
+          git push origin HEAD:fix/typecheck-zod-settings-boundary
+
+      - name: Cleanup successful validation workflow
+        if: steps.validation.outcome == 'success'
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git rm .github/workflows/prepare-zod-settings-boundary.yml
+          git commit -m 'chore: remove isolated settings validation [skip ci]'
+          git push origin HEAD:fix/typecheck-zod-settings-boundary
