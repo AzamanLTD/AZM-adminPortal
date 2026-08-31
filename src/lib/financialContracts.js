@@ -106,21 +106,23 @@ const escrowDisputeSchema = z.object({
   }).passthrough(),
 }).passthrough();
 
+const cursorPaginationSchema = z.object({
+  nextCursor: idSchema.nullable(),
+  hasMore: z.boolean(),
+  limit: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative().optional(),
+}).passthrough();
+
 /**
  * Producer-backed contract for GET /api/admin/escrow-disputes.
- * The Backend controller returns `success`, an escrow-dispute array, and a
- * pagination envelope. The nested fields below are the fields consumed by the
- * Admin Escrow Disputes page; additional producer fields remain open.
+ * The Backend controller returns `success`, an escrow-dispute array, and the
+ * shared cursor/offset pagination envelope from utils/pagination.js.
  */
 export const escrowDisputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(escrowDisputeSchema),
-  pagination: z.object({
-    page: z.number().int().positive(),
-    limit: z.number().int().positive(),
-    total: z.number().int().nonnegative(),
-    totalPages: z.number().int().nonnegative(),
-  }).passthrough(),
+  pagination: cursorPaginationSchema,
 }).passthrough();
 
 /**
