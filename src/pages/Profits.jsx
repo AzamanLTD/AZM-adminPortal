@@ -11,7 +11,7 @@ const SOURCE_COLORS = {
   ARBITRAGE_SPREAD: '#ec4899',
 };
 
-const CustomTooltip = ({ active, payload, label, rate }) => {
+const CustomTooltip = ({ active = false, payload = [], label = '', rate = 12.5 }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[var(--f-surface-sunken)] border border-line rounded-lg p-3 text-xs">
