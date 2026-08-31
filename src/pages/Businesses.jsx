@@ -5,9 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businesses as bizApi } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
-import { Button, Input, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle, Tag } from '@/components/forge';
-import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye, Hotel, UtensilsCrossed, Bus, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button, Input, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/forge';
+import { Building2, Ban, CheckCircle2, Search, FileCheck, ChevronLeft, ChevronRight, Eye, Hotel, UtensilsCrossed, Bus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const KYB_COLORS = {
