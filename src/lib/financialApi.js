@@ -2,6 +2,7 @@ import { escrow, feeProfiles, payouts, settings, trades, admin, users, withdrawa
 import {
   adminCreditSchema,
   disputeListResponseSchema,
+  escrowDisputeListResponseSchema,
   escrowResolveSchema,
   forceReleaseSchema,
   forceTradeActionSchema,
@@ -75,7 +76,10 @@ export const financialApi = {
   },
 
   escrow: {
-    disputes: (status) => escrow.disputes(status),
+    disputes: async (status) => {
+      const data = await escrow.disputes(status);
+      return parse(escrowDisputeListResponseSchema, data);
+    },
     resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => {
       const input = parse(escrowResolveSchema, {
         disputeId,

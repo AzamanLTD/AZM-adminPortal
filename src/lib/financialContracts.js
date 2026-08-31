@@ -69,6 +69,60 @@ export const disputeListResponseSchema = z.object({
   pagination: z.unknown().optional(),
 }).passthrough();
 
+const escrowParticipantSchema = z.object({
+  id: idSchema,
+  username: z.string().nullable().optional(),
+}).passthrough();
+
+const escrowTicketSchema = z.object({
+  id: idSchema,
+  name: z.string().nullable().optional(),
+  status: z.string().optional(),
+}).passthrough();
+
+const escrowDisputeSchema = z.object({
+  id: idSchema,
+  escrowId: idSchema,
+  status: z.string(),
+  reason: z.string().nullable().optional(),
+  ruling: z.string().nullable().optional(),
+  rulingNotes: z.string().nullable().optional(),
+  payerPct: z.number().nullable().optional(),
+  payeePct: z.number().nullable().optional(),
+  createdAt: z.string().optional(),
+  resolvedAt: z.string().nullable().optional(),
+  raisedBy: escrowParticipantSchema.nullable().optional(),
+  assignedTo: escrowParticipantSchema.nullable().optional(),
+  escrow: z.object({
+    id: idSchema,
+    ticketId: idSchema,
+    status: z.string(),
+    amountUsdc: z.union([z.number().finite(), z.string().min(1)]),
+    feeUsdc: z.union([z.number().finite(), z.string().min(1)]),
+    fundedAt: z.string().nullable().optional(),
+    payer: escrowParticipantSchema.nullable().optional(),
+    payee: escrowParticipantSchema.nullable().optional(),
+    ticket: escrowTicketSchema.nullable().optional(),
+  }).passthrough(),
+}).passthrough();
+
+/**
+ * Producer-backed contract for GET /api/admin/escrow-disputes.
+ * The Backend controller returns `success`, an escrow-dispute array, and a
+ * pagination envelope. The nested fields below are the fields consumed by the
+ * Admin Escrow Disputes page; additional producer fields remain open.
+ */
+export const escrowDisputeListResponseSchema = z.object({
+  success: z.literal(true),
+  disputes: z.array(escrowDisputeSchema),
+  pagination: z.object({
+    page: z.number().int().positive(),
+    limit: z.number().int().positive(),
+    total: z.number().int().nonnegative(),
+    totalPages: z.number().int().nonnegative(),
+  }).passthrough(),
+}).passthrough();
+
 /**
  * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
  * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
@@ -76,6 +130,7 @@ export const disputeListResponseSchema = z.object({
  * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
  * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
  * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
+ * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
  */
 
 /** @typedef {{
