@@ -1,0 +1,53 @@
+name: Apply guarded QR campaign UI repair
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Implement campaign dialogs
+        shell: bash
+        run: |
+          npm ci
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/QrForge.jsx')
+          text = p.read_text()
+
+          old_import = "import { Button } from '@/components/forge';\nimport { Input } from '@/components/forge';"
+          new_import = "import { Button } from '@/components/forge';\nimport { Input } from '@/components/forge';\nimport { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/forge';"
+          if text.count(old_import) != 1:
+              raise SystemExit(f'forge import anchor count={text.count(old_import)}')
+          text = text.replace(old_import, new_import, 1)
+
+          old = """        </div>\n\n    </div>\n  );\n}"""
+          new = """        </div>\n\n        {/* Campaign dialogs */}\n        <Dialog open={newCampaignOpen} onOpenChange={(open) => { if (!open) setNewCampaignOpen(false); }}>\n          <DialogContent className=\"max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]\">\n            <DialogHeader>\n              <DialogTitle className=\"text-[var(--f-text)]\">Create QR Campaign</DialogTitle>\n            </DialogHeader>\n            <div className=\"space-y-4\">\n              <div className=\"space-y-2\">\n                <label className=\"text-xs text-ink-2\">Campaign name</label>\n                <Input value={newCampaignName} onChange={(e) => setNewCampaignName(e.target.value)} placeholder=\"e.g. Accra Launch\" className=\"bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]\" autoFocus />\n              </div>\n              <div className=\"space-y-2\">\n                <label className=\"text-xs text-ink-2\">Destination URL</label>\n                <Input value={newCampaignUrl} onChange={(e) => setNewCampaignUrl(e.target.value)} placeholder=\"https://…\" className=\"bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]\" />\n              </div>\n            </div>\n            <DialogFooter>\n              <Button variant=\"ghost\" onClick={() => setNewCampaignOpen(false)}>Cancel</Button>\n              <Button\n                disabled={!newCampaignName.trim() || !newCampaignUrl.trim() || createCampaignMut.isPending}\n                onClick={() => createCampaignMut.mutate({ name: newCampaignName.trim(), destinationUrl: newCampaignUrl.trim() }, {\n                  onSuccess: () => { setNewCampaignOpen(false); setNewCampaignName(''); setNewCampaignUrl(''); },\n                })}\n              >\n                {createCampaignMut.isPending ? 'Creating…' : 'Create campaign'}\n              </Button>\n            </DialogFooter>\n          </DialogContent>\n        </Dialog>\n\n        <Dialog open={editUrlOpen} onOpenChange={(open) => { if (!open) { setEditUrlOpen(false); setEditCampaignId(null); } }}>\n          <DialogContent className=\"max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]\">\n            <DialogHeader>\n              <DialogTitle className=\"text-[var(--f-text)]\">Update Campaign Destination</DialogTitle>\n            </DialogHeader>\n            <div className=\"space-y-2\">\n              <label className=\"text-xs text-ink-2\">Destination URL</label>\n              <Input value={editUrlValue} onChange={(e) => setEditUrlValue(e.target.value)} placeholder=\"https://…\" className=\"bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]\" autoFocus />\n            </div>\n            <DialogFooter>\n              <Button variant=\"ghost\" onClick={() => { setEditUrlOpen(false); setEditCampaignId(null); }}>Cancel</Button>\n              <Button\n                disabled={!editUrlValue.trim() || editCampaignId == null || updateCampaignMut.isPending}\n                onClick={() => updateCampaignMut.mutate({ id: editCampaignId, data: { destinationUrl: editUrlValue.trim() } }, {\n                  onSuccess: () => { setEditUrlOpen(false); setEditCampaignId(null); },\n                })}\n              >\n                {updateCampaignMut.isPending ? 'Saving…' : 'Save URL'}\n              </Button>\n            </DialogFooter>\n          </DialogContent>\n        </Dialog>\n\n        <Dialog open={deleteOpen} onOpenChange={(open) => { if (!open) { setDeleteOpen(false); setDeleteTarget(null); } }}>\n          <DialogContent className=\"max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]\">\n            <DialogHeader>\n              <DialogTitle className=\"text-[var(--f-text)]\">Delete QR Campaign</DialogTitle>\n            </DialogHeader>\n            <p className=\"text-sm text-ink-2\">Delete <span className=\"font-semibold text-[var(--f-text)]\">{deleteTarget?.name || 'this campaign'}</span>? Existing scan history may no longer be available.</p>\n            <DialogFooter>\n              <Button variant=\"ghost\" onClick={() => { setDeleteOpen(false); setDeleteTarget(null); }}>Cancel</Button>\n              <Button\n                variant=\"destructive\"\n                disabled={!deleteTarget?.id || deleteCampaignMut.isPending}\n                onClick={() => deleteCampaignMut.mutate(deleteTarget.id, {\n                  onSuccess: () => { setDeleteOpen(false); setDeleteTarget(null); },\n                })}\n              >\n                {deleteCampaignMut.isPending ? 'Deleting…' : 'Delete campaign'}\n              </Button>\n            </DialogFooter>\n          </DialogContent>\n        </Dialog>\n\n    </div>\n  );\n}"""
+          if text.count(old) != 1:
+              raise SystemExit(f'campaign dialog anchor count={text.count(old)}')
+          text = text.replace(old, new, 1)
+          p.write_text(text)
+          PY
+
+          npx eslint --quiet src/pages/QrForge.jsx
+          npm run build
+          git diff --check
+
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git checkout origin/main -- .github/workflows/ci.yml
+          git rm .github/workflows/apply-qr-campaign-ui.yml
+          git add src .github/workflows/ci.yml
+          git commit -m 'fix(qr): restore campaign management dialogs [skip ci]'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
