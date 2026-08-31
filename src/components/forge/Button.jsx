@@ -18,15 +18,8 @@ const SIZE = { sm:'f-btn--sm', md:'', lg:'f-btn--lg' };
  * }} ButtonProps
  */
 
-/**
- * The only button in the product.
- * Deliberately NOT a motion.button: the press is pure CSS, so a table with
- * 400 row-actions costs zero listeners and zero React re-renders.
- *
- * @param {ButtonProps} props
- * @param {import('react').ForwardedRef<HTMLButtonElement>} ref
- */
-function Button({
+/** @type {import('react').ForwardRefRenderFunction<HTMLButtonElement, ButtonProps>} */
+function ButtonImpl({
   variant='secondary', size='md', icon:Icon, iconRight:IconRight,
   loading=false, block=false, className='', children, ...props
 }, ref) {
@@ -49,5 +42,5 @@ function Button({
   );
 }
 
-export const ButtonWithRef = forwardRef(Button);
-export { ButtonWithRef as Button };
+/** @type {import('react').ForwardRefExoticComponent<ButtonProps & import('react').RefAttributes<HTMLButtonElement>>} */
+export const Button = forwardRef(ButtonImpl);
