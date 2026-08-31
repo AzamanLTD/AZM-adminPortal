@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { animate, useReducedMotion } from 'framer-motion';
+import { animate, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ function useCounter(value, format) {
   return ref;
 }
 
+/** @param {{ label: string, value: number|string, format?: (v: any) => string, delta?: number, deltaLabel?: string, polarity?: 'normal'|'invert', spark?: number[], onClick?: () => void }} props */
 export function KpiCard({ label, value, format = v => Math.round(v).toLocaleString(),
                           delta, deltaLabel, polarity = 'normal', spark, onClick }) {
   const ref = useCounter(value, format);
@@ -43,7 +44,8 @@ export function KpiCard({ label, value, format = v => Math.round(v).toLocaleStri
   );
 }
 
-export function Sparkline({ data, height = 28, className }) {
+/** @param {{ data?: number[], height?: number, className?: string }} props */
+export function Sparkline({ data, height = 28, className = '' }) {
   const reduce = useReducedMotion();
   if (!data?.length) return null;
   const max = Math.max(...data), min = Math.min(...data), span = max - min || 1;
