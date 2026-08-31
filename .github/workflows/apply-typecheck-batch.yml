@@ -30,11 +30,16 @@ jobs:
                   raise SystemExit(f'{path}: expected exactly one match, found {count}: {old[:140]!r}')
               p.write_text(text.replace(old, new, 1))
 
-          replace_once('src/pages/FeeEngine.jsx', "import { Button } from '@/components/forge';", "import { Button, ConfirmDestructive } from '@/components/forge';")
+          p = Path('src/pages/FeeEngine.jsx')
+          text = p.read_text()
+          if "import { Button, ConfirmDestructive } from '@/components/forge';" not in text:
+              replace_once('src/pages/FeeEngine.jsx', "import { Button } from '@/components/forge';", "import { Button, ConfirmDestructive } from '@/components/forge';")
           outer = '''      <ConfirmDestructive\n        open={!!removeKey}\n        title="Remove Payout Method"\n        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        onConfirm={confirmRemoveMethod}\n        onClose={() => setRemoveKey(null)}\n      />\n'''
-          replace_once('src/pages/FeeEngine.jsx', outer, '')
+          if outer in text:
+              replace_once('src/pages/FeeEngine.jsx', outer, '')
           inner = '''      <ConfirmDialog\n        open={!!removeKey}\n        title="Remove Payout Method"\n        message={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        variant="destructive"\n        onConfirm={confirmRemoveMethod}\n        onCancel={() => setRemoveKey(null)}\n      />\n'''
-          replace_once('src/pages/FeeEngine.jsx', inner, '''      <ConfirmDestructive\n        open={!!removeKey}\n        title="Remove Payout Method"\n        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        loading={false}\n        onConfirm={confirmRemoveMethod}\n        onClose={() => setRemoveKey(null)}\n      />\n''')
+          if inner in text:
+              replace_once('src/pages/FeeEngine.jsx', inner, '''      <ConfirmDestructive\n        open={!!removeKey}\n        title="Remove Payout Method"\n        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        loading={false}\n        onConfirm={confirmRemoveMethod}\n        onClose={() => setRemoveKey(null)}\n      />\n''')
 
           replace_once('src/lib/useAdminData.js', '''export function useGlobalSettings() {\n  return useQuery({\n    queryKey: ['admin', 'settings'],\n    queryFn: async () => {\n      const data = await api.settings.get();\n      return data.settings || data;\n    },\n  });\n}''', '''export function useGlobalSettings() {\n  return useQuery({\n    queryKey: ['admin', 'settings'],\n    queryFn: async () => {\n      const data = await financialApi.settings.get();\n      return data.settings;\n    },\n  });\n}''')
 
