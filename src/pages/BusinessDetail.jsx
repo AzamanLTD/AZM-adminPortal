@@ -385,7 +385,7 @@ export default function BusinessDetail() {
               <p className="text-xs text-ink-3 font-mono mt-0.5">{biz.bizId}</p>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button variant="ghost" size="sm" onClick={() => qc.invalidateQueries(['admin-business-detail', bizId])}>
+              <Button variant="ghost" size="sm" onClick={() => qc.invalidateQueries({ queryKey: ['admin-business-detail', bizId] })}>
                 <RefreshCw className="h-3.5 w-3.5" />
               </Button>
               {biz.isSuspended
