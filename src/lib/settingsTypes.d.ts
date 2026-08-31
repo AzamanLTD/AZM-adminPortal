@@ -1,6 +1,42 @@
-import { z } from 'zod';
-import { adminSettingsSchema, adminSettingsResponseSchema, adminSettingsUpdateSchema } from './settingsContracts';
+export interface AdminSettings {
+  p2pFeePct: number;
+  bankMargin: number;
+  thirdPartyMargin: number;
+  vendorShareUnder1k: number;
+  vendorShareOver1k: number;
+  tierThreshold: number;
+  vendorMinCollateral: number;
+  baseExitFeePct: number;
+  fiatWithdrawalFeePct: number;
+  cryptoWithdrawalFeePct: number;
+  cryptoPlatformFeePct: number;
+  withdrawalFeeByRiskTier: Record<string, number>;
+  feeByPaymentMethod: Record<string, number>;
+  supportedPaymentMethods: string[];
+  gasFeeTrc20: number;
+  gasFeeErc20: number;
+  gasFeeBep20: number;
+  autoPayoutEnabled: boolean;
+  autoPayoutThresholdUsdc: number;
+  autoPayoutMaxAmountUsdc: number;
+  autoPayoutIntervalMs: number;
+  liveUsdToGhs: number;
+  liveRetailRate?: number | null;
+  liveCorporateRate?: number | null;
+  liveRateSource: string;
+  lastRateSync?: string | null;
+  minAppVersion: string;
+  forceUpdateUrl: string;
+  updateMessage: string;
+  susuProfitPct: number;
+  smartEscrowFeePct: number;
+  escrowDraftExpiryHours: number;
+  escrowFundedExpiryDays: number;
+}
 
-export type AdminSettings = z.infer<typeof adminSettingsSchema>;
-export type AdminSettingsResponse = z.infer<typeof adminSettingsResponseSchema>;
-export type AdminSettingsUpdate = z.infer<typeof adminSettingsUpdateSchema>;
+export interface AdminSettingsResponse {
+  success: true;
+  settings: AdminSettings;
+}
+
+export type AdminSettingsUpdate = Partial<AdminSettings>;
