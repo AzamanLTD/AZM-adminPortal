@@ -109,6 +109,7 @@ async function request(path, options = {}) {
       }
       throw new Error('Session expired. Please log in again.');
     }
+    /** @type {Error & { statusCode?: number, violations?: unknown, tier?: unknown, stakedBalance?: unknown }} */
     const error = new Error(data.message || data.error || 'Request failed');
     error.statusCode = res.status;
     if (res.status === 402) {
