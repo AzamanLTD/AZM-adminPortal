@@ -478,11 +478,11 @@ export default function FeeEngine() {
     tierThreshold: form.tierThreshold || 1000,
     fiatWithdrawalFeePct: asPct(form.fiatWithdrawalFeePct || 2),
     cryptoWithdrawalFeePct: asPct(form.cryptoWithdrawalFeePct || 1),
-    cryptoPlatformFeePct: asPct(form.cryptoPlatformFeePct || 0),
+    cryptoPlatformFeePct: asPct(String(form.cryptoPlatformFeePct || 0)),
   };
 
-  const vendorUnder = parseFloat(form.vendorShareUnder1k || 0);
-  const vendorOver = parseFloat(form.vendorShareOver1k || 0);
+  const vendorUnder = parseFloat(String(form.vendorShareUnder1k || 0));
+  const vendorOver = parseFloat(String(form.vendorShareOver1k || 0));
 
   if (isLoading) return <div className="text-ink-2 text-sm p-8 text-center">Loading settings…</div>;
 
