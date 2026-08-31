@@ -200,8 +200,17 @@ function DisputeCard({ dispute, allDisputes }) {
       return { prev };
     },
     onSuccess: () => { toast.success('Escrow released to buyer'); qc.invalidateQueries({ queryKey: ['admin', 'disputes'] }); },
-    onError: (e, _v, ctx) => {
+    onError: async (e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);
+      if (e?.statusCode === 409) {
+        // A concurrent admin already won the atomic settlement claim.
+        // The optimistic projection is stale, so reconcile from the
+        // authoritative dispute endpoint instead of treating the request as
+        // a successful release.
+        await qc.invalidateQueries({ queryKey: ['admin', 'disputes'], refetchType: 'active' });
+        toast.error('Trade was already resolved by another admin. The dispute list was refreshed.');
+        return;
+      }
       toast.error(e.message || 'Force release failed');
     },
   });
