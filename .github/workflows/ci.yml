@@ -34,10 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Diagnostic typecheck baseline
-        continue-on-error: true
-        run: npm run typecheck
-
       - name: Lint changed JavaScript/TypeScript files
         shell: bash
         run: |
