@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useFeeProfiles } from '@/lib/useAdminData';
+import { useFinancialFeeProfiles } from '@/lib/useFinancialFeeProfiles';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { financialApi } from '@/lib/financialApi';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Plus, Edit2, Trash2, Zap, Calendar, User } from 'lucide-react';
@@ -14,21 +14,21 @@ const SCOPE_COLORS = { ALL: 'bg-[var(--f-info-bg)] text-[var(--f-info)]', HOLIDA
 const EMPTY = { name: '', targetScope: 'ALL', targetValue: '', platformFeePct: '2', adminSplitPct: '60', vendorSplitPct: '40', exitFeePct: '2', priority: '0', validFrom: '', validUntil: '' };
 
 export default function FeeProfiles() {
-  const { data: profiles = [], isLoading, isError, refetch } = useFeeProfiles();
+  const { data: profiles = [], isLoading, isError, refetch } = useFinancialFeeProfiles();
   const qc = useQueryClient();
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
   const createMutation = useMutation({
-    mutationFn: (d) => api.feeProfiles.create(d),
+    mutationFn: (d) => financialApi.fees.create(d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile created'); setShowForm(false); },
   });
   const updateMutation = useMutation({
-    mutationFn: ({ id, ...d }) => api.feeProfiles.update(id, d),
+    mutationFn: ({ id, ...d }) => financialApi.fees.update(id, d),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile updated'); setEditing(null); },
   });
   const deleteMutation = useMutation({
-    mutationFn: (id) => api.feeProfiles.delete(id),
+    mutationFn: (id) => financialApi.fees.delete(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fee-profiles'] }); toast.success('Fee profile deactivated'); },
   });
 
