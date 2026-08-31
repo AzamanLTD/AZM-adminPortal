@@ -8,13 +8,13 @@ import {
   forceTradeActionSchema,
   reasonSchema,
   userIdSchema,
+  withdrawalPendingResponseSchema,
 } from './financialContracts';
 
 const parse = (schema, value) => schema.parse(value);
 
 /**
  * Narrow facade for high-risk Admin financial operations.
- *
  * Existing consumers can migrate one surface at a time without changing the
  * underlying transport/authentication implementation in api.js.
  */
@@ -55,7 +55,10 @@ export const financialApi = {
   },
 
   withdrawals: {
-    pending: () => withdrawals.pending(),
+    pending: async () => {
+      const data = await withdrawals.pending();
+      return parse(withdrawalPendingResponseSchema, data);
+    },
     approve: (id) => withdrawals.approve(parse(userIdSchema, id)),
     reject: (id, reason) => {
       const input = parse(reasonSchema, { reason });
