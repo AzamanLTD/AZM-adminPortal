@@ -106,8 +106,8 @@ export default function ControlPlane() {
                 </tr>
               </thead>
               <tbody>
-                {activityQuery.isLoading && <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>Loading activity…</td></tr>}
-                {!activityQuery.isLoading && !events.length && <tr><td colSpan="4" className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>No activity events found.</td></tr>}
+                {activityQuery.isLoading && <tr><td colSpan={4} className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>Loading activity…</td></tr>}
+                {!activityQuery.isLoading && !events.length && <tr><td colSpan={4} className="py-8 text-center" style={{ color: 'var(--f-text-3)' }}>No activity events found.</td></tr>}
                 {events.map((event) => (
                   <tr key={`${event.id}-${event.createdAt}`} style={{ borderBottom: '1px solid var(--f-line)' }}>
                     <td className="py-3 pr-3 font-medium" style={{ color: 'var(--f-text)' }}>{event.eventType || '—'}</td>
