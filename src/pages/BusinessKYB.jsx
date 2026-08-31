@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessKyb } from '@/lib/api';
 import StatCard from '@/components/admin/StatCard';
 import { Button } from '@/components/forge';
+import { Skel } from '@/components/forge';
 import { Textarea } from '@/components/forge';
 import { Dialog, DialogContent } from '@/components/forge';
 import { FileCheck, CheckCircle2, XCircle, Eye, Building2, Clock } from 'lucide-react';
@@ -36,7 +37,7 @@ function DocumentCard({ doc }) {
   const qc = useQueryClient();
 
   const reviewMutation = useMutation({
-    mutationFn: ({ status, reviewNotes }) => businessKyb.reviewDoc(doc.id, status, reviewNotes),
+    mutationFn: /** @param {{ status: string, reviewNotes?: string }} data */ ({ status, reviewNotes }) => businessKyb.reviewDoc(doc.id, status, reviewNotes),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['biz-kyb'] }); toast.success('Document reviewed'); },
     onError: (e) => toast.error(e.message || 'Review failed'),
   });
@@ -130,13 +131,13 @@ export default function BusinessKYB() {
   const totalCount    = pendingCount + verifiedCount + rejectedCount;
 
   const approveBiz = useMutation({
-    mutationFn: (bizId) => businessKyb.approve(bizId),
+    mutationFn: /** @param {string | number} bizId */ (bizId) => businessKyb.approve(bizId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['biz-kyb'] }); toast.success('Business KYB approved — status: VERIFIED'); setSelectedId(null); },
     onError: (e) => toast.error(e.message || 'Approval failed'),
   });
 
   const rejectBiz = useMutation({
-    mutationFn: ({ bizId, reason }) => businessKyb.reject(bizId, reason),
+    mutationFn: /** @param {{ bizId: string | number, reason: string }} data */ ({ bizId, reason }) => businessKyb.reject(bizId, reason),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['biz-kyb'] }); toast.success('Business KYB rejected'); setSelectedId(null); setShowRejectBizInput(false); setRejectReason(''); },
     onError: (e) => toast.error(e.message || 'Rejection failed'),
   });

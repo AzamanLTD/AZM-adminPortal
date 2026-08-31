@@ -102,12 +102,12 @@ export default function Businesses() {
   const totalPages = data?.pagination?.totalPages || 1;
 
   const suspendMutation = useMutation({
-    mutationFn: ({ bizId, reason }) => bizApi.suspend(bizId, reason),
+    mutationFn: /** @param {{ bizId: string | number, reason: string }} data */ ({ bizId, reason }) => bizApi.suspend(bizId, reason),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-businesses'] }); toast.success('Business suspended'); setSuspendTarget(null); setSuspendReason(''); },
     onError: (e) => toast.error(e.message || 'Suspend failed'),
   });
   const unsuspendMutation = useMutation({
-    mutationFn: (bizId) => bizApi.unsuspend(bizId),
+    mutationFn: /** @param {string | number} bizId */ (bizId) => bizApi.unsuspend(bizId),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin-businesses'] }); toast.success('Business unsuspended'); },
     onError: (e) => toast.error(e.message || 'Unsuspend failed'),
   });

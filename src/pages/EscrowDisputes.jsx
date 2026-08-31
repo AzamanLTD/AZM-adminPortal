@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialApi } from '@/lib/financialApi';
 import StatCard from '@/components/admin/StatCard';
 import { Button } from '@/components/forge';
+import { Tag } from '@/components/forge';
 import { Input } from '@/components/forge';
 import { Textarea } from '@/components/forge';
 import { Lock, ArrowRight, ShieldAlert, AlertTriangle, Scale, CheckCircle, DollarSign } from 'lucide-react';
@@ -76,7 +77,7 @@ function EscrowDisputeCard({ dispute }) {
   const payeePct = 100 - (parseInt(payerPct, 10) || 0);
 
   const resolveMutation = useMutation({
-    mutationFn: ({ ruling, notes, payerPct, payeePct }) =>
+    mutationFn: /** @param {{ ruling: string, notes: string, payerPct: number, payeePct: number }} data */ ({ ruling, notes, payerPct, payeePct }) =>
       financialApi.escrow.resolve(dispute.id, ruling, notes, payerPct, payeePct),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['escrow-disputes'] }); toast.success('Ruling issued — funds moved'); setExtremeModalPending(null); },
     onError: (err) => toast.error(err.message || 'Resolution failed'),
