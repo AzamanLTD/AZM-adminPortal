@@ -19,9 +19,9 @@ function useCounter(value, format) {
   return ref;
 }
 
-/** @param {{ label: string, value: number|string, format?: (v: any) => string, delta?: number, deltaLabel?: string, polarity?: 'normal'|'invert', spark?: number[], onClick?: () => void }} props */
-export function KpiCard({ label, value, format = v => Math.round(v).toLocaleString(),
-                          delta, deltaLabel, polarity = 'normal', spark, onClick }) {
+/** @param {{ label: string, value: number|string, format?: (v: any) => string, delta?: number, deltaLabel?: string, sub?: string, color?: string, polarity?: 'normal'|'invert', spark?: number[], onClick?: () => void }} props */
+export function KpiCard({ label, value, format = v => String(v),
+                          delta, deltaLabel, sub, color, polarity = 'normal', spark, onClick }) {
   const ref = useCounter(value, format);
   const dir = delta == null ? 'flat' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
   const Icon = dir === 'up' ? ArrowUp : dir === 'down' ? ArrowDown : Minus;
@@ -30,7 +30,7 @@ export function KpiCard({ label, value, format = v => Math.round(v).toLocaleStri
          data-polarity={polarity === 'invert' ? 'invert' : undefined}
          onClick={onClick}>
       <div className="f-kpi__k">{label}</div>
-      <div className="f-kpi__v" ref={ref}>
+      <div className="f-kpi__v" ref={ref} style={color ? { color } : undefined}>
         {typeof value === 'number' ? format(value) : value}
       </div>
       {delta != null && (
@@ -39,6 +39,7 @@ export function KpiCard({ label, value, format = v => Math.round(v).toLocaleStri
           {deltaLabel ?? `${Math.abs(delta)}%`}
         </div>
       )}
+      {delta == null && sub && <div className="text-xs text-ink-3 mt-1">{sub}</div>}
       {spark && <Sparkline data={spark} className="mt-3" />}
     </div>
   );
