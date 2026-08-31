@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { escrow as escrowApi } from '@/lib/api';
+import { financialApi } from '@/lib/financialApi';
 import StatCard from '@/components/admin/StatCard';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
@@ -77,7 +77,7 @@ function EscrowDisputeCard({ dispute }) {
 
   const resolveMutation = useMutation({
     mutationFn: ({ ruling, notes, payerPct, payeePct }) =>
-      escrowApi.resolve(dispute.id, ruling, notes, payerPct, payeePct),
+      financialApi.escrow.resolve(dispute.id, ruling, notes, payerPct, payeePct),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['escrow-disputes'] }); toast.success('Ruling issued — funds moved'); setExtremeModalPending(null); },
     onError: (err) => toast.error(err.message || 'Resolution failed'),
   });
@@ -228,7 +228,7 @@ function EscrowDisputeCard({ dispute }) {
 export default function EscrowDisputes() {
   const { data, isLoading } = useQuery({
     queryKey: ['escrow-disputes'],
-    queryFn: () => escrowApi.disputes(),
+    queryFn: () => financialApi.escrow.disputes(),
     refetchInterval: 30_000,
   });
   const disputes = data?.disputes || [];
