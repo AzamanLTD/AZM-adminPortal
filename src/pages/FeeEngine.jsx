@@ -8,7 +8,7 @@ import api from '@/lib/api';
 import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';
 
 /** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */
-/** @typedef {Record<string, string | number>} FeeForm */
+/** @typedef {Record<string, string>} FeeForm */
 
 function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
@@ -434,8 +434,8 @@ export default function FeeEngine() {
         thirdPartyMargin: pct(serverSettings.thirdPartyMargin),
         vendorShareUnder1k: pct(serverSettings.vendorShareUnder1k),
         vendorShareOver1k: pct(serverSettings.vendorShareOver1k),
-        tierThreshold: serverSettings.tierThreshold,
-        vendorMinCollateral: serverSettings.vendorMinCollateral,
+        tierThreshold: String(serverSettings.tierThreshold),
+        vendorMinCollateral: String(serverSettings.vendorMinCollateral),
         baseExitFeePct: pct(serverSettings.baseExitFeePct),
         fiatWithdrawalFeePct: pct(serverSettings.fiatWithdrawalFeePct),
         cryptoWithdrawalFeePct: pct(serverSettings.cryptoWithdrawalFeePct),
