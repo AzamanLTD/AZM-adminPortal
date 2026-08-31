@@ -30,6 +30,14 @@ jobs:
                   raise SystemExit(f'{path}: expected exactly one match, found {count}: {old!r}')
               p.write_text(text.replace(old, new))
 
+          def replace_exactly(path, old, new, expected):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f'{path}: expected exactly {expected} matches, found {count}: {old!r}')
+              p.write_text(text.replace(old, new))
+
           config = Path('src/pages/Config.jsx')
           text = config.read_text()
           typedef = "/** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */"
@@ -69,7 +77,7 @@ jobs:
           text = text.replace(old, new)
           fee.write_text(text)
 
-          replace_once('src/pages/WarRoom.jsx', 'buyerPercent: parseInt(buyerPct)', 'buyerPercent: buyerPct')
+          replace_exactly('src/pages/WarRoom.jsx', 'buyerPercent: parseInt(buyerPct)', 'buyerPercent: buyerPct', 2)
 
       - name: Commit repaired source
         shell: bash
