@@ -16,6 +16,7 @@
     "resolveJsonModule": true,
     "types": []
   },
+  "files": ["src/vite-env.d.ts", "src/lib/settingsTypes.d.ts"],
   "include": ["src/components/**/*.js", "src/pages/**/*.jsx", "src/Layout.jsx", "src/vite-env.d.ts"],
   "exclude": ["node_modules", "dist", "src/vite-plugins", "src/components/ui", "src/api", "src/lib"]
 }
