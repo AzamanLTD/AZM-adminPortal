@@ -60,6 +60,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/forge';
 import { Input } from '@/components/forge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/forge';
 import { toast } from 'sonner';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -810,6 +811,80 @@ export default function QrForge() {
             </div>
           )}
         </div>
+
+        {/* Campaign dialogs */}
+        <Dialog open={newCampaignOpen} onOpenChange={(open) => { if (!open) setNewCampaignOpen(false); }}>
+          <DialogContent className="max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]">
+            <DialogHeader>
+              <DialogTitle className="text-[var(--f-text)]">Create QR Campaign</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs text-ink-2">Campaign name</label>
+                <Input value={newCampaignName} onChange={(e) => setNewCampaignName(e.target.value)} placeholder="e.g. Accra Launch" className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" autoFocus />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs text-ink-2">Destination URL</label>
+                <Input value={newCampaignUrl} onChange={(e) => setNewCampaignUrl(e.target.value)} placeholder="https://…" className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setNewCampaignOpen(false)}>Cancel</Button>
+              <Button
+                disabled={!newCampaignName.trim() || !newCampaignUrl.trim() || createCampaignMut.isPending}
+                onClick={() => createCampaignMut.mutate({ name: newCampaignName.trim(), destinationUrl: newCampaignUrl.trim() }, {
+                  onSuccess: () => { setNewCampaignOpen(false); setNewCampaignName(''); setNewCampaignUrl(''); },
+                })}
+              >
+                {createCampaignMut.isPending ? 'Creating…' : 'Create campaign'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={editUrlOpen} onOpenChange={(open) => { if (!open) { setEditUrlOpen(false); setEditCampaignId(null); } }}>
+          <DialogContent className="max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]">
+            <DialogHeader>
+              <DialogTitle className="text-[var(--f-text)]">Update Campaign Destination</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              <label className="text-xs text-ink-2">Destination URL</label>
+              <Input value={editUrlValue} onChange={(e) => setEditUrlValue(e.target.value)} placeholder="https://…" className="bg-[var(--f-surface-sunken)] border-line text-[var(--f-text)]" autoFocus />
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => { setEditUrlOpen(false); setEditCampaignId(null); }}>Cancel</Button>
+              <Button
+                disabled={!editUrlValue.trim() || editCampaignId == null || updateCampaignMut.isPending}
+                onClick={() => updateCampaignMut.mutate({ id: editCampaignId, data: { destinationUrl: editUrlValue.trim() } }, {
+                  onSuccess: () => { setEditUrlOpen(false); setEditCampaignId(null); },
+                })}
+              >
+                {updateCampaignMut.isPending ? 'Saving…' : 'Save URL'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={deleteOpen} onOpenChange={(open) => { if (!open) { setDeleteOpen(false); setDeleteTarget(null); } }}>
+          <DialogContent className="max-w-md bg-[var(--f-surface-raised)] border-[var(--f-line-strong)] text-[var(--f-text)]">
+            <DialogHeader>
+              <DialogTitle className="text-[var(--f-text)]">Delete QR Campaign</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-ink-2">Delete <span className="font-semibold text-[var(--f-text)]">{deleteTarget?.name || 'this campaign'}</span>? Existing scan history may no longer be available.</p>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => { setDeleteOpen(false); setDeleteTarget(null); }}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={!deleteTarget?.id || deleteCampaignMut.isPending}
+                onClick={() => deleteCampaignMut.mutate(deleteTarget.id, {
+                  onSuccess: () => { setDeleteOpen(false); setDeleteTarget(null); },
+                })}
+              >
+                {deleteCampaignMut.isPending ? 'Deleting…' : 'Delete campaign'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
     </div>
   );
