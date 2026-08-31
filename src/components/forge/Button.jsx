@@ -3,13 +3,13 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const VARIANT = {
-  primary:'f-btn--primary', secondary:'', ghost:'f-btn--ghost', danger:'f-btn--danger',
+  primary:'f-btn--primary', secondary:'', outline:'', ghost:'f-btn--ghost', danger:'f-btn--danger', destructive:'f-btn--danger',
 };
 const SIZE = { sm:'f-btn--sm', md:'', lg:'f-btn--lg' };
 
 /**
  * @typedef {import('react').ButtonHTMLAttributes<HTMLButtonElement> & {
- *   variant?: 'primary'|'secondary'|'ghost'|'danger',
+ *   variant?: 'primary'|'secondary'|'outline'|'ghost'|'danger'|'destructive',
  *   size?: 'sm'|'md'|'lg',
  *   icon?: import('lucide-react').LucideIcon,
  *   iconRight?: import('lucide-react').LucideIcon,
