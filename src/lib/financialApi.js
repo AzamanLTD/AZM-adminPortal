@@ -12,6 +12,7 @@ import {
   userIdSchema,
   withdrawalPendingResponseSchema,
 } from './financialContracts';
+import { feeProfileListResponseSchema, feeProfileWriteSchema } from './feeContracts';
 
 const parse = (schema, value) => schema.parse(value);
 
@@ -30,10 +31,10 @@ export const financialApi = {
   },
 
   fees: {
-    list: () => feeProfiles.list(),
-    create: (data) => feeProfiles.create(data),
-    update: (id, data) => feeProfiles.update(id, data),
-    delete: (id) => feeProfiles.delete(id),
+    list: async () => parse(feeProfileListResponseSchema, await feeProfiles.list()),
+    create: (data) => feeProfiles.create(parse(feeProfileWriteSchema, data)),
+    update: (id, data) => feeProfiles.update(parse(userIdSchema, id), parse(feeProfileWriteSchema, data)),
+    delete: (id) => feeProfiles.delete(parse(userIdSchema, id)),
     resolve: (context) => feeProfiles.resolve(context),
   },
 
