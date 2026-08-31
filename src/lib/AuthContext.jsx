@@ -20,7 +20,21 @@ function decodeJwtPayload(token) {
   }
 }
 
-const AuthContext = createContext(null);
+/** @typedef {{
+ * user: object | null,
+ * isAuthenticated: boolean,
+ * isLoadingAuth: boolean,
+ * isLoadingPublicSettings: boolean,
+ * authError: { type: string, message: string } | null,
+ * appPublicSettings: unknown,
+ * authChecked: boolean,
+ * login: (email: string, password: string) => Promise<{ success: boolean, message?: string }>,
+ * logout: () => Promise<void>,
+ * navigateToLogin: () => void,
+ * checkUserAuth: () => Promise<void>,
+ * checkAppState: () => Promise<void>
+ * }} AuthContextValue */
+const AuthContext = createContext(/** @type {AuthContextValue | null} */ (null));
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
