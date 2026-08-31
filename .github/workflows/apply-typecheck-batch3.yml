@@ -1,0 +1,147 @@
+name: Apply guarded typecheck batch 3
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply guarded source fixes
+        shell: bash
+        run: |
+          npm ci
+          npm run typecheck > /tmp/typecheck-before.log 2>&1 || true
+          before=$(grep -c 'error TS' /tmp/typecheck-before.log || true)
+          echo "TypeScript errors before: $before"
+
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected exactly one match, found {count}')
+              p.write_text(text.replace(old, new, 1))
+
+          def replace_all(path, old, new, minimum=1):
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count < minimum:
+                  raise SystemExit(f'{path}: expected at least {minimum} matches, found {count}')
+              p.write_text(text.replace(old, new))
+
+          # Business detail: mutation variables and current TanStack Query invalidation API.
+          replace_once('src/pages/BusinessDetail.jsx',
+              'mutationFn: ({ reason }) => bizApi.suspend(bizId, reason),',
+              'mutationFn: /** @param {{ reason: string }} data */ ({ reason }) => bizApi.suspend(bizId, reason),')
+          replace_all('src/pages/BusinessDetail.jsx',
+              "qc.invalidateQueries(['admin-business-detail', bizId]);",
+              "qc.invalidateQueries({ queryKey: ['admin-business-detail', bizId] });")
+
+          # Config fallback preserves the optional rate-sync field consumed by the page.
+          replace_once('src/pages/Config.jsx',
+              "settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK' },",
+              "settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null },")
+
+          # Dashboard: callback and Recharts prop contracts.
+          replace_once('src/pages/Dashboard.jsx',
+              'function ChartTip({ active, payload, label }) {',
+              "/** @param {{ active?: boolean, payload?: Array<{ color?: string, fill?: string, name?: string, value?: number | string }>, label?: string }} props */\nfunction ChartTip({ active, payload, label }) {")
+          replace_once('src/pages/Dashboard.jsx',
+              'function KpiTile({ label, value, sub, icon: Icon, accent = false, trend, loading = false, onClick }) {',
+              "/** @param {{ label: string, value: string | number, sub?: string, icon?: any, accent?: boolean, trend?: 'up' | 'down', loading?: boolean, onClick?: () => void }} props */\nfunction KpiTile({ label, value, sub, icon: Icon, accent = false, trend, loading = false, onClick }) {")
+          replace_once('src/pages/Dashboard.jsx', 'onClick={refetch}', 'onClick={() => refetch()}')
+
+          # Escrow facade accepts string identifiers.
+          p = Path('src/pages/EscrowDisputes.jsx')
+          text = p.read_text()
+          for old, new in [
+              ('financialApi.escrow.resolve(dispute.id,', 'financialApi.escrow.resolve(String(dispute.id),'),
+              ('financialApi.escrow.assign(dispute.id,', 'financialApi.escrow.assign(String(dispute.id),'),
+          ]:
+              if old in text:
+                  text = text.replace(old, new)
+          p.write_text(text)
+
+          # QR Forge: type mutation variables and rename shadowing state only.
+          replace_once('src/pages/QrForge.jsx',
+              'mutationFn: ({ id, data }) => updateCampaign(id, data),',
+              'mutationFn: /** @param {{ id: string | number, data: Record<string, unknown> }} vars */ ({ id, data }) => updateCampaign(id, data),')
+          replace_once('src/pages/QrForge.jsx',
+              'mutationFn: deleteCampaign,',
+              'mutationFn: /** @param {string | number} id */ (id) => deleteCampaign(id),')
+          replace_once('src/pages/QrForge.jsx',
+              'const [deleteCampaign, setDeleteCampaign] = useState(null);',
+              'const [deleteTarget, setDeleteTarget] = useState(null);')
+          replace_all('src/pages/QrForge.jsx', 'setDeleteCampaign(', 'setDeleteTarget(')
+          replace_once('src/pages/QrForge.jsx', 'setDeleteCampaign(c);', 'setDeleteTarget(c);') if False else None
+          replace_all('src/pages/QrForge.jsx', 'deleteCampaign?.id', 'deleteTarget?.id', minimum=1) if 'deleteCampaign?.id' in Path('src/pages/QrForge.jsx').read_text() else None
+          replace_all('src/pages/QrForge.jsx', 'deleteCampaign.id', 'deleteTarget.id', minimum=1) if 'deleteCampaign.id' in Path('src/pages/QrForge.jsx').read_text() else None
+          replace_all('src/pages/QrForge.jsx', 'deleteCampaign.name', 'deleteTarget.name', minimum=1) if 'deleteCampaign.name' in Path('src/pages/QrForge.jsx').read_text() else None
+          replace_all('src/pages/QrForge.jsx', 'deleteCampaign &&', 'deleteTarget &&', minimum=1) if 'deleteCampaign &&' in Path('src/pages/QrForge.jsx').read_text() else None
+          replace_all('src/pages/QrForge.jsx', 'deleteCampaignMut.mutate(deleteCampaign)', 'deleteCampaignMut.mutate(deleteTarget)', minimum=1) if 'deleteCampaignMut.mutate(deleteCampaign)' in Path('src/pages/QrForge.jsx').read_text() else None
+
+          # Storefronts: use the actual Tag API and React's typed currentTarget.
+          replace_once('src/pages/Storefronts.jsx',
+              "<Tag variant={disabled ? 'destructive' : 'success'}>",
+              "<Tag tone={disabled ? 'bad' : 'ok'}>")
+          replace_once('src/pages/Storefronts.jsx',
+              "onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}",
+              "onError={(e) => { const image = e.currentTarget; image.style.display = 'none'; const fallback = image.nextElementSibling; if (fallback instanceof HTMLElement) fallback.style.display = 'flex'; }}")
+
+          # ActionDialog had no declared props, causing downstream JSX inference failures.
+          p = Path('src/components/ActionDialog.jsx')
+          text = p.read_text()
+          marker = 'export default function ActionDialog({'
+          if marker not in text:
+              raise SystemExit('ActionDialog marker missing')
+          if '/** @param {{' not in text[:text.find(marker)]:
+              props = '''/** @param {{\n * open: boolean,\n * title?: string,\n * label?: string,\n * placeholder?: string,\n * confirmLabel?: string,\n * variant?: 'default' | 'destructive',\n * onConfirm: (value: string) => void,\n * onCancel: () => void,\n * isPending?: boolean,\n * inputType?: 'text' | 'textarea' | 'select',\n * options?: Array<{ value: string, label: string }>,\n * defaultValue?: string\n * }} props */\n'''
+              text = text.replace(marker, props + marker, 1)
+              p.write_text(text)
+
+          # Users: every mutation receives an explicit variable shape.
+          replacements = [
+              ('mutationFn: (id) => api.kyc.approve(id),', 'mutationFn: /** @param {string | number} id */ (id) => api.kyc.approve(id),'),
+              ('mutationFn: ({ id, reason }) => api.kyc.reject(id, reason),', 'mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.kyc.reject(id, reason),'),
+              ('mutationFn: ({ id, duration }) => api.users.ban(id, duration),', 'mutationFn: /** @param {{ id: string | number, duration: string }} data */ ({ id, duration }) => api.users.ban(id, duration),'),
+              ('mutationFn: ({ id, role }) => api.users.changeRole(id, role),', 'mutationFn: /** @param {{ id: string | number, role: string }} data */ ({ id, role }) => api.users.changeRole(id, role),'),
+              ('mutationFn: ({ id, tier }) => api.users.setRiskTier(id, tier),', 'mutationFn: /** @param {{ id: string | number, tier: string }} data */ ({ id, tier }) => api.users.setRiskTier(id, tier),'),
+              ('mutationFn: ({ id, amount }) => api.users.credit(id, amount),', 'mutationFn: /** @param {{ id: string | number, amount: number }} data */ ({ id, amount }) => api.users.credit(id, amount),'),
+              ('mutationFn: ({ id, action, reason }) => api.vendors.review(id, action, reason),', 'mutationFn: /** @param {{ id: string | number, action: string, reason: string }} data */ ({ id, action, reason }) => api.vendors.review(id, action, reason),'),
+              ("mutationFn: ({ id, reason }) => api.users.reviewTradeAccount(id, 'REJECT', reason),", "mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.users.reviewTradeAccount(id, 'REJECT', reason),"),
+              ("mutationFn: ({ id }) => api.users.reviewTradeAccount(id, 'APPROVE'),", "mutationFn: /** @param {{ id: string | number }} data */ ({ id }) => api.users.reviewTradeAccount(id, 'APPROVE'),"),
+          ]
+          for old, new in replacements:
+              replace_once('src/pages/Users.jsx', old, new)
+          PY
+
+          npm run build
+          npx eslint --quiet src/pages/BusinessDetail.jsx src/pages/Config.jsx src/pages/Dashboard.jsx src/pages/EscrowDisputes.jsx src/pages/QrForge.jsx src/pages/Storefronts.jsx src/components/ActionDialog.jsx src/pages/Users.jsx
+          npm run typecheck > /tmp/typecheck-after.log 2>&1 || true
+          after=$(grep -c 'error TS' /tmp/typecheck-after.log || true)
+          echo "TypeScript errors before: $before"
+          echo "TypeScript errors after:  $after"
+          test "$after" -lt "$before"
+          git diff --check
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git checkout origin/main -- .github/workflows/ci.yml
+          git rm .github/workflows/apply-typecheck-batch3.yml
+          git add src .github/workflows/ci.yml
+          git commit -m 'fix(typecheck): repair shared page action contracts [skip ci]'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
