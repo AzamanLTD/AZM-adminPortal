@@ -20,7 +20,7 @@ function decodeJwtPayload(token) {
   }
 }
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

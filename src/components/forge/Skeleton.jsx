@@ -1,4 +1,4 @@
-export const Skel = ({ w='100%', h=12, className='' }) =>
+export const Skel = ({ w='100%', h=12, className }) =>
   <div className="f-sk" style={{ width:w, height:h }} aria-hidden />;
 
 /** Skeletons must match the real geometry exactly or arrival causes a jump. */
