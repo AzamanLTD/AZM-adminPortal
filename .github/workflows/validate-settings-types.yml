@@ -1,0 +1,39 @@
+name: Isolated settings type validation
+
+on:
+  push:
+    branches:
+      - fix/typecheck-explicit-settings-types
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Typecheck report
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > typecheck.log 2>&1
+          status=$?
+          echo "TYPECHECK_EXIT=$status" > typecheck.meta
+          cat typecheck.log
+          exit 0
+      - name: Production build
+        run: npm run build
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: settings-type-validation
+          path: |
+            typecheck.log
+            typecheck.meta
