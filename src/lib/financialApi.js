@@ -6,6 +6,8 @@ import {
   escrowResolveSchema,
   forceReleaseSchema,
   forceTradeActionSchema,
+  payoutSettingsResponseSchema,
+  payoutSettingsUpdateSchema,
   reasonSchema,
   userIdSchema,
   withdrawalPendingResponseSchema,
@@ -15,7 +17,6 @@ const parse = (schema, value) => schema.parse(value);
 
 /**
  * Narrow facade for high-risk Admin financial operations.
- *
  * Existing consumers can migrate one surface at a time without changing the
  * underlying transport/authentication implementation in api.js.
  */
@@ -69,8 +70,14 @@ export const financialApi = {
   },
 
   payouts: {
-    settings: () => payouts.getSettings(),
-    updateSettings: (data) => payouts.updateSettings(data),
+    settings: async () => {
+      const data = await payouts.getSettings();
+      return parse(payoutSettingsResponseSchema, data);
+    },
+    updateSettings: (data) => {
+      const input = parse(payoutSettingsUpdateSchema, data);
+      return payouts.updateSettings(input);
+    },
     batchProcess: () => payouts.batchProcess(),
   },
 
