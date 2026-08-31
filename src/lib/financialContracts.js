@@ -179,7 +179,7 @@ export const payoutSettingsResponseSchema = z.object({
 export const payoutSettingsUpdateSchema = z.object({
   autoPayoutEnabled: z.boolean().optional(),
   autoPayoutThresholdUsdc: z.number().finite().nonnegative().optional(),
-  autoPayoutMaxAmountUsdc: z.number().int().min(10000).optional(),
+  autoPayoutMaxAmountUsdc: z.number().finite().nonnegative().optional(),
   autoPayoutIntervalMs: z.number().int().min(10000).optional(),
 }).strict().refine((value) => Object.keys(value).length > 0, {
   message: 'At least one payout setting is required.',
