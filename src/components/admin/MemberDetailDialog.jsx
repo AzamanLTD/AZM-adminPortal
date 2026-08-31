@@ -1,6 +1,6 @@
 import { useSusuMember } from '@/lib/useAdminData';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, Tag,
 } from '@/components/forge';
 import {
   Fingerprint, AlertTriangle,
@@ -62,7 +62,6 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
 
         {u && (
           <div className="space-y-5">
-            {/* Identity */}
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-full bg-[var(--f-ok-bg)] flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {u.avatar
@@ -73,71 +72,42 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                 <p className="text-base font-bold text-[var(--f-text)]">{u.displayName || u.username}</p>
                 <p className="text-xs text-ink-3">@{u.username} · {u.email}</p>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <Tag className={`${KYC_COLORS[u.kycStatus] || KYC_COLORS.UNVERIFIED} border-0 text-xs`}>
-                    KYC {u.kycStatus}
-                  </Tag>
-                  <Tag className={`${POR_COLORS[u.proofOfResidencyStatus] || POR_COLORS.NOT_SUBMITTED} border-0 text-xs`}>
-                    PoR {u.proofOfResidencyStatus?.replace('_', ' ')}
-                  </Tag>
-                  {u.banStatus && u.banStatus !== 'ACTIVE' && (
-                    <Tag className="bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-0 text-xs">{u.banStatus}</Tag>
-                  )}
+                  <Tag className={`${KYC_COLORS[u.kycStatus] || KYC_COLORS.UNVERIFIED} border-0 text-xs`}>KYC {u.kycStatus}</Tag>
+                  <Tag className={`${POR_COLORS[u.proofOfResidencyStatus] || POR_COLORS.NOT_SUBMITTED} border-0 text-xs`}>PoR {u.proofOfResidencyStatus?.replace('_', ' ')}</Tag>
+                  {u.banStatus && u.banStatus !== 'ACTIVE' && <Tag className="bg-[var(--f-bad-bg)] text-[var(--f-bad)] border-0 text-xs">{u.banStatus}</Tag>}
                 </div>
               </div>
             </div>
 
-            {/* Decrypted identity card */}
             <div className="bg-bg border border-[var(--f-warn-bg)] rounded-xl p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Eye className="w-3.5 h-3.5 text-[var(--f-warn)]" />
-                <span className="text-xs font-semibold text-[var(--f-warn)] uppercase tracking-wide">
-                  Authorized Identity View (Decrypted)
-                </span>
+                <span className="text-xs font-semibold text-[var(--f-warn)] uppercase tracking-wide">Authorized Identity View (Decrypted)</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Stat label="Legal Name" value={u.legalName || '—'} />
                 <Stat label="ID Type" value={u.idType || '—'} />
                 <div className="col-span-2 bg-surface/50 rounded-lg px-3 py-2">
                   <p className="text-[11px] text-ink-3 uppercase tracking-wide">ID Number</p>
-                  <p className="text-sm font-mono font-semibold text-amber-300">
-                    {u.idNumber || (u.idNumberOnFile ? '⚠ on file (decryption unavailable)' : '—')}
-                  </p>
+                  <p className="text-sm font-mono font-semibold text-amber-300">{u.idNumber || (u.idNumberOnFile ? '⚠ on file (decryption unavailable)' : '—')}</p>
                 </div>
               </div>
               {(u.idImageFront || u.idImageBack) && (
                 <div className="flex gap-2">
-                  {u.idImageFront && (
-                    <a href={u.idImageFront} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
-                      ID Front
-                    </a>
-                  )}
-                  {u.idImageBack && (
-                    <a href={u.idImageBack} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
-                      ID Back
-                    </a>
-                  )}
-                  {u.proofOfResidencyUrl && (
-                    <a href={u.proofOfResidencyUrl} target="_blank" rel="noreferrer"
-                      className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
-                      Residency Doc
-                    </a>
-                  )}
+                  {u.idImageFront && <a href={u.idImageFront} target="_blank" rel="noreferrer" className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">ID Front</a>}
+                  {u.idImageBack && <a href={u.idImageBack} target="_blank" rel="noreferrer" className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">ID Back</a>}
+                  {u.proofOfResidencyUrl && <a href={u.proofOfResidencyUrl} target="_blank" rel="noreferrer" className="flex-1 text-center text-xs py-1.5 rounded-lg border border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">Residency Doc</a>}
                 </div>
               )}
             </div>
 
-            {/* Risk stats */}
             <div className="grid grid-cols-4 gap-2">
-              <Stat label="Trust Rating" value={u.trustRating ?? '—'}
-                color={u.trustRating >= 80 ? 'text-[var(--f-ok)]' : u.trustRating >= 40 ? 'text-[var(--f-warn)]' : 'text-[var(--f-bad)]'} />
+              <Stat label="Trust Rating" value={u.trustRating ?? '—'} color={u.trustRating >= 80 ? 'text-[var(--f-ok)]' : u.trustRating >= 40 ? 'text-[var(--f-warn)]' : 'text-[var(--f-bad)]'} />
               <Stat label="Strikes" value={u.strikeCount ?? 0} color={u.strikeCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-text)]'} />
               <Stat label="Defaults" value={h?.defaultCount ?? 0} color={h?.defaultCount > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-text)]'} />
               <Stat label="AZM" value={Number(u.azmBalance || 0).toFixed(0)} />
             </div>
 
-            {/* Susu memberships */}
             <Section icon={FileText} title="Susu Memberships" count={h?.memberships?.length}>
               <div className="space-y-1.5">
                 {(h?.memberships || []).map((m) => (
@@ -145,9 +115,7 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
                     <span className="text-ink-2 truncate">{m.susuName}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <Tag className="bg-line text-ink-2 border-0 text-[10px]">slot {m.payoutSlot ?? '—'}</Tag>
-                      <Tag className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : m.memberStatus === 'ACTIVE' ? 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]' : 'bg-line text-ink-2'}`}>
-                        {m.memberStatus}
-                      </Tag>
+                      <Tag className={`border-0 text-[10px] ${m.memberStatus === 'DEFAULTED' ? 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' : m.memberStatus === 'ACTIVE' ? 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]' : 'bg-line text-ink-2'}`}>{m.memberStatus}</Tag>
                     </div>
                   </div>
                 ))}
@@ -155,7 +123,6 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
               </div>
             </Section>
 
-            {/* Seizures */}
             <Section icon={AlertTriangle} title="Seizures" count={h?.seizures?.length}>
               <div className="space-y-1.5">
                 {(h?.seizures || []).map((s) => (
@@ -169,7 +136,6 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
               </div>
             </Section>
 
-            {/* Voucher slashes received (their voucher got slashed for this user's default) */}
             <Section icon={TrendingDown} title="Voucher Slashes Triggered (by this member's defaults)" count={h?.slashesReceived?.length}>
               <div className="space-y-1.5">
                 {(h?.slashesReceived || []).map((s) => (
@@ -183,7 +149,6 @@ export default function MemberDetailDialog({ userId, open, onOpenChange }) {
               </div>
             </Section>
 
-            {/* Slashes issued (this user vouched someone who defaulted) */}
             <Section icon={Hand} title="Penalties Taken as Voucher (their invitees defaulted)" count={h?.slashesIssued?.length}>
               <div className="space-y-1.5">
                 {(h?.slashesIssued || []).map((s) => (
