@@ -151,7 +151,11 @@ export const withdrawalPendingResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
     pending: z.array(withdrawalSchema),
-    frozen: z.array(withdrawalSchema),
+    frozen: z.array(z.object({
+      id: idSchema,
+      status: z.string(),
+      user: withdrawalUserSchema.nullable().optional(),
+    }).passthrough()),
     counts: z.object({
       pending: z.number().int().nonnegative(),
       frozen: z.number().int().nonnegative(),
