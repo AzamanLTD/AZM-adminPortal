@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePoRQueue, usePoRApprove, usePoRReject } from '@/lib/useAdminData';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, Tag,
 } from '@/components/forge';
 import { Button } from '@/components/forge';
 import { Textarea } from '@/components/forge';
