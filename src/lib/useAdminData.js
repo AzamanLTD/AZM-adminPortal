@@ -28,6 +28,7 @@ export function useSystemHealth() {
   });
 }
 
+/** @returns {import('@tanstack/react-query').UseQueryResult<import('./settingsTypes').AdminSettings, Error>} */
 export function useGlobalSettings() {
   return useQuery({
     queryKey: ['admin', 'settings'],
