@@ -1,0 +1,83 @@
+name: Temporary typecheck batch
+
+on:
+  push:
+    branches:
+      - fix/typecheck-imports-feeengine-batch
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.event.head_commit.message != 'temporary: seed typecheck batch workflow' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply focused batch
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          forge_files = {
+              'src/pages/EscrowDisputes.jsx': ['Tag'],
+              'src/pages/Storefronts.jsx': ['Tag'],
+              'src/pages/SusuGroups.jsx': ['Tag'],
+              'src/pages/Users.jsx': ['Tag'],
+              'src/pages/WarRoom.jsx': ['Tag'],
+              'src/pages/Withdrawals.jsx': ['Tag'],
+              'src/pages/BusinessKYB.jsx': ['Skel'],
+          }
+
+          import_pattern = re.compile(r"import\\s*\\{([^}]*)\\}\\s*from\\s*'@/components/forge';", re.S)
+          for filename, symbols in forge_files.items():
+              path = Path(filename)
+              text = path.read_text()
+              match = import_pattern.search(text)
+              assert match, f'No forge import found in {filename}'
+              body = match.group(1)
+              for symbol in symbols:
+                  if re.search(rf'\\b{re.escape(symbol)}\\b', body):
+                      continue
+                  body = body.rstrip()
+                  if body.endswith(','):
+                      body = f'{body} {symbol},'
+                  else:
+                      body = f'{body}, {symbol}'
+              text = text[:match.start(1)] + body + text[match.end(1):]
+              path.write_text(text)
+
+          path = Path('src/pages/FeeEngine.jsx')
+          text = path.read_text()
+          block = re.compile(r'''\\s*<ConfirmDialog\\s+open=\\{!!removeKey\\}\\s+title="Remove Payout Method"\\s+message=\\{removeKey \\? `Remove \\${removeKey}\\? Vendors with this method will need to update their accounts\\.` : ''\\}\\s+confirmLabel="Remove"\\s+variant="destructive"\\s+onConfirm=\\{confirmRemoveMethod\\}\\s+onCancel=\\{\\(\\) => setRemoveKey\\(null\\)\\}\\s*/>''', re.S)
+          matches = list(block.finditer(text))
+          assert len(matches) == 4, f'Expected 4 FeeEngine ConfirmDialog blocks, found {len(matches)}'
+          spans = [m.span() for m in matches]
+          for start, end in reversed(spans[:3]):
+              text = text[:start] + text[end:]
+          replacement = '''\n      <ConfirmDestructive\n        open={!!removeKey}\n        title="Remove Payout Method"\n        body={removeKey ? `Remove ${removeKey}? Vendors with this method will need to update their accounts.` : ''}\n        confirmLabel="Remove"\n        onConfirm={confirmRemoveMethod}\n        onClose={() => setRemoveKey(null)}\n      />'''
+          text = block.sub(replacement, text, count=1)
+          text = text.replace("import { Button } from '@/components/forge';", "import { Button, ConfirmDestructive } from '@/components/forge';", 1)
+          text = text.replace("function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning }) {", "function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning = undefined }) {", 1)
+          assert 'ConfirmDialog' not in text, 'FeeEngine still contains ConfirmDialog'
+          assert text.count('ConfirmDestructive') == 2, 'FeeEngine should contain one import and one scoped confirmation'
+          path.write_text(text)
+          PY
+
+      - name: Validate patch
+        run: |
+          npm ci
+          npm run build
+
+      - name: Commit patch and remove temporary workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/pages/EscrowDisputes.jsx src/pages/Storefronts.jsx src/pages/SusuGroups.jsx src/pages/Users.jsx src/pages/WarRoom.jsx src/pages/Withdrawals.jsx src/pages/BusinessKYB.jsx src/pages/FeeEngine.jsx
+          git rm .github/workflows/_temporary_typecheck_batch.yml
+          git commit -m 'fix(typecheck): restore component imports and FeeEngine scope [typecheck-batch]'
+          git push origin HEAD:fix/typecheck-imports-feeengine-batch
