@@ -50,13 +50,6 @@ const disputeMessageSchema = z.object({
   text: z.string().optional(),
 }).passthrough();
 
-/**
- * Producer-backed contract for GET /api/admin/disputes.
- * The Backend controller returns `success`, `disputes`, and a pagination
- * envelope; each dispute includes the participants and messages used by the
- * War Room consumer. Additional provider fields remain open so the contract
- * protects the fields the consumer relies on without inventing a full Trade model.
- */
 export const disputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(z.object({
@@ -114,11 +107,6 @@ const cursorPaginationSchema = z.object({
   total: z.number().int().nonnegative().optional(),
 }).passthrough();
 
-/**
- * Producer-backed contract for GET /api/admin/escrow-disputes.
- * The Backend controller returns `success`, an escrow-dispute array, and the
- * shared cursor/offset pagination envelope from utils/pagination.js.
- */
 export const escrowDisputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(escrowDisputeSchema),
@@ -159,7 +147,6 @@ const withdrawalPaginationSchema = z.object({
   total: z.number().int().nonnegative().optional(),
 }).passthrough();
 
-/** Producer-backed contract for GET /api/admin/withdrawals/pending. */
 export const withdrawalPendingResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
@@ -173,6 +160,31 @@ export const withdrawalPendingResponseSchema = z.object({
   }).passthrough(),
 }).passthrough();
 
+const payoutSettingsSchema = z.object({
+  autoPayoutEnabled: z.boolean(),
+  autoPayoutThresholdUsdc: z.number().finite().nonnegative(),
+  autoPayoutMaxAmountUsdc: z.number().finite().nonnegative(),
+  autoPayoutIntervalMs: z.number().int().min(10000),
+}).strict();
+
+export const payoutSettingsResponseSchema = z.object({
+  success: z.literal(true),
+  settings: payoutSettingsSchema,
+  pool: z.object({
+    balance: z.number().finite().nonnegative(),
+    alertThreshold: z.number().finite().nonnegative(),
+  }).strict(),
+}).strict();
+
+export const payoutSettingsUpdateSchema = z.object({
+  autoPayoutEnabled: z.boolean().optional(),
+  autoPayoutThresholdUsdc: z.number().finite().nonnegative().optional(),
+  autoPayoutMaxAmountUsdc: z.number().finite().nonnegative().optional(),
+  autoPayoutIntervalMs: z.number().int().min(10000).optional(),
+}).strict().refine((value) => Object.keys(value).length > 0, {
+  message: 'At least one payout setting is required.',
+});
+
 /**
  * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
  * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
@@ -182,6 +194,8 @@ export const withdrawalPendingResponseSchema = z.object({
  * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
  * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
  * @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse
+ * @typedef {import('zod').infer<typeof payoutSettingsResponseSchema>} PayoutSettingsResponse
+ * @typedef {import('zod').infer<typeof payoutSettingsUpdateSchema>} PayoutSettingsUpdate
  */
 
 /** @typedef {{
@@ -193,10 +207,6 @@ export const withdrawalPendingResponseSchema = z.object({
 
 /** @typedef {Error & AdminApiErrorDetails} AdminApiError */
 
-/**
- * @param {unknown} error
- * @returns {error is AdminApiError}
- */
 export function isAdminApiError(error) {
   return error instanceof Error && (
     typeof error.statusCode === 'number' ||
