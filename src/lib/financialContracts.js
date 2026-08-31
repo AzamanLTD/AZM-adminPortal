@@ -38,6 +38,37 @@ export const escrowResolveSchema = z.object({
   payeePct: z.number().min(0).max(100),
 });
 
+const disputeParticipantSchema = z.object({
+  id: idSchema,
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+}).passthrough();
+
+const disputeMessageSchema = z.object({
+  id: idSchema.optional(),
+  sender: z.string().optional(),
+  text: z.string().optional(),
+}).passthrough();
+
+/**
+ * Producer-backed contract for GET /api/admin/disputes.
+ * The Backend controller returns `success`, `disputes`, and a pagination
+ * envelope; each dispute includes the participants and messages used by the
+ * War Room consumer. Additional provider fields remain open so the contract
+ * protects the fields the consumer relies on without inventing a full Trade model.
+ */
+export const disputeListResponseSchema = z.object({
+  success: z.literal(true),
+  disputes: z.array(z.object({
+    id: idSchema,
+    status: z.string(),
+    user: disputeParticipantSchema,
+    vendor: disputeParticipantSchema,
+    messages: z.array(disputeMessageSchema),
+  }).passthrough()),
+  pagination: z.unknown().optional(),
+}).passthrough();
+
 const escrowParticipantSchema = z.object({
   id: idSchema,
   username: z.string().nullable().optional(),
@@ -73,25 +104,6 @@ const escrowDisputeSchema = z.object({
     payee: escrowParticipantSchema.nullable().optional(),
     ticket: escrowTicketSchema.nullable().optional(),
   }).passthrough(),
-}).passthrough();
-
-/**
- * Producer-backed contract for GET /api/admin/disputes.
- * The Backend controller returns `success`, `disputes`, and a pagination
- * envelope; each dispute includes the participants and messages used by the
- * War Room consumer. Additional provider fields remain open so the contract
- * protects the fields the consumer relies on without inventing a full Trade model.
- */
-export const disputeListResponseSchema = z.object({
-  success: z.literal(true),
-  disputes: z.array(z.object({
-    id: idSchema,
-    status: z.string(),
-    user: z.object({ id: idSchema, username: z.string().nullable().optional(), email: z.string().nullable().optional() }).passthrough(),
-    vendor: z.object({ id: idSchema, username: z.string().nullable().optional(), email: z.string().nullable().optional() }).passthrough(),
-    messages: z.array(z.object({ id: idSchema.optional(), sender: z.string().optional(), text: z.string().optional() }).passthrough()),
-  }).passthrough()),
-  pagination: z.unknown().optional(),
 }).passthrough();
 
 /**
