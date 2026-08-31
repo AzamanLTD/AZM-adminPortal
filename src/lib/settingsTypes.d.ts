@@ -1,6 +1,7 @@
-import { z } from 'zod';
-import { adminSettingsSchema, adminSettingsResponseSchema, adminSettingsUpdateSchema } from './settingsContracts';
-
-export type AdminSettings = z.infer<typeof adminSettingsSchema>;
-export type AdminSettingsResponse = z.infer<typeof adminSettingsResponseSchema>;
-export type AdminSettingsUpdate = z.infer<typeof adminSettingsUpdateSchema>;
+// Compatibility facade for legacy imports. The authoritative compile-time
+// contract lives in the included src/types/adminSettings.d.ts boundary.
+export type {
+  AdminSettings,
+  AdminSettingsResponse,
+  AdminSettingsUpdate,
+} from '../types/adminSettings';

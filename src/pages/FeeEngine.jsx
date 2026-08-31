@@ -7,7 +7,10 @@ import { toast } from 'sonner';
 import api from '@/lib/api';
 import { Calculator, Save, AlertTriangle, TrendingUp, RotateCcw, History, BarChart3, Clock, ArrowUp, ArrowDown } from 'lucide-react';
 
-function pct(v) { return (parseFloat(v) * 100).toFixed(2); }
+/** @typedef {import('@/types/adminSettings').AdminSettings} AdminSettings */
+/** @typedef {Record<string, string>} FeeForm */
+
+function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }
 function asPct(v) { return parseFloat(v) / 100; }
 
 function SettingRow({ label, description, value, onChange, min = 0, max = 100, unit = '%', warning = '' }) {
@@ -208,7 +211,7 @@ function ProjectedRevenue({ form, dirty, liveSettings }) {
   // Calculate projected revenue with new fees
   // Current p2p fee vs new p2p fee — impact on trade fee revenue
   const currentP2pFee = liveSettings.p2pFeePct;
-  const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;
+  const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;
   const feeDelta = currentP2pFee - oldP2pFee;
 
   // Estimate trade fee revenue portion
@@ -412,14 +415,15 @@ function ChangeHistory() {
 }
 
 export default function FeeEngine() {
-  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();
-  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */
-  const serverSettings = serverSettingsRaw;
+  const globalSettings = useGlobalSettings();
+  const { isLoading } = globalSettings;
+  /** @type {AdminSettings | undefined} */
+  const serverSettings = globalSettings.data;
   const { mutate: updateSettings, isPending } = useUpdateSettings();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
 
-  const [form, setForm] = useState({});
+  const [form, setForm] = useState(/** @type {FeeForm} */ ({}));
   const [dirty, setDirty] = useState(false);
 
   useEffect(() => {
@@ -430,8 +434,8 @@ export default function FeeEngine() {
         thirdPartyMargin: pct(serverSettings.thirdPartyMargin),
         vendorShareUnder1k: pct(serverSettings.vendorShareUnder1k),
         vendorShareOver1k: pct(serverSettings.vendorShareOver1k),
-        tierThreshold: serverSettings.tierThreshold,
-        vendorMinCollateral: serverSettings.vendorMinCollateral,
+        tierThreshold: String(serverSettings.tierThreshold),
+        vendorMinCollateral: String(serverSettings.vendorMinCollateral),
         baseExitFeePct: pct(serverSettings.baseExitFeePct),
         fiatWithdrawalFeePct: pct(serverSettings.fiatWithdrawalFeePct),
         cryptoWithdrawalFeePct: pct(serverSettings.cryptoWithdrawalFeePct),
@@ -474,11 +478,11 @@ export default function FeeEngine() {
     tierThreshold: form.tierThreshold || 1000,
     fiatWithdrawalFeePct: asPct(form.fiatWithdrawalFeePct || 2),
     cryptoWithdrawalFeePct: asPct(form.cryptoWithdrawalFeePct || 1),
-    cryptoPlatformFeePct: asPct(form.cryptoPlatformFeePct || 0),
+    cryptoPlatformFeePct: asPct(String(form.cryptoPlatformFeePct || 0)),
   };
 
-  const vendorUnder = parseFloat(form.vendorShareUnder1k || 0);
-  const vendorOver = parseFloat(form.vendorShareOver1k || 0);
+  const vendorUnder = parseFloat(String(form.vendorShareUnder1k || 0));
+  const vendorOver = parseFloat(String(form.vendorShareOver1k || 0));
 
   if (isLoading) return <div className="text-ink-2 text-sm p-8 text-center">Loading settings…</div>;
 

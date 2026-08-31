@@ -49,5 +49,9 @@ jobs:
             echo "No changed JavaScript/TypeScript files to lint."
           fi
 
+      # Typecheck is a required compile-time gate for the checked Admin source boundary.
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Build
         run: npm run build
