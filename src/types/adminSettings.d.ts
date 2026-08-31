@@ -1,3 +1,7 @@
+/**
+ * Authoritative compile-time settings boundary for checked Admin Portal source.
+ * Runtime validation remains in src/lib/settingsContracts.js.
+ */
 export interface AdminSettings {
   p2pFeePct: number;
   bankMargin: number;
