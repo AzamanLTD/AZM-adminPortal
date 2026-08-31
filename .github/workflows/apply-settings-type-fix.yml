@@ -1,0 +1,67 @@
+name: Apply guarded settings type repair
+
+on:
+  push:
+    branches:
+      - fix/typecheck-settings-query-contract
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply guarded source repairs
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('src/lib/useAdminData.js')
+          text = path.read_text()
+          old = """    queryFn: async () => {
+      const data = await financialApi.settings.get();
+      return data.settings;
+    },"""
+          new = """    queryFn: /** @returns {Promise<import('./settingsTypes').AdminSettings>} */ async () => {
+      const data = await financialApi.settings.get();
+      return data.settings;
+    },"""
+          if text.count(old) != 1:
+              raise SystemExit('useAdminData: expected exactly one settings query function')
+          path.write_text(text.replace(old, new))
+
+          path = Path('src/pages/FeeEngine.jsx')
+          text = path.read_text()
+          old = "function pct(v) { return (parseFloat(v) * 100).toFixed(2); }"
+          new = "function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }"
+          if text.count(old) != 1:
+              raise SystemExit('FeeEngine: expected exactly one pct helper')
+          path.write_text(text.replace(old, new))
+
+      - name: Validate source
+        run: |
+          npm ci
+          npx eslint src/lib/useAdminData.js src/pages/FeeEngine.jsx
+          npm run build
+
+      - name: Commit source-only repair
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git add src/lib/useAdminData.js src/pages/FeeEngine.jsx
+          git diff --cached --check
+          git diff --cached --name-only | grep -Fx 'src/lib/useAdminData.js'
+          git diff --cached --name-only | grep -Fx 'src/pages/FeeEngine.jsx'
+          git commit -m 'fix(typecheck): make settings query result explicit'
+          git push origin HEAD:fix/typecheck-settings-query-contract
+
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/apply-settings-type-fix.yml
+          git commit -m 'chore: remove temporary settings repair workflow [skip ci]'
+          git push origin HEAD:fix/typecheck-settings-query-contract
