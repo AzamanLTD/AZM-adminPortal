@@ -1,7 +1,6 @@
 name: Typecheck diagnostic (non-gating)
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - fix/typecheck-admin-api-error-contract
