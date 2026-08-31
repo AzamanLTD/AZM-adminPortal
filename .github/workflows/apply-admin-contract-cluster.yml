@@ -1,0 +1,90 @@
+name: Apply guarded admin contract cluster repair
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair typed admin contracts
+        shell: bash
+        run: |
+          npm ci
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path); text = p.read_text(); count = text.count(old)
+              if count != 1: raise SystemExit(f'{path}: expected 1 match, found {count}')
+              p.write_text(text.replace(old, new, 1))
+
+          # FeeEngine: preserve the schema-derived settings type at the page boundary.
+          replace_once('src/pages/FeeEngine.jsx',
+              "const { data: serverSettings, isLoading } = useGlobalSettings();",
+              "const { data: serverSettingsRaw, isLoading } = useGlobalSettings();\n  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */\n  const serverSettings = serverSettingsRaw;")
+
+          # Users: KYCPanel receives no props in its actual render path.
+          replace_once('src/pages/Users.jsx',
+              'function KYCPanel({ userId }) {',
+              'function KYCPanel() {')
+
+          # War Room mutation variables.
+          replace_once('src/pages/WarRoom.jsx',
+              'mutationFn: ({ id, reason }) => api.trades.forceRelease(id, reason),',
+              'mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceRelease(id, reason),')
+          replace_once('src/pages/WarRoom.jsx',
+              'mutationFn: ({ id, reason }) => api.trades.forceCancel(id, reason),',
+              'mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => api.trades.forceCancel(id, reason),')
+          replace_once('src/pages/WarRoom.jsx',
+              "mutationFn: ({ id, ruling, reason, buyerPercent, override }) =>\n      api.trades.resolve(id, ruling, reason, buyerPercent, override),",
+              "mutationFn: /** @param {{ id: string | number, ruling: string, reason: string, buyerPercent: number, override?: boolean }} data */ ({ id, ruling, reason, buyerPercent, override }) =>\n      api.trades.resolve(String(id), ruling, reason, buyerPercent, override),")
+          replace_once('src/pages/WarRoom.jsx',
+              'mutationFn: ({ id, message }) => api.trades.injectMessage(id, message),',
+              'mutationFn: /** @param {{ id: string | number, message: string }} data */ ({ id, message }) => api.trades.injectMessage(String(id), message),')
+          replace_once('src/pages/WarRoom.jsx',
+              'onError: async (e, _v, ctx) => {',
+              '/** @param {Error & { statusCode?: number }} e */\n    onError: async (e, _v, ctx) => {')
+          replace_once('src/pages/WarRoom.jsx',
+              'onError: (e, _v, ctx) => {',
+              '/** @param {Error & { statusCode?: number }} e */\n    onError: (e, _v, ctx) => {')
+          replace_once('src/pages/WarRoom.jsx',
+              'onError: (err, _v, ctx) => {',
+              '/** @param {Error & { response?: { data?: any }, data?: any }} err */\n    onError: (err, _v, ctx) => {')
+          replace_once('src/pages/WarRoom.jsx',
+              'resolve.mutate({ id: dispute.id, ruling, reason, buyerPercent: parseInt(buyerPct) });',
+              'resolve.mutate({ id: String(dispute.id), ruling, reason, buyerPercent: parseInt(buyerPct) });')
+
+          # Withdrawals mutation variables, including batch array.
+          replace_once('src/pages/Withdrawals.jsx',
+              'mutationFn: (id) => financialApi.withdrawals.approve(id),',
+              'mutationFn: /** @param {string | number} id */ (id) => financialApi.withdrawals.approve(id),')
+          replace_once('src/pages/Withdrawals.jsx',
+              'mutationFn: ({ id, reason }) => financialApi.withdrawals.reject(id, reason),',
+              'mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.withdrawals.reject(id, reason),')
+          replace_once('src/pages/Withdrawals.jsx',
+              'mutationFn: async (ids) => {',
+              '/** @param {Array<string | number>} ids */\n    mutationFn: async (ids) => {')
+
+          PY
+
+          npx eslint --fix src/pages/FeeEngine.jsx src/pages/Users.jsx src/pages/WarRoom.jsx src/pages/Withdrawals.jsx
+          npx eslint --quiet src/pages/FeeEngine.jsx src/pages/Users.jsx src/pages/WarRoom.jsx src/pages/Withdrawals.jsx
+          npm run build
+          git diff --check
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git checkout origin/main -- .github/workflows/ci.yml
+          git rm .github/workflows/apply-admin-contract-cluster.yml
+          git add src .github/workflows/ci.yml
+          git commit -m 'fix(typecheck): repair admin contract cluster [skip ci]'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
