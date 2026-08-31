@@ -49,5 +49,8 @@ jobs:
             echo "No changed JavaScript/TypeScript files to lint."
           fi
 
+      - name: Diagnostic typecheck
+        run: npm run typecheck
+
       - name: Build
         run: npm run build
