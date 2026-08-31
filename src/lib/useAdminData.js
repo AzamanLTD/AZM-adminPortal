@@ -4,6 +4,7 @@
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from './api';
+import { financialApi } from './financialApi';
 
 export function useStats() {
   return useQuery({
@@ -103,7 +104,7 @@ export function useDisputes() {
   return useQuery({
     queryKey: ['admin', 'disputes'],
     queryFn: async () => {
-      const data = await api.trades.disputes();
+      const data = await financialApi.disputes.list();
       return data.disputes || [];
     },
     refetchInterval: 20000,
@@ -121,14 +122,11 @@ export function useWithdrawals() {
   });
 }
 
-// Payouts flagged NEEDS_MANUAL_REVIEW (the autonomous payout worker couldn't
-// auto-dispatch them). Used by the notification center.
 export function useNeedsReviewWithdrawals() {
   return useQuery({
     queryKey: ['admin', 'withdrawals', 'needs-review'],
     queryFn: async () => {
       const data = await api.withdrawals.needsReview();
-      // Shape tolerance: backend may return {data:{...}}, {withdrawals}, {needsReview}, or an array.
       return (
         data?.data?.needsReview ||
         data?.needsReview ||
@@ -141,7 +139,6 @@ export function useNeedsReviewWithdrawals() {
   });
 }
 
-// Pending vendor applications (mirrors the Users.jsx VendorPanel query).
 export function useVendorApplications() {
   return useQuery({
     queryKey: ['vendor', 'apps'],
@@ -153,7 +150,6 @@ export function useVendorApplications() {
   });
 }
 
-// Resolved dispute history (for the "Resolved" feed in the notification center).
 export function useDisputeResolutions() {
   return useQuery({
     queryKey: ['admin', 'dispute-resolutions'],
@@ -165,7 +161,6 @@ export function useDisputeResolutions() {
   });
 }
 
-// Pending KYC applications (shares the ['kyc','pending'] key used inline in Users.jsx).
 export function usePendingKyc() {
   return useQuery({
     queryKey: ['kyc', 'pending'],
@@ -186,10 +181,6 @@ export function useAuditLog(page = 1, filters = {}) {
     },
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PRIVATE SUSU ECOSYSTEM — Admin Portal (Phase 5 / Workstream E)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function useSusuList(status) {
   return useQuery({
@@ -280,10 +271,6 @@ export function usePoRReject() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
   });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ESCROW DISPUTES + BUSINESS KYB — Admin Portal (WS1/WS2)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function useEscrowDisputes(status) {
   return useQuery({
