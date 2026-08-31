@@ -1,0 +1,42 @@
+name: Typecheck diagnostic (non-gating)
+
+on:
+  push:
+    branches:
+      - fix/typecheck-admin-api-error-contract
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Typecheck (report only)
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > /tmp/typecheck.log 2>&1
+          status=$?
+          cat /tmp/typecheck.log
+          echo "Typecheck exit code: $status"
+          errors=$(grep -c 'error TS' /tmp/typecheck.log || true)
+          echo "TypeScript error count: $errors"
+          exit 0
+      - name: Remove diagnostic workflow
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git rm .github/workflows/typecheck-diagnostic.yml
+          git add .
+          git commit -m 'chore: remove one-shot typecheck diagnostic [skip ci]'
+          git push origin HEAD:fix/typecheck-admin-api-error-contract
