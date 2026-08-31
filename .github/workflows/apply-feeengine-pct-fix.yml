@@ -1,0 +1,47 @@
+name: Apply guarded FeeEngine numeric boundary repair
+
+on:
+  push:
+    branches:
+      - fix/typecheck-explicit-settings-types
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply exact FeeEngine repair
+        shell: python
+        run: |
+          from pathlib import Path
+          path = Path('src/pages/FeeEngine.jsx')
+          text = path.read_text()
+          old = "const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;"
+          new = "const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;"
+          if text.count(old) != 1:
+              raise SystemExit(f'FeeEngine: expected exactly 1 oldP2pFee expression, found {text.count(old)}')
+          path.write_text(text.replace(old, new))
+      - name: Validate source
+        run: |
+          npm ci
+          npx eslint src/pages/FeeEngine.jsx
+          npm run build
+      - name: Commit source-only repair
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git add src/pages/FeeEngine.jsx
+          git diff --cached --check
+          git commit -m 'fix(typecheck): normalize FeeEngine numeric input'
+          git push origin HEAD:fix/typecheck-explicit-settings-types
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          git rm .github/workflows/apply-feeengine-pct-fix.yml
+          git commit -m 'chore: remove temporary FeeEngine repair workflow [skip ci]'
+          git push origin HEAD:fix/typecheck-explicit-settings-types
