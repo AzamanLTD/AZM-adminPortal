@@ -1,0 +1,50 @@
+name: Temporary Admin Force Release Patch
+
+on:
+  push:
+    branches:
+      - fix/admin-force-release-409-refresh-20260831
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[admin-force-release-409-refresh-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply surgical conflict-refresh patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/pages/WarRoom.jsx')
+          text = path.read_text()
+
+          old = '''    onError: (e, _v, ctx) => {\n      if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);\n      toast.error(e.message || 'Force release failed');\n    },'''
+          new = '''    onError: async (e, _v, ctx) => {\n      if (ctx?.prev) qc.setQueryData(['admin', 'disputes'], ctx.prev);\n      if (e?.statusCode === 409) {\n        // A concurrent admin already won the atomic settlement claim.\n        // The optimistic projection is stale, so reconcile from the\n        // authoritative dispute endpoint instead of treating the request as\n        // a successful release.\n        await qc.invalidateQueries({ queryKey: ['admin', 'disputes'], refetchType: 'active' });\n        toast.error('Trade was already resolved by another admin. The dispute list was refreshed.');\n        return;\n      }\n      toast.error(e.message || 'Force release failed');\n    },'''
+
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one force-release onError block, found {text.count(old)}')
+
+          path.write_text(text.replace(old, new))
+          PY
+
+      - name: Verify exact diff
+        run: |
+          git diff --check
+          git diff -- src/pages/WarRoom.jsx
+
+      - name: Remove temporary workflow and commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/temporary-admin-force-release-patch.yml
+          git add src/pages/WarRoom.jsx
+          git diff --cached --check
+          git diff --cached --stat
+          git commit -m 'fix(admin): refresh disputes after force-release conflict [admin-force-release-409-refresh-applied]'
+          git push origin HEAD:${GITHUB_REF_NAME}
