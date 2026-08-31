@@ -1,0 +1,63 @@
+name: Migrate WarRoom financial facade
+
+on:
+  push:
+    branches: [fix/admin-warroom-financial-facade]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/admin-warroom-financial-facade
+          fetch-depth: 1
+
+      - name: Apply exact guarded migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          file=src/pages/WarRoom.jsx
+          grep -Fq "import api from '@/lib/api';" "$file"
+          grep -Fq "api.trades.forceRelease(String(id), reason)" "$file"
+          grep -Fq "api.trades.forceCancel(String(id), reason)" "$file"
+          test "$(grep -Fc "import api from '@/lib/api';" "$file")" -eq 1
+          test "$(grep -Fc "api.trades.forceRelease(String(id), reason)" "$file")" -eq 1
+          test "$(grep -Fc "api.trades.forceCancel(String(id), reason)" "$file")" -eq 1
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/WarRoom.jsx')
+          s = p.read_text()
+          s = s.replace("import api from '@/lib/api';", "import { financialApi } from '@/lib/financialApi';", 1)
+          s = s.replace("api.trades.forceRelease(String(id), reason)", "financialApi.disputes.forceRelease(id, reason)", 1)
+          s = s.replace("api.trades.forceCancel(String(id), reason)", "financialApi.disputes.forceCancel(id, reason)", 1)
+          p.write_text(s)
+          PY
+          grep -Fq "import { financialApi } from '@/lib/financialApi';" "$file"
+          grep -Fq "financialApi.disputes.forceRelease(id, reason)" "$file"
+          grep -Fq "financialApi.disputes.forceCancel(id, reason)" "$file"
+          if grep -Fq "api from '@/lib/api'" "$file"; then exit 1; fi
+
+      - name: Commit source migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/WarRoom.jsx
+          git diff --cached --check
+          git diff --cached -- src/pages/WarRoom.jsx
+          git commit -m "fix(typecheck): route WarRoom force actions through financial facade"
+          git push origin HEAD:fix/admin-warroom-financial-facade
+
+      - name: Remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm .github/workflows/migrate-warroom-facade.yml
+          git commit -m "chore: remove temporary WarRoom migration workflow"
+          git push origin HEAD:fix/admin-warroom-financial-facade
