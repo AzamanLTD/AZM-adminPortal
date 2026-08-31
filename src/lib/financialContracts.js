@@ -139,6 +139,12 @@ const withdrawalSchema = z.object({
   user: withdrawalUserSchema.nullable().optional(),
 }).passthrough();
 
+const frozenWithdrawalSchema = z.object({
+  id: idSchema,
+  status: z.string(),
+  user: withdrawalUserSchema.nullable().optional(),
+}).passthrough();
+
 const withdrawalPaginationSchema = z.object({
   nextCursor: idSchema.nullable(),
   hasMore: z.boolean(),
@@ -151,7 +157,7 @@ export const withdrawalPendingResponseSchema = z.object({
   success: z.literal(true),
   data: z.object({
     pending: z.array(withdrawalSchema),
-    frozen: z.array(withdrawalSchema),
+    frozen: z.array(frozenWithdrawalSchema),
     counts: z.object({
       pending: z.number().int().nonnegative(),
       frozen: z.number().int().nonnegative(),
