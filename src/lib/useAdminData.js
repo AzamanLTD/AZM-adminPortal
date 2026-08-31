@@ -115,8 +115,17 @@ export function useWithdrawals() {
   return useQuery({
     queryKey: ['admin', 'withdrawals'],
     queryFn: async () => {
-      const data = await api.withdrawals.pending();
-      return data.withdrawals || [];
+      const response = await financialApi.withdrawals.pending();
+      const { pending, frozen, counts, pagination } = response.data;
+      return Object.assign(
+        pending.map((withdrawal) => ({
+          ...withdrawal,
+          requestedAt: withdrawal.createdAt,
+          method: withdrawal.payoutMethod,
+          wallet: withdrawal.destination,
+        })),
+        { frozen, counts, pagination },
+      );
     },
     refetchInterval: 30000,
   });

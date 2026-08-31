@@ -125,6 +125,54 @@ export const escrowDisputeListResponseSchema = z.object({
   pagination: cursorPaginationSchema,
 }).passthrough();
 
+const withdrawalUserSchema = z.object({
+  id: idSchema.optional(),
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  kycStatus: z.string().nullable().optional(),
+  banStatus: z.string().nullable().optional(),
+  strikeCount: z.number().int().nonnegative().optional(),
+  tradesCompleted: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+const withdrawalSchema = z.object({
+  id: idSchema,
+  amount: z.union([z.number().finite(), z.string().min(1)]),
+  payoutMethod: z.string(),
+  network: z.string().nullable().optional(),
+  destination: z.string(),
+  totalGasFee: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  vendorGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  adminGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  status: z.string(),
+  userId: idSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  user: withdrawalUserSchema.nullable().optional(),
+}).passthrough();
+
+const withdrawalPaginationSchema = z.object({
+  nextCursor: idSchema.nullable(),
+  hasMore: z.boolean(),
+  limit: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+/** Producer-backed contract for GET /api/admin/withdrawals/pending. */
+export const withdrawalPendingResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    pending: z.array(withdrawalSchema),
+    frozen: z.array(withdrawalSchema),
+    counts: z.object({
+      pending: z.number().int().nonnegative(),
+      frozen: z.number().int().nonnegative(),
+    }).passthrough(),
+    pagination: withdrawalPaginationSchema,
+  }).passthrough(),
+}).passthrough();
+
 /**
  * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
  * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
@@ -133,6 +181,7 @@ export const escrowDisputeListResponseSchema = z.object({
  * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
  * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
  * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
+ * @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse
  */
 
 /** @typedef {{
