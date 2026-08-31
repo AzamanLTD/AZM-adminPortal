@@ -13,6 +13,7 @@ import {
   withdrawalPendingResponseSchema,
 } from './financialContracts';
 import { feeProfileListResponseSchema, feeProfileWriteSchema } from './feeContracts';
+import { adminSettingsResponseSchema, adminSettingsUpdateSchema } from './settingsContracts';
 
 const parse = (schema, value) => schema.parse(value);
 
@@ -26,8 +27,8 @@ export const financialApi = {
   profitBreakdown: () => admin.profitBreakdown(),
 
   settings: {
-    get: () => settings.get(),
-    update: (data) => settings.update(data),
+    get: async () => parse(adminSettingsResponseSchema, await settings.get()),
+    update: (data) => settings.update(parse(adminSettingsUpdateSchema, data)),
   },
 
   fees: {
@@ -39,75 +40,32 @@ export const financialApi = {
   },
 
   disputes: {
-    list: async (page = 1) => {
-      const data = await trades.disputes(page);
-      return parse(disputeListResponseSchema, data);
-    },
-    forceRelease: (tradeId, reason) => {
-      const input = parse(forceReleaseSchema, { tradeId, reason });
-      return trades.forceRelease(input.tradeId, input.reason);
-    },
-    forceCancel: (tradeId, reason) => {
-      const input = parse(forceTradeActionSchema, { tradeId, reason });
-      return trades.forceCancel(input.tradeId, input.reason);
-    },
-    resolve: (tradeId, ruling, reason, buyerPercent, override) =>
-      trades.resolve(tradeId, ruling, reason, buyerPercent, override),
+    list: async (page = 1) => parse(disputeListResponseSchema, await trades.disputes(page)),
+    forceRelease: (tradeId, reason) => { const input = parse(forceReleaseSchema, { tradeId, reason }); return trades.forceRelease(input.tradeId, input.reason); },
+    forceCancel: (tradeId, reason) => { const input = parse(forceTradeActionSchema, { tradeId, reason }); return trades.forceCancel(input.tradeId, input.reason); },
+    resolve: (tradeId, ruling, reason, buyerPercent, override) => trades.resolve(tradeId, ruling, reason, buyerPercent, override),
     injectMessage: (tradeId, message) => trades.injectMessage(tradeId, message),
     resolutions: () => trades.resolutions(),
   },
 
   withdrawals: {
-    pending: async () => {
-      const data = await withdrawals.pending();
-      return parse(withdrawalPendingResponseSchema, data);
-    },
+    pending: async () => parse(withdrawalPendingResponseSchema, await withdrawals.pending()),
     approve: (id) => withdrawals.approve(parse(userIdSchema, id)),
-    reject: (id, reason) => {
-      const input = parse(reasonSchema, { reason });
-      return withdrawals.reject(parse(userIdSchema, id), input.reason);
-    },
+    reject: (id, reason) => { const input = parse(reasonSchema, { reason }); return withdrawals.reject(parse(userIdSchema, id), input.reason); },
     needsReview: () => withdrawals.needsReview(),
   },
 
   payouts: {
-    settings: async () => {
-      const data = await payouts.getSettings();
-      return parse(payoutSettingsResponseSchema, data);
-    },
-    updateSettings: (data) => {
-      const input = parse(payoutSettingsUpdateSchema, data);
-      return payouts.updateSettings(input);
-    },
+    settings: async () => parse(payoutSettingsResponseSchema, await payouts.getSettings()),
+    updateSettings: (data) => payouts.updateSettings(parse(payoutSettingsUpdateSchema, data)),
     batchProcess: () => payouts.batchProcess(),
   },
 
-  userCredit: (id, amount, reason) => {
-    const input = parse(adminCreditSchema, { amount, reason });
-    return users.credit(parse(userIdSchema, id), input.amount);
-  },
+  userCredit: (id, amount, reason) => { const input = parse(adminCreditSchema, { amount, reason }); return users.credit(parse(userIdSchema, id), input.amount); },
 
   escrow: {
-    disputes: async (status) => {
-      const data = await escrow.disputes(status);
-      return parse(escrowDisputeListResponseSchema, data);
-    },
-    resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => {
-      const input = parse(escrowResolveSchema, {
-        disputeId,
-        ruling,
-        rulingNotes,
-        payerPct,
-        payeePct,
-      });
-      return escrow.resolve(
-        input.disputeId,
-        input.ruling,
-        input.rulingNotes,
-        input.payerPct,
-        input.payeePct,
-      );
-    },
+    disputes: async (status) => parse(escrowDisputeListResponseSchema, await escrow.disputes(status)),
+    resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => { const input = parse(escrowResolveSchema, { disputeId, ruling, rulingNotes, payerPct, payeePct }); return escrow.resolve(input.disputeId, input.ruling, input.rulingNotes, input.payerPct, input.payeePct); },
     assign: (disputeId, assignedToId) => escrow.assign(disputeId, assignedToId),
   },
 };
