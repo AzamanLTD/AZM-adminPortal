@@ -1,9 +1,11 @@
-import { escrow, feeProfiles, payouts, settings, trades, withdrawals, admin } from './api';
+import { escrow, feeProfiles, payouts, settings, trades, admin, users, withdrawals } from './api';
 import {
   adminCreditSchema,
+  escrowResolveSchema,
   forceReleaseSchema,
   forceTradeActionSchema,
   reasonSchema,
+  userIdSchema,
 } from './financialContracts';
 
 const parse = (schema, value) => schema.parse(value);
@@ -45,10 +47,10 @@ export const financialApi = {
 
   withdrawals: {
     pending: () => withdrawals.pending(),
-    approve: (id) => withdrawals.approve(id),
+    approve: (id) => withdrawals.approve(parse(userIdSchema, id)),
     reject: (id, reason) => {
       const input = parse(reasonSchema, { reason });
-      return withdrawals.reject(id, input.reason);
+      return withdrawals.reject(parse(userIdSchema, id), input.reason);
     },
     needsReview: () => withdrawals.needsReview(),
   },
@@ -61,13 +63,27 @@ export const financialApi = {
 
   userCredit: (id, amount, reason) => {
     const input = parse(adminCreditSchema, { amount, reason });
-    return import('./api').then(({ users }) => users.credit(id, input.amount));
+    return users.credit(parse(userIdSchema, id), input.amount);
   },
 
   escrow: {
     disputes: (status) => escrow.disputes(status),
-    resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) =>
-      escrow.resolve(disputeId, ruling, rulingNotes, payerPct, payeePct),
+    resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => {
+      const input = parse(escrowResolveSchema, {
+        disputeId,
+        ruling,
+        rulingNotes,
+        payerPct,
+        payeePct,
+      });
+      return escrow.resolve(
+        input.disputeId,
+        input.ruling,
+        input.rulingNotes,
+        input.payerPct,
+        input.payeePct,
+      );
+    },
     assign: (disputeId, assignedToId) => escrow.assign(disputeId, assignedToId),
   },
 };
