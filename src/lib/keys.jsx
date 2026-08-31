@@ -29,7 +29,8 @@ export function useKey(scope, key, handler, deps = []) {
 
 /** `g` then `d` — 800ms window, the Gmail/Linear standard. */
 export function useSequence(seq, handler, timeout = 800) {
-  const buf = useRef([]); const t = useRef();
+  const buf = useRef(/** @type {string[]} */ ([]));
+  const t = useRef(/** @type {ReturnType<typeof setTimeout> | undefined} */ (undefined));
   useEffect(() => {
     const on = e => {
       if (isTyping(e.target) || e.metaKey || e.ctrlKey) return;
@@ -40,6 +41,9 @@ export function useSequence(seq, handler, timeout = 800) {
       if (tail === seq.join('')) { buf.current = []; handler(); }
     };
     document.addEventListener('keydown', on);
-    return () => document.removeEventListener('keydown', on);
-  }, [handler]);   // eslint-disable-line
+    return () => {
+      document.removeEventListener('keydown', on);
+      clearTimeout(t.current);
+    };
+  }, [handler, seq, timeout]);
 }
