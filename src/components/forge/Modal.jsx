@@ -4,7 +4,7 @@ import { modalV, scrimV } from '@/lib/motion';
 import { KeyScope } from '@/lib/keys';
 import { cn } from '@/lib/utils';
 
-export function Modal({ open, onClose, title, description, children,
+export function Modal({ open, onClose, title, description = '', children,
                         footer, size = 'md', closeOnOverlay = true }) {
   return (
     <AnimatePresence>
