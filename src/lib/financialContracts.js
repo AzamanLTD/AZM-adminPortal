@@ -50,13 +50,6 @@ const disputeMessageSchema = z.object({
   text: z.string().optional(),
 }).passthrough();
 
-/**
- * Producer-backed contract for GET /api/admin/disputes.
- * The Backend controller returns `success`, `disputes`, and a pagination
- * envelope; each dispute includes the participants and messages used by the
- * War Room consumer. Additional provider fields remain open so the contract
- * protects the fields the consumer relies on without inventing a full Trade model.
- */
 export const disputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(z.object({
@@ -114,26 +107,71 @@ const cursorPaginationSchema = z.object({
   total: z.number().int().nonnegative().optional(),
 }).passthrough();
 
-/**
- * Producer-backed contract for GET /api/admin/escrow-disputes.
- * The Backend controller returns `success`, an escrow-dispute array, and the
- * shared cursor/offset pagination envelope from utils/pagination.js.
- */
 export const escrowDisputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(escrowDisputeSchema),
   pagination: cursorPaginationSchema,
 }).passthrough();
 
+const withdrawalUserSchema = z.object({
+  id: idSchema.optional(),
+  username: z.string().nullable().optional(),
+  email: z.string().nullable().optional(),
+  kycStatus: z.string().nullable().optional(),
+  banStatus: z.string().nullable().optional(),
+  strikeCount: z.number().int().nonnegative().optional(),
+  tradesCompleted: z.number().int().nonnegative().optional(),
+}).passthrough();
+
+const withdrawalSchema = z.object({
+  id: idSchema,
+  amount: z.union([z.number().finite(), z.string().min(1)]),
+  payoutMethod: z.string(),
+  network: z.string().nullable().optional(),
+  destination: z.string(),
+  totalGasFee: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  vendorGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  adminGasShare: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  status: z.string(),
+  userId: idSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  user: withdrawalUserSchema.nullable().optional(),
+}).passthrough();
+
+const withdrawalPaginationSchema = z.object({
+  nextCursor: idSchema.nullable(),
+  hasMore: z.boolean(),
+  limit: z.number().int().positive(),
+  page: z.number().int().positive().optional(),
+  total: z.number().int().nonnegative().optional(),
+}).passthrough();
+
 /**
- * @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput
- * @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput
- * @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput
- * @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput
- * @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput
- * @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse
- * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
+ * Producer-backed contract for GET /api/admin/withdrawals/pending.
+ * The Backend returns pending and frozen queues plus counts under `data`.
  */
+export const withdrawalPendingResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    pending: z.array(withdrawalSchema),
+    frozen: z.array(withdrawalSchema),
+    counts: z.object({
+      pending: z.number().int().nonnegative(),
+      frozen: z.number().int().nonnegative(),
+    }).passthrough(),
+    pagination: withdrawalPaginationSchema,
+  }).passthrough(),
+}).passthrough();
+
+/** @typedef {import('zod').infer<typeof forceReleaseSchema>} ForceReleaseInput */
+/** @typedef {import('zod').infer<typeof forceTradeActionSchema>} ForceTradeActionInput */
+/** @typedef {import('zod').infer<typeof adminCreditSchema>} AdminCreditInput */
+/** @typedef {import('zod').infer<typeof reasonSchema>} ReasonInput */
+/** @typedef {import('zod').infer<typeof escrowResolveSchema>} EscrowResolveInput */
+/** @typedef {import('zod').infer<typeof disputeListResponseSchema>} DisputeListResponse */
+/** @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse */
+/** @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse */
 
 /** @typedef {{
  * statusCode?: number,
@@ -144,10 +182,7 @@ export const escrowDisputeListResponseSchema = z.object({
 
 /** @typedef {Error & AdminApiErrorDetails} AdminApiError */
 
-/**
- * @param {unknown} error
- * @returns {error is AdminApiError}
- */
+/** @param {unknown} error @returns {error is AdminApiError} */
 export function isAdminApiError(error) {
   return error instanceof Error && (
     typeof error.statusCode === 'number' ||
