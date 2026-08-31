@@ -411,7 +411,9 @@ function ChangeHistory() {
 }
 
 export default function FeeEngine() {
-  const { data: serverSettings, isLoading } = useGlobalSettings();
+  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();
+  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */
+  const serverSettings = serverSettingsRaw;
   const { mutate: updateSettings, isPending } = useUpdateSettings();
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;

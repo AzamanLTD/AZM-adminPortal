@@ -14,7 +14,7 @@ import ActionDialog from '@/components/ActionDialog';
 const KYC_COLORS = { VERIFIED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]', PENDING: 'bg-[var(--f-warn-bg)] text-[var(--f-warn)]', REJECTED: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]', NONE: 'bg-surface-sunken text-ink-2' };
 const RISK_COLORS = { STANDARD: 'bg-surface-sunken text-ink-2', TRUSTED: 'bg-[var(--f-ok-bg)] text-[var(--f-ok)]', HIGH_RISK: 'bg-[var(--f-bad-bg)] text-[var(--f-bad)]' };
 
-function KYCPanel({ userId }) {
+function KYCPanel() {
   const { data, isLoading } = useQuery({ queryKey: ['kyc', 'pending'], queryFn: () => api.kyc.pending() });
   const pending = data?.applications || data || [];
   const qc = useQueryClient();

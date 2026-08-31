@@ -254,7 +254,7 @@ export default function Withdrawals() {
   const [showBatchConfirm, setShowBatchConfirm] = useState(false);
 
   const approve = useMutation({
-    mutationFn: (id) => financialApi.withdrawals.approve(id),
+    mutationFn: /** @param {string | number} id */ (id) => financialApi.withdrawals.approve(id),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
       const prev = qc.getQueryData(['admin', 'withdrawals']);
@@ -276,7 +276,7 @@ export default function Withdrawals() {
   });
 
   const reject = useMutation({
-    mutationFn: ({ id, reason }) => financialApi.withdrawals.reject(id, reason),
+    mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.withdrawals.reject(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
       const prev = qc.getQueryData(['admin', 'withdrawals']);
@@ -340,6 +340,7 @@ export default function Withdrawals() {
 
   // Batch approve (sequential to avoid overwhelming the API)
   const batchApprove = useMutation({
+    /** @param {Array<string | number>} ids */
     mutationFn: async (ids) => {
       const results = [];
       for (const id of ids) {
