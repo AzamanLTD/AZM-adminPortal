@@ -1,0 +1,135 @@
+name: Apply guarded current settings type repair
+
+on:
+  push:
+    branches:
+      - fix/typecheck-current-settings-boundary
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply guarded source repairs
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('src/vite-env.d.ts')
+          text = path.read_text()
+          if 'interface AdminSettings {' not in text:
+              marker = "interface Window {\n  __azAdminSocket: unknown;\n}\n"
+              if text.count(marker) != 1:
+                  raise SystemExit('vite-env.d.ts: Window declaration marker not uniquely found')
+              addition = """
+
+          interface AdminSettings {
+            p2pFeePct: number;
+            bankMargin: number;
+            thirdPartyMargin: number;
+            vendorShareUnder1k: number;
+            vendorShareOver1k: number;
+            tierThreshold: number;
+            vendorMinCollateral: number;
+            baseExitFeePct: number;
+            fiatWithdrawalFeePct: number;
+            cryptoWithdrawalFeePct: number;
+            cryptoPlatformFeePct: number;
+            withdrawalFeeByRiskTier: Record<string, number>;
+            feeByPaymentMethod: Record<string, number>;
+            supportedPaymentMethods: string[];
+            gasFeeTrc20: number;
+            gasFeeErc20: number;
+            gasFeeBep20: number;
+            autoPayoutEnabled: boolean;
+            autoPayoutThresholdUsdc: number;
+            autoPayoutMaxAmountUsdc: number;
+            autoPayoutIntervalMs: number;
+            liveUsdToGhs: number;
+            liveRetailRate?: number | null;
+            liveCorporateRate?: number | null;
+            liveRateSource: string;
+            lastRateSync?: string | null;
+            minAppVersion: string;
+            forceUpdateUrl: string;
+            updateMessage: string;
+            susuProfitPct: number;
+            smartEscrowFeePct: number;
+            escrowDraftExpiryHours: number;
+            escrowFundedExpiryDays: number;
+          }
+          """
+              text = text.replace(marker, marker + addition)
+              path.write_text(text)
+
+          path = Path('src/pages/Config.jsx')
+          text = path.read_text()
+          old = "queryFn: () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true }))"
+          new = "queryFn: /** @returns {Promise<{ settings: Pick<AdminSettings, 'susuProfitPct' | 'liveUsdToGhs' | 'liveRateSource' | 'lastRateSync'>, _error?: boolean }>} */ () => financialApi.settings.get().catch(() => ({ settings: { susuProfitPct: 0.03, liveUsdToGhs: 15.2, liveRateSource: 'AZM_ADMIN_MOCK', lastRateSync: null }, _error: true }))"
+          if text.count(old) != 1:
+              raise SystemExit(f'Config.jsx: expected exactly one global settings query, found {text.count(old)}')
+          path.write_text(text.replace(old, new))
+
+          path = Path('src/pages/FeeEngine.jsx')
+          text = path.read_text()
+          old = "function pct(v) { return (parseFloat(v) * 100).toFixed(2); }"
+          new = "function pct(v) { return (parseFloat(String(v)) * 100).toFixed(2); }"
+          if text.count(old) != 1:
+              raise SystemExit(f'FeeEngine.jsx: expected exactly one pct helper, found {text.count(old)}')
+          text = text.replace(old, new)
+          old = "  const { data: serverSettingsRaw, isLoading } = useGlobalSettings();\n  /** @type {import('@/lib/settingsTypes').AdminSettings | undefined} */\n  const serverSettings = serverSettingsRaw;"
+          new = "  const globalSettings = useGlobalSettings();\n  const { isLoading } = globalSettings;\n  /** @type {AdminSettings | undefined} */\n  const serverSettings = globalSettings.data;"
+          if text.count(old) != 1:
+              raise SystemExit('FeeEngine.jsx: expected one existing serverSettings boundary')
+          text = text.replace(old, new)
+          old = "const oldP2pFee = parseFloat(form.p2pFeePct || 2) / 100;"
+          new = "const oldP2pFee = parseFloat(String(form.p2pFeePct || 2)) / 100;"
+          if text.count(old) != 1:
+              raise SystemExit('FeeEngine.jsx: expected one oldP2pFee expression')
+          path.write_text(text.replace(old, new))
+
+          path = Path('src/pages/WarRoom.jsx')
+          text = path.read_text()
+          replacements = [
+              ('tradeId: dispute.id', 'tradeId: String(dispute.id)'),
+              ('forceRelease.mutate({ id: dispute.id, reason: reasonText })', 'forceRelease.mutate({ id: String(dispute.id), reason: reasonText })'),
+              ('forceCancel.mutate({ id: dispute.id, reason: reasonText })', 'forceCancel.mutate({ id: String(dispute.id), reason: reasonText })'),
+          ]
+          for old, new in replacements:
+              if text.count(old) != 1:
+                  raise SystemExit(f'WarRoom.jsx: expected exactly one {old!r}, found {text.count(old)}')
+              text = text.replace(old, new)
+          path.write_text(text)
+
+      - name: Full validation
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+          npx eslint src/pages/Config.jsx src/pages/FeeEngine.jsx src/pages/WarRoom.jsx
+
+      - name: Commit source-only changes
+        shell: bash
+        run: |
+          git config user.name 'Taimako Shamsudeen Abdul-Mumin Sugru'
+          git config user.email '57481825+pyraxxz@users.noreply.github.com'
+          git add src/vite-env.d.ts src/pages/Config.jsx src/pages/FeeEngine.jsx src/pages/WarRoom.jsx
+          git diff --cached --check
+          git diff --cached --name-only | grep -Fx 'src/vite-env.d.ts'
+          git diff --cached --name-only | grep -Fx 'src/pages/Config.jsx'
+          git diff --cached --name-only | grep -Fx 'src/pages/FeeEngine.jsx'
+          git diff --cached --name-only | grep -Fx 'src/pages/WarRoom.jsx'
+          git commit -m 'fix(typecheck): align current settings and dispute boundaries'
+          git push origin HEAD:fix/typecheck-current-settings-boundary
+
+      - name: Remove temporary workflow
+        if: ${{ success() }}
+        shell: bash
+        run: |
+          git rm .github/workflows/apply-current-settings-boundary.yml
+          git commit -m 'chore: remove temporary settings repair workflow [skip ci]'
+          git push origin HEAD:fix/typecheck-current-settings-boundary
