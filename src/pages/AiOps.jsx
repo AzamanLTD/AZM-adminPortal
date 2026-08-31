@@ -46,7 +46,7 @@ export default function AiOps() {
   });
 
   const approve = useMutation({
-    mutationFn: ({ userId, amount, duration }) => api.aiOps.approveDiscount(userId, amount, duration),
+    mutationFn: /** @param {{ userId: string | number, amount: number, duration: number }} data */ ({ userId, amount, duration }) => api.aiOps.approveDiscount(userId, amount, duration),
     onSuccess: () => toast.success('Discount credit approved'),
   });
 
