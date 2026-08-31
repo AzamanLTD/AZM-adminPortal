@@ -74,7 +74,7 @@ function EscrowDisputeCard({ dispute }) {
 
   const e = dispute.escrow || {};
   const amount = num(e.amountUsdc);
-  const payeePct = 100 - (parseInt(payerPct, 10) || 0);
+  const payeePct = 100 - (Number(payerPct) || 0);
 
   const resolveMutation = useMutation({
     mutationFn: /** @param {{ ruling: string, notes: string, payerPct: number, payeePct: number }} data */ ({ ruling, notes, payerPct, payeePct }) =>
@@ -84,7 +84,7 @@ function EscrowDisputeCard({ dispute }) {
   });
 
   const submit = (override = false) => {
-    const p = parseInt(payerPct, 10) || 0;
+    const p = Number(payerPct) || 0;
     if (ruling === 'SPLIT') {
       if (!override && (p < 5 || p > 95)) { setExtremeModalPending({ payerPct: p, payeePct: 100 - p }); return; }
       resolveMutation.mutate({ ruling, notes, payerPct: p, payeePct: 100 - p });
@@ -193,14 +193,14 @@ function EscrowDisputeCard({ dispute }) {
                     </div>
                   </div>
                   <div className="flex rounded-lg overflow-hidden h-2">
-                    <div className="bg-[var(--f-info)] transition-all" style={{ width: `${Math.min(100, Math.max(0, parseInt(payerPct, 10) || 0))}%` }} />
+                    <div className="bg-[var(--f-info)] transition-all" style={{ width: `${Math.min(100, Math.max(0, Number(payerPct) || 0))}%` }} />
                     <div className="flex-1 bg-[var(--f-ok)]" />
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-[var(--f-info)]">Payer gets {usdc(amount * ((parseInt(payerPct, 10) || 0) / 100))}</span>
+                    <span className="text-[var(--f-info)]">Payer gets {usdc(amount * ((Number(payerPct) || 0) / 100))}</span>
                     <span className="text-[var(--f-ok)]">Payee gets {usdc(amount * (payeePct / 100))}</span>
                   </div>
-                  {(parseInt(payerPct, 10) < 5 || parseInt(payerPct, 10) > 95) && (
+                  {(Number(payerPct) < 5 || Number(payerPct) > 95) && (
                     <div className="flex items-center gap-2 bg-[var(--f-warn)15] border border-[var(--f-warn)40] rounded-xl px-3 py-2">
                       <AlertTriangle className="w-3.5 h-3.5 text-[var(--f-warn)] flex-shrink-0" />
                       <span className="text-xs text-[var(--f-warn)]">Extreme ruling — will require confirmation</span>
