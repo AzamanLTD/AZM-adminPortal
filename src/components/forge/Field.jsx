@@ -1,7 +1,8 @@
 import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
-export function Field({ label, hint, error, required, children, className }) {
+/** @param {{ label?: string, hint?: string, error?: string, required?: boolean, children?: any, className?: string }} props */
+export function Field({ label, hint, error, required = false, children, className = '' }) {
   const id = useId();
   const child = typeof children === 'function' ? children({ id, invalid: !!error }) : children;
   return (
@@ -18,8 +19,10 @@ export function Field({ label, hint, error, required, children, className }) {
   );
 }
 
-export const Input = ({ className, invalid, ...p }) =>
+/** @param {import('react').InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean }} props */
+export const Input = ({ className = '', invalid = false, ...p }) =>
   <input className={cn('f-input', className)} aria-invalid={invalid || undefined} {...p} />;
 
-export const Textarea = ({ className, rows = 4, ...p }) =>
+/** @param {import('react').TextareaHTMLAttributes<HTMLTextAreaElement>} props */
+export const Textarea = ({ className = '', rows = 4, ...p }) =>
   <textarea rows={rows} className={cn('f-input', className)} {...p} />;
