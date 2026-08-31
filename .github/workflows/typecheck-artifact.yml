@@ -1,0 +1,37 @@
+name: Disposable typecheck artifact
+
+on:
+  push:
+    branches:
+      - diag/current-typecheck-20260831
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run typecheck and capture output
+        shell: bash
+        run: |
+          set +e
+          npm run typecheck > typecheck.log 2>&1
+          status=$?
+          echo "TYPECHECK_EXIT=$status" >> typecheck.meta
+          printf 'error TS' | wc -c >/dev/null
+          exit 0
+      - name: Upload compiler log
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-typecheck-log
+          path: |
+            typecheck.log
+            typecheck.meta
