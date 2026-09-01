@@ -42,7 +42,7 @@ export function useGlobalSettings() {
 export function useUpdateSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: /** @param {Record<string, unknown>} data */ (data) => api.settings.update(data),
+    mutationFn: /** @param {Record<string, unknown>} data */ (data) => financialApi.settings.update(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'settings'] }),
   });
 }
