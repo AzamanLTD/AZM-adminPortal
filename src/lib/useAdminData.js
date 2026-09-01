@@ -219,7 +219,101 @@ export function useSusuDetail(id) {
     enabled: !!id,
     queryFn: async () => {
       const data = await api.susuAdmin.detail(id);
-      return data.data || data;
+      return data.data?.susu || null;
     },
+  });
+}
+
+export function useSusuMember(userId) {
+  return useQuery({
+    queryKey: ['admin', 'susu', 'member', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const data = await api.susuAdmin.member(userId);
+      return data.data || null;
+    },
+  });
+}
+
+export function useResolveSusu() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: /** @param {{ id: string | number, action: string, notes?: string, alertId?: string | number }} data */ ({ id, action, notes, alertId }) => api.susuAdmin.resolve(id, action, notes, alertId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'susu'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] });
+    },
+  });
+}
+
+export function useSusuIncidents(acknowledged) {
+  return useQuery({
+    queryKey: ['admin', 'susu-incidents', acknowledged === undefined ? 'all' : String(acknowledged)],
+    queryFn: async () => {
+      const data = await api.susuIncidents.alerts(acknowledged);
+      return data.data?.alerts || [];
+    },
+    refetchInterval: 20000,
+  });
+}
+
+export function useAcknowledgeIncident() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: /** @param {string | number} id */ (id) => api.susuIncidents.acknowledge(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'susu-incidents'] }),
+  });
+}
+
+export function usePoRQueue() {
+  return useQuery({
+    queryKey: ['admin', 'por-queue'],
+    queryFn: async () => {
+      const data = await api.proofOfResidency.queue();
+      return data.data?.queue || [];
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function usePoRApprove() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: /** @param {string | number} userId */ (userId) => api.proofOfResidency.approve(userId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
+  });
+}
+
+export function usePoRReject() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: /** @param {{ userId: string | number, reason: string }} data */ ({ userId, reason }) => api.proofOfResidency.reject(userId, reason),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'por-queue'] }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ESCROW DISPUTES + BUSINESS KYB — Admin Portal (WS1/WS2)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function useEscrowDisputes(status) {
+  return useQuery({
+    queryKey: ['escrow-disputes', status || 'all'],
+    queryFn: async () => {
+      const data = await api.escrow.disputes(status);
+      return data.disputes || [];
+    },
+    refetchInterval: 30_000,
+  });
+}
+
+export function useBusinessKybQueue(status = 'PENDING') {
+  return useQuery({
+    queryKey: ['biz-kyb', status],
+    queryFn: async () => {
+      const data = await api.businessKyb.queue(status);
+      return data.businesses || [];
+    },
+    staleTime: 60_000,
   });
 }
