@@ -15,12 +15,12 @@ export const tradeIdSchema = idSchema;
 export const userIdSchema = idSchema;
 
 export const reasonSchema = z.object({
-  reason: z.string().trim().max(2000).optional(),
+  reason: z.string().trim().max(1000).optional(),
 }).strict();
 
 export const forceTradeActionSchema = z.object({
   tradeId: tradeIdSchema,
-  reason: z.string().trim().max(2000).optional(),
+  reason: z.string().trim().max(1000).optional(),
 }).strict();
 
 export const forceReleaseSchema = forceTradeActionSchema;

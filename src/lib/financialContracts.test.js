@@ -97,4 +97,12 @@ describe('Admin financial response contracts', () => {
       reason: 'manual review',
     });
   });
+
+  it('enforces the Backend adminNotes 1000-character boundary', () => {
+    const accepted = 'x'.repeat(1000);
+    const rejected = 'x'.repeat(1001);
+
+    expect(forceTradeActionSchema.parse({ tradeId: 42, reason: accepted }).reason).toHaveLength(1000);
+    expect(() => forceTradeActionSchema.parse({ tradeId: 42, reason: rejected })).toThrow();
+  });
 });
