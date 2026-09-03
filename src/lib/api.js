@@ -143,7 +143,7 @@ export const auth = {
 export const admin = {
   stats: () => request('/api/admin/stats'),
   systemHealth: () => request('/api/admin/system-health'),
-  profitBreakdown: () => request('/api/admin/profit-breakdown'),
+  profitBreakdown: (period = '30d') => request(`/api/admin/profit-breakdown?period=${encodeURIComponent(period)}`),
 };
 
 // ── Global Settings (Financial Parameters) ───────────────────────────────────
