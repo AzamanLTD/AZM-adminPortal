@@ -67,7 +67,7 @@ export default function ControlPlane() {
           disabled={loading}
           aria-label="Refresh control plane"
           aria-busy={loading}
-          className="f-icon-btn disabled:cursor-not-allowed disabled:opacity-60"
+          className="f-icon-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           title={loading ? 'Refreshing control plane' : 'Refresh control plane'}
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
