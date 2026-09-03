@@ -61,7 +61,15 @@ export default function ControlPlane() {
             Live workforce posture, duty coverage, and protected staff activity.
           </p>
         </div>
-        <button onClick={refresh} className="f-icon-btn" title="Refresh control plane">
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={loading}
+          aria-label="Refresh control plane"
+          aria-busy={loading}
+          className="f-icon-btn disabled:cursor-not-allowed disabled:opacity-60"
+          title={loading ? 'Refreshing control plane' : 'Refresh control plane'}
+        >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
