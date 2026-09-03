@@ -81,13 +81,14 @@ export function useDeleteFeeProfile() {
   });
 }
 
-export function useProfitBreakdown() {
+export function useProfitBreakdown(period = '30d') {
   return useQuery({
-    queryKey: ['admin', 'profit'],
+    queryKey: ['admin', 'profit', period],
     queryFn: async () => {
-      const data = await api.admin.profitBreakdown();
+      const data = await api.admin.profitBreakdown(period);
       return data.data || data;
     },
+    staleTime: 15_000,
   });
 }
 
