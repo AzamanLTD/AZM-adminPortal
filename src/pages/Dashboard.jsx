@@ -76,10 +76,8 @@ function KpiTile({ label, value, sub, icon: Icon, accent = false, trend, loading
       <div className="h-3 w-16 rounded bg-[var(--f-surface-sunken)] animate-pulse" />
     </div>
   );
-  return (
-    <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.12 }}
-      onClick={onClick} className={`az-stat-card ${onClick ? 'cursor-pointer' : ''}`}
-      style={accent ? { borderTop: '2px solid var(--az-orange)' } : { borderTop: '2px solid transparent' }}>
+  const content = (
+    <>
       <div className="flex items-start justify-between mb-3">
         <p className="az-section-label">{label}</p>
         {Icon && (
@@ -97,6 +95,31 @@ function KpiTile({ label, value, sub, icon: Icon, accent = false, trend, loading
           {sub}
         </p>
       )}
+    </>
+  );
+  if (!onClick) {
+    return (
+      <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.12 }} className="az-stat-card"
+        style={accent ? { borderTop: '2px solid var(--az-orange)' } : { borderTop: '2px solid transparent' }}>
+        {content}
+      </motion.div>
+    );
+  }
+  return (
+    <motion.div
+      whileHover={{ y: -2 }} transition={{ duration: 0.12 }}
+      role="button" tabIndex={0}
+      aria-label={`Open ${label}`}
+      onClick={onClick}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onClick();
+        }
+      }}
+      className="az-stat-card cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--az-orange)]"
+      style={accent ? { borderTop: '2px solid var(--az-orange)' } : { borderTop: '2px solid transparent' }}>
+      {content}
     </motion.div>
   );
 }
@@ -113,7 +136,14 @@ function AlertRow({ icon: Icon, label, count, severity = 'warn', to }) {
   return (
     <motion.div initial={{ opacity:0, x:-4 }} animate={{ opacity:1, x:0 }}
       onClick={() => navigate(to)}
-      className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+      role="button" tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          navigate(to);
+        }
+      }}
+      className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:opacity-80 transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--az-orange)]"
       style={{ background: colors.bg, border: `1px solid ${colors.border}` }}>
       <div className="flex items-center gap-2.5">
         <Icon style={{ width: 14, height: 14, color: colors.text }} />
@@ -233,7 +263,7 @@ export default function Dashboard() {
           onClick={() => navigate('/users')} />
         <KpiTile label="Active Vendors" value={fmt(activeVendors)} icon={Building2}
           sub="currently active accounts" loading={statsLoading}
-          onClick={() => navigate('/users')} />
+          onClick={() => navigate('/businesses')} />
         <KpiTile label="Active Disputes" value={fmt(activeDisputes)} icon={AlertTriangle}
           sub={activeDisputes > 0 ? 'requires attention' : 'all clear'}
           trend={activeDisputes > 0 ? 'down' : undefined} loading={statsLoading}
