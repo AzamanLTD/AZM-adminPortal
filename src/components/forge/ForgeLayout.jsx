@@ -5,6 +5,7 @@ import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useStats } from '@/lib/useAdminData';
 import { useAuth } from '@/lib/AuthContext';
+import SystemStatusRail from '@/components/forge/SystemStatusRail';
 
 export function ForgeLayout() {
   const { data: stats = {} } = useStats();
@@ -13,15 +14,14 @@ export function ForgeLayout() {
 
   const navProps = useMemo(() => ({
     counts: {
-      disputes:        stats.activeDisputes    || 0,
-      escrow_disputes: stats.disputedEscrows   || 0,
-      kyc:             stats.pendingKyc        || 0,
-      withdrawals:     stats.pendingWithdrawals || 0,
-      biz_kyb:         stats.pendingBusinessKyb || 0,
+      disputes: stats.activeDisputes || 0,
+      escrow_disputes: stats.disputedEscrows || 0,
+      kyc: stats.pendingKyc || 0,
+      withdrawals: stats.pendingWithdrawals || 0,
+      biz_kyb: stats.pendingBusinessKyb || 0,
     },
   }), [stats]);
 
-  // Admin portal is monochrome — no tint
   const adminRoot = useMemo(() => ({ 'data-vertical': 'general' }), []);
 
   return (
@@ -37,6 +37,7 @@ export function ForgeLayout() {
               onLogout={logout}
               onNavigateSettings={() => navigate('/config')}
             >
+              <SystemStatusRail />
               <Outlet />
             </Shell>
             <CommandPalette navProps={navProps} />
