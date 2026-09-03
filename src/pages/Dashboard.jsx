@@ -263,7 +263,7 @@ export default function Dashboard() {
           onClick={() => navigate('/users')} />
         <KpiTile label="Active Vendors" value={fmt(activeVendors)} icon={Building2}
           sub="currently active accounts" loading={statsLoading}
-          onClick={() => navigate('/businesses')} />
+          onClick={() => navigate('/users')} />
         <KpiTile label="Active Disputes" value={fmt(activeDisputes)} icon={AlertTriangle}
           sub={activeDisputes > 0 ? 'requires attention' : 'all clear'}
           trend={activeDisputes > 0 ? 'down' : undefined} loading={statsLoading}
