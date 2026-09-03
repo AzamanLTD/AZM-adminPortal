@@ -44,7 +44,8 @@ function useTokenVar(name, fallback) {
 }
 
 // ── Time range ────────────────────────────────────────────────────────────────
-const TIME_RANGES = ['24h','7d','30d','90d'];
+const TIME_RANGES = ['24h', '7d', '30d', '90d'];
+const PERIOD_LABELS = { '24h': 'Last 24 hours', '7d': 'Last 7 days', '30d': 'Last 30 days', '90d': 'Last 90 days' };
 
 // ── Chart tooltip ─────────────────────────────────────────────────────────────
 /** @param {{ active?: boolean, payload?: Array<{ color?: string, fill?: string, name?: string, value?: number | string }>, label?: string }} props */
@@ -143,7 +144,8 @@ function PillTabs({ value, onChange, options }) {
   return (
     <div className="flex items-center gap-1 p-0.5 rounded-lg" style={{ background: 'var(--f-surface-sunken)' }}>
       {options.map(o => (
-        <button key={o} onClick={() => onChange(o)}
+        <button key={o} type="button" onClick={() => onChange(o)}
+          aria-pressed={value === o}
           className={`az-pill-tab px-3 py-1 text-xs font-semibold rounded-md transition-all ${value===o ? 'active' : ''}`}>
           {o}
         </button>
@@ -159,31 +161,23 @@ export default function Dashboard() {
 
   const { data: stats, isLoading: statsLoading, refetch } = useStats();
   const { data: health } = useSystemHealth();
-  const { data: profit } = useProfitBreakdown();
+  const { data: profit, isLoading: profitLoading, isFetching: profitFetching, isError: profitError, refetch: refetchProfit } = useProfitBreakdown(range);
   const { data: withdrawals } = useWithdrawals();
   const { data: disputes } = useDisputes();
   const { data: kyc } = usePendingKyc();
   const { data: escrow } = useEscrowDisputes();
 
   const orange = useTokenVar('--az-orange', '#f97316');
-  const orangeBg = useTokenVar('--az-orange-bg', 'rgba(249,115,22,0.10)');
   const textColor = useTokenVar('--f-text-3', '#8b8983');
   const lineColor = useTokenVar('--f-line', '#26262a');
 
-  // Build chart data from profit breakdown
+  // Build chart data from the backend's real daily PnL contract. Never invent
+  // data when the selected period has no activity; absence is a useful signal.
   const chartData = useMemo(() => {
-    if (!profit?.dailyRevenue?.length) {
-      // Generate placeholder skeleton data
-      return Array.from({ length: 12 }, (_, i) => ({
-        label: `Month ${i+1}`,
-        newUser: Math.floor(Math.random() * 30000 + 5000),
-        existing: Math.floor(Math.random() * 18000 + 3000),
-      }));
-    }
-    return profit.dailyRevenue.map(d => ({
+    return (profit?.dailyPnl || []).map(d => ({
       label: d.label || d.date,
-      newUser: d.newRevenue || d.revenue || 0,
-      existing: d.existingRevenue || 0,
+      profit: Number(d.profit || 0),
+      volume: Number(d.volume || 0),
     }));
   }, [profit]);
 
@@ -197,8 +191,11 @@ export default function Dashboard() {
   const totalUsers = stats?.totalUsers || 0;
   const totalBusinesses = stats?.totalBusinesses || 0;
   const activeDisputes = stats?.activeDisputes || 0;
+  const periodProfit = Number(profit?.totalProfit || 0);
+  const periodVolume = useMemo(() => chartData.reduce((sum, row) => sum + row.volume, 0), [chartData]);
 
   const isSystemHealthy = health?.status === 'ok' || health?.healthy;
+  const showProfitEmpty = !profitLoading && !profitError && chartData.length === 0;
 
   return (
     <div className="space-y-5">
@@ -221,7 +218,7 @@ export default function Dashboard() {
             </span>
           </div>
           <PillTabs value={range} onChange={setRange} options={TIME_RANGES} />
-          <button onClick={() => refetch()} className="f-icon-btn">
+          <button type="button" onClick={() => { refetch(); refetchProfit(); }} className="f-icon-btn" aria-label="Refresh dashboard">
             <RefreshCw className="h-4 w-4" />
           </button>
         </div>
@@ -230,15 +227,15 @@ export default function Dashboard() {
       {/* ── KPI Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KpiTile label="Total Revenue" value={fmtUSD(totalRevenue)} icon={TrendingUp}
-          sub="+0.94% last year" trend="up" accent loading={statsLoading} />
+          sub="Platform lifetime volume" accent loading={statsLoading} />
         <KpiTile label="Total Users" value={fmt(totalUsers)} icon={Users}
-          sub="+0.12% last year" trend="up" loading={statsLoading}
+          sub="all registered users" loading={statsLoading}
           onClick={() => navigate('/users')} />
         <KpiTile label="Businesses" value={fmt(totalBusinesses)} icon={Building2}
           sub="across all categories" loading={statsLoading}
           onClick={() => navigate('/businesses')} />
         <KpiTile label="Active Disputes" value={fmt(activeDisputes)} icon={AlertTriangle}
-          sub={activeDisputes > 0 ? 'requires attention' : 'all clear'} 
+          sub={activeDisputes > 0 ? 'requires attention' : 'all clear'}
           trend={activeDisputes > 0 ? 'down' : undefined} loading={statsLoading}
           onClick={() => navigate('/war-room')} />
       </div>
@@ -249,33 +246,54 @@ export default function Dashboard() {
         <div className="lg:col-span-2 az-chart-container">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <p className="az-section-label">Sales Trend</p>
+              <p className="az-section-label">Profit Trend</p>
               <p className="text-2xl font-bold font-mono mt-1" style={{ color: 'var(--f-text)' }}>
-                {fmtUSD(totalRevenue)}
+                {profitLoading ? '…' : fmtUSD(periodProfit)}
+              </p>
+              <p className="text-[11px] mt-1" style={{ color: 'var(--f-text-3)' }}>
+                {PERIOD_LABELS[range]} · {profitFetching && !profitLoading ? 'Updating…' : profitError ? 'Unavailable' : `${fmtUSD(periodVolume)} volume`}
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--f-text-3)' }}>
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: orange }} />
-                New User
+                Profit
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: 'var(--f-line-strong)' }} />
-                Existing User
+                Volume
               </span>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={chartData} barGap={2} barCategoryGap="28%">
-              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={lineColor} strokeOpacity={0.5} />
-              <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: textColor, fontSize: 10 }} axisLine={false} tickLine={false}
-                tickFormatter={v => v >= 1000 ? `${v/1000}k` : v} />
-              <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-              <Bar dataKey="newUser" name="New User" fill={orange} radius={[3,3,0,0]} maxBarSize={18} />
-              <Bar dataKey="existing" name="Existing" fill="var(--f-surface-sunken)" radius={[3,3,0,0]} maxBarSize={18} />
-            </BarChart>
-          </ResponsiveContainer>
+          {profitLoading ? (
+            <div className="h-[220px] rounded-lg animate-pulse" style={{ background: 'var(--f-surface-sunken)' }} aria-label="Loading profit trend" />
+          ) : profitError ? (
+            <div className="h-[220px] flex flex-col items-center justify-center rounded-lg text-center"
+              style={{ background: 'var(--f-surface-sunken)' }} role="alert">
+              <AlertTriangle className="h-5 w-5 mb-2" style={{ color: 'var(--f-bad)' }} />
+              <p className="text-xs font-medium" style={{ color: 'var(--f-text-2)' }}>Profit data could not be loaded.</p>
+              <Button variant="ghost" size="sm" onClick={() => refetchProfit()} className="mt-2 text-xs">Retry</Button>
+            </div>
+          ) : showProfitEmpty ? (
+            <div className="h-[220px] flex flex-col items-center justify-center rounded-lg text-center"
+              style={{ background: 'var(--f-surface-sunken)' }}>
+              <Activity className="h-5 w-5 mb-2 opacity-40" style={{ color: 'var(--f-text-3)' }} />
+              <p className="text-xs font-medium" style={{ color: 'var(--f-text-2)' }}>No profit activity in this period</p>
+              <p className="text-[11px] mt-1" style={{ color: 'var(--f-text-3)' }}>Try a wider range to see more activity.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={chartData} barGap={2} barCategoryGap="28%">
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke={lineColor} strokeOpacity={0.5} />
+                <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: textColor, fontSize: 10 }} axisLine={false} tickLine={false}
+                  tickFormatter={v => v >= 1000 ? `${v/1000}k` : v} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
+                <Bar dataKey="profit" name="Profit" fill={orange} radius={[3,3,0,0]} maxBarSize={18} />
+                <Bar dataKey="volume" name="Volume" fill="var(--f-surface-sunken)" radius={[3,3,0,0]} maxBarSize={18} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Alerts + Queues */}
@@ -397,7 +415,7 @@ export default function Dashboard() {
             { label: 'AI Operations', desc: 'Smart insights & actions', icon: Radio, to: '/ai-ops' },
             { label: 'Audit Log', desc: 'Full action history', icon: Shield, to: '/audit-log' },
           ].map(({ label, desc, icon: Icon, to, accent }) => (
-            <button key={to} onClick={() => navigate(to)}
+            <button key={to} type="button" onClick={() => navigate(to)}
               className="w-full flex items-center gap-3 p-2.5 rounded-lg text-left transition-all hover:opacity-80"
               style={{
                 background: accent ? 'var(--az-orange-bg)' : 'var(--f-surface-sunken)',
