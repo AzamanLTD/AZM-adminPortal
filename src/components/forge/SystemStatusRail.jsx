@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { useSystemHealth } from '@/lib/useAdminData';
 
 /**
@@ -25,11 +25,7 @@ export default function SystemStatusRail() {
         color: 'var(--f-text)',
       }}
     >
-      {isError ? (
-        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: 'var(--f-bad)' }} />
-      ) : (
-        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: 'var(--f-warn)' }} />
-      )}
+      <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: isError ? 'var(--f-bad)' : 'var(--f-warn)' }} />
       <div className="min-w-0 flex-1">
         <div className="font-semibold">
           {isError ? 'System health is unavailable' : 'System issue detected'}
