@@ -171,8 +171,6 @@ export default function Dashboard() {
   const textColor = useTokenVar('--f-text-3', '#8b8983');
   const lineColor = useTokenVar('--f-line', '#26262a');
 
-  // Build chart data from the backend's real daily PnL contract. Never invent
-  // data when the selected period has no activity; absence is a useful signal.
   const chartData = useMemo(() => {
     return (profit?.dailyPnl || []).map(d => ({
       label: d.label || d.date,
@@ -181,15 +179,17 @@ export default function Dashboard() {
     }));
   }, [profit]);
 
-  // Dispute data
   const disputeList = disputes?.disputes || disputes?.data || [];
   const pendingKycCount = kyc?.pending?.length || kyc?.count || 0;
   const escrowCount = escrow?.disputes?.length || escrow?.count || 0;
   const withdrawalCount = withdrawals?.pending?.length || withdrawals?.count || 0;
 
-  const totalRevenue = stats?.totalRevenue || stats?.totalVolume || 0;
+  // Keep these KPIs aligned with the live /api/admin/stats response contract.
+  // The endpoint exposes totalAdminProfit and activeVendors, not the legacy
+  // totalRevenue/totalBusinesses fields previously read here.
+  const platformProfit = Number(stats?.totalAdminProfit || 0);
   const totalUsers = stats?.totalUsers || 0;
-  const totalBusinesses = stats?.totalBusinesses || 0;
+  const activeVendors = stats?.activeVendors || 0;
   const activeDisputes = stats?.activeDisputes || 0;
   const periodProfit = Number(profit?.totalProfit || 0);
   const periodVolume = useMemo(() => chartData.reduce((sum, row) => sum + row.volume, 0), [chartData]);
@@ -226,14 +226,14 @@ export default function Dashboard() {
 
       {/* ── KPI Row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KpiTile label="Total Revenue" value={fmtUSD(totalRevenue)} icon={TrendingUp}
-          sub="Platform lifetime volume" accent loading={statsLoading} />
+        <KpiTile label="Platform Profit" value={fmtUSD(platformProfit)} icon={TrendingUp}
+          sub="current profit-fee balance" accent loading={statsLoading} />
         <KpiTile label="Total Users" value={fmt(totalUsers)} icon={Users}
           sub="all registered users" loading={statsLoading}
           onClick={() => navigate('/users')} />
-        <KpiTile label="Businesses" value={fmt(totalBusinesses)} icon={Building2}
-          sub="across all categories" loading={statsLoading}
-          onClick={() => navigate('/businesses')} />
+        <KpiTile label="Active Vendors" value={fmt(activeVendors)} icon={Building2}
+          sub="currently active accounts" loading={statsLoading}
+          onClick={() => navigate('/users')} />
         <KpiTile label="Active Disputes" value={fmt(activeDisputes)} icon={AlertTriangle}
           sub={activeDisputes > 0 ? 'requires attention' : 'all clear'}
           trend={activeDisputes > 0 ? 'down' : undefined} loading={statsLoading}
@@ -242,7 +242,6 @@ export default function Dashboard() {
 
       {/* ── Revenue Chart + Alerts ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Chart */}
         <div className="lg:col-span-2 az-chart-container">
           <div className="flex items-center justify-between mb-5">
             <div>
@@ -296,7 +295,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Alerts + Queues */}
         <div className="space-y-4">
           <div className="rounded-xl p-4 space-y-3"
             style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
@@ -316,7 +314,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* System health */}
           <div className="rounded-xl p-4"
             style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
             <p className="az-section-label mb-3">System Health</p>
@@ -341,9 +338,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Recent Transactions + Quick Actions ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Recent Disputes/Transactions */}
         <div className="lg:col-span-2 rounded-xl overflow-hidden"
           style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
           <div className="flex items-center justify-between px-4 py-3 border-b"
@@ -361,7 +356,6 @@ export default function Dashboard() {
             </div>
           ) : (
             <div>
-              {/* Table header */}
               <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b text-[10px] font-bold uppercase tracking-wider"
                 style={{ borderColor: 'var(--f-line)', color: 'var(--f-text-3)' }}>
                 <span className="col-span-2">ID</span>
@@ -376,7 +370,7 @@ export default function Dashboard() {
                   style={{ borderColor: 'var(--f-line)' }}
                   onClick={() => navigate('/war-room')}>
                   <span className="col-span-2 font-mono text-[10px]" style={{ color: 'var(--f-text-3)' }}>
-                    #{(d.id||'').slice(-4)}
+                    #{String(d.id || '').slice(-4)}
                   </span>
                   <span className="col-span-3 text-xs truncate" style={{ color: 'var(--f-text-2)' }}>
                     {d.buyer?.username || d.customerName || '—'}
@@ -402,7 +396,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Quick nav */}
         <div className="rounded-xl p-4 space-y-3"
           style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
           <p className="az-section-label">Quick Navigation</p>
