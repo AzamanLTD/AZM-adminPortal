@@ -15,6 +15,7 @@ import { useState, useMemo } from 'react';
 import { useWithdrawals, useStats } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialApi } from '@/lib/financialApi';
+import { patchWithdrawal, rollbackWithdrawal, captureWithdrawal } from '@/lib/optimisticWithdrawalCache';
 import { Button } from '@/components/forge';
 import { Tag } from '@/components/forge';
 import {
@@ -257,20 +258,17 @@ export default function Withdrawals() {
     mutationFn: /** @param {string | number} id */ (id) => financialApi.withdrawals.approve(id),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
-      const prev = qc.getQueryData(['admin', 'withdrawals']);
-      qc.setQueryData(['admin', 'withdrawals'], old => {
-        if (!Array.isArray(old)) return old;
-        return old.map(w => w.id === id ? { ...w, status: 'approved' } : w);
-      });
-      return { prev };
+      const previousItem = captureWithdrawal(qc.getQueryData(['admin', 'withdrawals']), id);
+      qc.setQueryData(['admin', 'withdrawals'], old => patchWithdrawal(old, id, 'approved'));
+      return { id, previousItem, optimisticStatus: 'approved' };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
       toast.success('Withdrawal approved');
       setDetailTarget(null);
     },
-    onError: (e, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData(['admin', 'withdrawals'], ctx.prev);
+    onError: (e, id, ctx) => {
+      qc.setQueryData(['admin', 'withdrawals'], current => rollbackWithdrawal(current, ctx?.id ?? id, ctx?.previousItem, ctx?.optimisticStatus));
       toast.error(e.message || 'Failed to approve withdrawal');
     },
   });
@@ -279,12 +277,9 @@ export default function Withdrawals() {
     mutationFn: /** @param {{ id: string | number, reason: string }} data */ ({ id, reason }) => financialApi.withdrawals.reject(id, reason),
     onMutate: async ({ id }) => {
       await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
-      const prev = qc.getQueryData(['admin', 'withdrawals']);
-      qc.setQueryData(['admin', 'withdrawals'], old => {
-        if (!Array.isArray(old)) return old;
-        return old.map(w => w.id === id ? { ...w, status: 'rejected' } : w);
-      });
-      return { prev };
+      const previousItem = captureWithdrawal(qc.getQueryData(['admin', 'withdrawals']), id);
+      qc.setQueryData(['admin', 'withdrawals'], old => patchWithdrawal(old, id, 'rejected'));
+      return { id, previousItem, optimisticStatus: 'rejected' };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
@@ -293,7 +288,7 @@ export default function Withdrawals() {
       setDetailTarget(null);
     },
     onError: (e, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData(['admin', 'withdrawals'], ctx.prev);
+      qc.setQueryData(['admin', 'withdrawals'], current => rollbackWithdrawal(current, ctx?.id, ctx?.previousItem, ctx?.optimisticStatus));
       toast.error(e.message || 'Failed to reject withdrawal');
     },
   });
@@ -353,7 +348,25 @@ export default function Withdrawals() {
       }
       return results;
     },
-    onSuccess: (results) => {
+    onMutate: async (ids) => {
+      await qc.cancelQueries({ queryKey: ['admin', 'withdrawals'] });
+      const previousItems = new Map();
+      const current = qc.getQueryData(['admin', 'withdrawals']);
+      for (const id of ids) {
+        const previousItem = captureWithdrawal(current, id);
+        if (previousItem) previousItems.set(id, previousItem);
+      }
+      qc.setQueryData(['admin', 'withdrawals'], old => {
+        let next = old;
+        for (const id of ids) next = patchWithdrawal(next, id, 'approved');
+        return next;
+      });
+      return { ids, previousItems };
+    },
+    onSuccess: (results, _ids, ctx) => {
+      for (const result of results.filter(r => !r.ok)) {
+        qc.setQueryData(['admin', 'withdrawals'], current => rollbackWithdrawal(current, result.id, ctx?.previousItems?.get(result.id), 'approved'));
+      }
       const succeeded = results.filter(r => r.ok).length;
       const failed = results.filter(r => !r.ok).length;
       qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
@@ -365,7 +378,12 @@ export default function Withdrawals() {
       clearSelection();
       setShowBatchConfirm(false);
     },
-    onError: (e) => toast.error(e.message || 'Batch approval failed'),
+    onError: (e, _ids, ctx) => {
+      for (const [id, previousItem] of ctx?.previousItems || []) {
+        qc.setQueryData(['admin', 'withdrawals'], current => rollbackWithdrawal(current, id, previousItem, 'approved'));
+      }
+      toast.error(e.message || 'Batch approval failed');
+    },
   });
 
   const selectedArray = Array.from(selected);
@@ -541,6 +559,7 @@ export default function Withdrawals() {
                   size="sm"
                   variant="outline"
                   onClick={() => setRejectTarget(w)}
+                  disabled={reject.isPending}
                   className="border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--f-bad-bg)] h-8"
                 >
                   <XCircle className="w-3.5 h-3.5 mr-1.5" /> Reject
