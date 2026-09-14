@@ -59,4 +59,4 @@ jobs:
       # These contract suites already live in src/lib but previously had no CI runner.
       # Pin the runner explicitly so CI does not silently float to a new major.
       - name: Run Admin lib contract suites
-        run: npx --yes vitest@4.1.11 run "src/lib/*.test.js"
+        run: npx --yes vitest@4.1.11 run src/lib
