@@ -17,6 +17,17 @@ export function useStats() {
   });
 }
 
+export function useDineInOverview() {
+  return useQuery({
+    queryKey: ['admin', 'dine-in', 'overview'],
+    queryFn: async () => {
+      const data = await api.admin.dineInOverview();
+      return data.overview || data;
+    },
+    refetchInterval: 30000,
+  });
+}
+
 export function useSystemHealth() {
   return useQuery({
     queryKey: ['admin', 'health'],

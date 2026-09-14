@@ -6,7 +6,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  useStats, useSystemHealth, useProfitBreakdown, useWithdrawals, useDisputes, usePendingKyc, useEscrowDisputes
+  useStats, useSystemHealth, useProfitBreakdown, useWithdrawals, useDisputes, usePendingKyc, useEscrowDisputes,
+  useDineInOverview,
 } from '@/lib/useAdminData';
 import { Button } from '@/components/forge';
 import {
@@ -14,7 +15,7 @@ import {
 } from 'recharts';
 import {
   TrendingUp, Users, Activity, AlertTriangle, Wallet, ShieldCheck, Lock, Building2, CheckCircle, ArrowRight, RefreshCw,
-  TrendingDown, Zap, Radio, Shield, FileCheck, ArrowUpRight,
+  TrendingDown, Zap, Radio, Shield, FileCheck, ArrowUpRight, Utensils,
 } from 'lucide-react';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -184,6 +185,105 @@ function PillTabs({ value, onChange, options }) {
   );
 }
 
+// ── Dine-in lifecycle projection (backend-authoritative via /api/admin/dine-in/overview)
+const DINE_IN_STATUS_STYLE = {
+  OPEN: { bg: 'var(--f-ok-bg)', fg: 'var(--f-ok)' },
+  FINALIZED: { bg: 'var(--f-warn-bg)', fg: 'var(--f-warn)' },
+  CLOSED: { bg: 'var(--f-surface-sunken)', fg: 'var(--f-text-3)' },
+  CANCELLED: { bg: 'var(--f-surface-sunken)', fg: 'var(--f-text-3)' },
+};
+
+function DineInStatusBadge({ status }) {
+  const style = DINE_IN_STATUS_STYLE[status] || DINE_IN_STATUS_STYLE.CLOSED;
+  return (
+    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase"
+      style={{ background: style.bg, color: style.fg }}>
+      {status || '—'}
+    </span>
+  );
+}
+
+function DineInPanel({ overview, loading }) {
+  const recent = overview?.recentTabs || [];
+  const volume = Number(overview?.volume24h?.totalUsdc || 0);
+  const tips = Number(overview?.volume24h?.tipsUsdc || 0);
+  const openTabs = overview?.openTabs ?? 0;
+  const finalized = overview?.finalizedTabs ?? 0;
+  const closedToday = overview?.closedToday ?? 0;
+
+  const miniStats = [
+    { label: 'Open Tabs', value: openTabs },
+    { label: 'Finalized', value: finalized },
+    { label: 'Closed Today', value: closedToday },
+    { label: '24h Volume (USDC)', value: volume.toFixed(2) },
+    { label: '24h Tips (USDC)', value: tips.toFixed(2) },
+  ];
+
+  return (
+    <div className="rounded-xl overflow-hidden"
+      style={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)' }}>
+      <div className="flex items-center justify-between px-4 py-3 border-b"
+        style={{ borderColor: 'var(--f-line)' }}>
+        <div className="flex items-center gap-2">
+          <Utensils className="h-4 w-4" style={{ color: 'var(--az-orange)' }} />
+          <p className="az-section-label">Dine-in Lifecycle</p>
+        </div>
+        <p className="text-[10px]" style={{ color: 'var(--f-text-3)' }}>
+          Backend-authoritative · OPEN → FINALIZED → CLOSED
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-px" style={{ background: 'var(--f-line)' }}>
+        {miniStats.map(({ label, value }) => (
+          <div key={label} className="px-4 py-3" style={{ background: 'var(--f-surface-raised)' }}>
+            <p className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--f-text-3)' }}>{label}</p>
+            <p className="text-sm font-bold font-mono mt-1" style={{ color: 'var(--f-text)' }}>
+              {loading ? '…' : value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {recent.length === 0 && !loading ? (
+        <div className="py-8 text-center">
+          <Utensils className="h-5 w-5 mx-auto mb-2 opacity-30" style={{ color: 'var(--f-text-3)' }} />
+          <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>No dine-in activity yet</p>
+        </div>
+      ) : (
+        <div>
+          <div className="grid grid-cols-12 gap-2 px-4 py-2 border-b text-[10px] font-bold uppercase tracking-wider"
+            style={{ borderColor: 'var(--f-line)', color: 'var(--f-text-3)' }}>
+            <span className="col-span-3">Business</span>
+            <span className="col-span-3">Tab</span>
+            <span className="col-span-2">Status</span>
+            <span className="col-span-2">Invoice</span>
+            <span className="col-span-2 text-right">Total (USDC)</span>
+          </div>
+          {recent.slice(0, 6).map((tab) => (
+            <div key={tab.id} className="grid grid-cols-12 gap-2 px-4 py-3 border-b last:border-0 items-center"
+              style={{ borderColor: 'var(--f-line)' }}>
+              <span className="col-span-3 text-xs truncate" style={{ color: 'var(--f-text-2)' }}>
+                {tab.businessProfile?.businessName || '—'}
+              </span>
+              <span className="col-span-3 font-mono text-[10px]" style={{ color: 'var(--f-text-3)' }}>
+                #{String(tab.id || '').slice(-6)}
+              </span>
+              <span className="col-span-2"><DineInStatusBadge status={tab.status} /></span>
+              <span className="col-span-2 text-[10px] font-semibold"
+                style={{ color: tab.invoice?.status === 'PAID' ? 'var(--f-ok)' : 'var(--f-text-3)' }}>
+                {tab.invoice ? tab.invoice.status : '—'}
+              </span>
+              <span className="col-span-2 text-right text-xs font-mono" style={{ color: 'var(--f-text-2)' }}>
+                {Number(tab.grandTotalUsdc || 0).toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -196,6 +296,7 @@ export default function Dashboard() {
   const { data: disputes } = useDisputes();
   const { data: kyc } = usePendingKyc();
   const { data: escrow } = useEscrowDisputes();
+  const { data: dineIn, isLoading: dineInLoading } = useDineInOverview();
 
   const orange = useTokenVar('--az-orange', '#f97316');
   const textColor = useTokenVar('--f-text-3', '#8b8983');
@@ -458,6 +559,9 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* ── Dine-in lifecycle projection ── */}
+      <DineInPanel overview={dineIn} loading={dineInLoading} />
     </div>
   );
 }

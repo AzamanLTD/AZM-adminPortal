@@ -144,6 +144,7 @@ export const admin = {
   stats: () => request('/api/admin/stats'),
   systemHealth: () => request('/api/admin/system-health'),
   profitBreakdown: (period = '30d') => request(`/api/admin/profit-breakdown?period=${encodeURIComponent(period)}`),
+  dineInOverview: () => request('/api/admin/dine-in/overview'),
 };
 
 // ── Global Settings (Financial Parameters) ───────────────────────────────────
