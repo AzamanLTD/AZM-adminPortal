@@ -20,7 +20,7 @@ import { Button } from '@/components/forge';
 import { Tag } from '@/components/forge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
-  ShieldCheck, ShieldAlert, ChevronRight, X,
+  ShieldCheck, ShieldAlert, ChevronRight, X, Snowflake,
   TrendingUp, CheckSquare, Square
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -244,7 +244,10 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
 
 /* ── Main page ─────────────────────────────────────────────────────────── */
 export default function Withdrawals() {
-  const { data: rawWithdrawals = [], isLoading, refetch } = useWithdrawals();
+  const { data, isLoading, refetch } = useWithdrawals();
+  const rawWithdrawals = data || [];
+  const queueFrozen = data?.frozen || [];
+  const queueTruncated = Boolean(data?.truncated);
   const { data: stats = {} } = useStats();
   const rate = stats.ghsRate || 12.5;
   const qc = useQueryClient();
@@ -430,6 +433,63 @@ export default function Withdrawals() {
           <p className={`text-xl font-bold ${summary.highRisk > 0 ? 'text-[var(--f-bad)]' : 'text-[var(--f-ok)]'}`}>{summary.highRisk}</p>
         </div>
       </div>
+
+      {/* Frozen payout exceptions (FROZEN_DISPUTE) — read-only visibility.
+          These are canonical transactions frozen mid-flight; the backend
+          surfaces them on the pending endpoint, and they need manual
+          reconciliation. They are NOT PENDING withdrawals: approve/reject
+          here does not apply to them. */}
+      {queueFrozen.length > 0 && (
+        <div className="bg-[var(--f-bad)]/5 border border-[var(--f-bad)]/40 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="shrink-0 w-9 h-9 rounded-lg bg-[var(--f-bad-bg)] border border-[var(--f-bad)] flex items-center justify-center">
+              <Snowflake className="w-4 h-4 text-[var(--f-bad)]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm font-bold text-[var(--f-text)]">
+                  Frozen payout exceptions ({queueFrozen.length})
+                </h2>
+                <Tag className="border-0 text-xs bg-[var(--f-bad-bg)] text-[var(--f-bad)]">FROZEN_DISPUTE</Tag>
+              </div>
+              <p className="text-xs text-ink-3 mt-1">
+                Payouts frozen mid-flight at the provider boundary. They require manual reconciliation via the
+                Financial reconciliation queue (Control Plane) — approving or rejecting here only applies to PENDING withdrawals.
+              </p>
+              <div className="mt-3 space-y-1.5">
+                {queueFrozen.map((f) => (
+                  <div key={f.id} className="flex items-center justify-between gap-3 bg-[var(--f-surface-raised)] border border-line rounded-lg px-3 py-2">
+                    <span className="text-sm text-[var(--f-text)] truncate">
+                      {f.user?.username || f.user?.email || `user #${f.user?.id ?? '—'}`}
+                      {f.type && <span className="text-ink-3"> · {f.type}</span>}
+                    </span>
+                    <span className="flex items-center gap-3 shrink-0">
+                      {f.amountUsdc != null && (
+                        <span className="text-sm font-semibold text-[var(--f-bad)]">
+                          ${Number(f.amountUsdc).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                        </span>
+                      )}
+                      <span className="text-xs text-ink-3">{f.createdAt ? new Date(f.createdAt).toLocaleString() : ''}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Honest truncation: the queue exceeded the page budget */}
+      {queueTruncated && (
+        <div className="bg-[var(--f-warn-bg)] border border-[var(--f-warn)]/40 rounded-xl p-3 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-[var(--f-warn)] shrink-0" />
+          <p className="text-xs text-ink-2">
+            Showing the most recent {rawWithdrawals.length} pending withdrawals — the backlog is larger than the
+            page budget. Process the newest items or use the backend queue to work the full list; do not treat this
+            list as the complete queue.
+          </p>
+        </div>
+      )}
 
       {/* Filters + batch bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">

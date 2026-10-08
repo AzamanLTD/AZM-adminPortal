@@ -55,3 +55,23 @@ describe('optimistic withdrawal cache', () => {
     expect(captureWithdrawal(source, 'missing')).toBeNull();
   });
 });
+
+describe('queue truncation flag survives optimistic patches', () => {
+  it('preserves the truncated flag and frozen exceptions through patch and rollback', () => {
+    const source = Object.assign([
+      { id: 'w1', status: 'PENDING', amount: 100 },
+      { id: 'w2', status: 'PENDING', amount: 200 },
+    ], {
+      frozen: [],
+      counts: { pending: 2, frozen: 0 },
+      pagination: { nextCursor: null, hasMore: false, limit: 100 },
+      truncated: true,
+    });
+
+    const patched = patchWithdrawal(source, 'w1', 'approved');
+    expect(patched.truncated).toBe(true);
+
+    const rolledBack = rollbackWithdrawal(patched, 'w1', source[0], 'approved');
+    expect(rolledBack.truncated).toBe(true);
+  });
+});

@@ -107,10 +107,22 @@ const cursorPaginationSchema = z.object({
   total: z.number().int().nonnegative().optional(),
 }).passthrough();
 
+// GET /api/admin/escrow-disputes is an OFFSET-paginated list on the backend
+// (adminController.getEscrowDisputes returns { page, limit, total, totalPages }).
+// It never emits nextCursor/hasMore. The previous schema asserted the cursor
+// envelope here, which made every parse of a real backend response throw and
+// the EscrowDisputes page fail into a silent "empty queue".
+export const offsetPaginationSchema = z.object({
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+}).passthrough();
+
 export const escrowDisputeListResponseSchema = z.object({
   success: z.literal(true),
   disputes: z.array(escrowDisputeSchema),
-  pagination: cursorPaginationSchema,
+  pagination: offsetPaginationSchema,
 }).passthrough();
 
 const withdrawalUserSchema = z.object({

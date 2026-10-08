@@ -313,7 +313,10 @@ export default function Dashboard() {
   const disputeList = disputes?.disputes || disputes?.data || [];
   const pendingKycCount = kyc?.pending?.length || kyc?.count || 0;
   const escrowCount = escrow?.disputes?.length || escrow?.count || 0;
-  const withdrawalCount = withdrawals?.pending?.length || withdrawals?.count || 0;
+  // useWithdrawals returns the drained pending queue as an array with
+  // metadata (counts.pending). The legacy .pending/.count reads never existed
+  // on this shape and silently reported 0.
+  const withdrawalCount = withdrawals?.length || withdrawals?.counts?.pending || 0;
 
   // Keep these KPIs aligned with the live /api/admin/stats response contract.
   // The endpoint exposes totalAdminProfit and activeVendors, not the legacy

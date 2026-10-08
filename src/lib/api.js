@@ -192,7 +192,10 @@ export const kyc = {
 
 // ── Withdrawals ───────────────────────────────────────────────────────────────
 export const withdrawals = {
-  pending: () => request('/api/admin/withdrawals/pending'),
+  // Backend paginates the pending queue (default limit 100) with a cursor
+  // envelope: { nextCursor, hasMore }. Pass the last row id to fetch the
+  // next page.
+  pending: (cursor) => request(`/api/admin/withdrawals/pending${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`),
   approve: (id) => request(`/api/admin/withdrawals/${id}/approve`, { method: 'POST' }),
   reject: (id, reason) => request(`/api/admin/withdrawals/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }),
   needsReview: () => request('/api/admin/payouts/needs-review'),
@@ -265,7 +268,16 @@ export const businessKyb = {
 };
 
 export const escrow = {
-  disputes: (status) => request(`/api/admin/escrow-disputes${status ? `?status=${status}` : ''}`),
+  // Backend serves this list in offset pages (default limit 20) and returns
+  // { page, limit, total, totalPages }. Always send explicit page/limit so
+  // the queue never silently clamps to the backend default.
+  disputes: (status, page = 1, limit = 20) => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    params.set('page', String(page));
+    params.set('limit', String(limit));
+    return request(`/api/admin/escrow-disputes?${params.toString()}`);
+  },
   resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => request(`/api/admin/escrow-disputes/${disputeId}/resolve`, { method: 'POST', body: JSON.stringify({ ruling, rulingNotes, payerPct, payeePct }) }),
   assign: (disputeId, assignedToId) => request(`/api/admin/escrow-disputes/${disputeId}/assign`, { method: 'POST', body: JSON.stringify({ assignedToId }) }),
 };

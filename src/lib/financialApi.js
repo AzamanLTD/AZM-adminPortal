@@ -50,6 +50,9 @@ export const financialApi = {
 
   withdrawals: {
     pending: async () => parse(withdrawalPendingResponseSchema, await withdrawals.pending()),
+    // One page of the cursor-paginated pending queue. Cursor = last row id
+    // from the previous page's pagination.nextCursor.
+    pendingPage: async (cursor) => parse(withdrawalPendingResponseSchema, await withdrawals.pending(cursor)),
     approve: (id) => withdrawals.approve(parse(userIdSchema, id)),
     reject: (id, reason) => { const input = parse(reasonSchema, { reason }); return withdrawals.reject(parse(userIdSchema, id), input.reason); },
     needsReview: () => withdrawals.needsReview(),
@@ -64,7 +67,7 @@ export const financialApi = {
   userCredit: (id, amount, reason) => { const input = parse(adminCreditSchema, { amount, reason }); return users.credit(parse(userIdSchema, id), input.amount); },
 
   escrow: {
-    disputes: async (status) => parse(escrowDisputeListResponseSchema, await escrow.disputes(status)),
+    disputes: async (status, page = 1, limit = 100) => parse(escrowDisputeListResponseSchema, await escrow.disputes(status, page, limit)),
     resolve: (disputeId, ruling, rulingNotes, payerPct, payeePct) => { const input = parse(escrowResolveSchema, { disputeId, ruling, rulingNotes, payerPct, payeePct }); return escrow.resolve(input.disputeId, input.ruling, input.rulingNotes, input.payerPct, input.payeePct); },
     assign: (disputeId, assignedToId) => escrow.assign(disputeId, assignedToId),
   },
