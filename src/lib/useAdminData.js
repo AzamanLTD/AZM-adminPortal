@@ -147,23 +147,53 @@ export function useWithdrawals() {
   });
 }
 
-// Payouts flagged NEEDS_MANUAL_REVIEW (the autonomous payout worker couldn't
-// auto-dispatch them). Used by the notification center.
+// Payouts parked as NEEDS_MANUAL_REVIEW (the payout worker could not
+// auto-dispatch them durably). Typed against the backend list contract
+// (GET /api/admin/payouts/needs-review, default limit 50, cursor envelope;
+// the no-params first page arrives in offset mode and carries the
+// authoritative pagination.total). The single page is honest about
+// truncation — it is never presented as the complete park queue.
 export function useNeedsReviewWithdrawals() {
   return useQuery({
     queryKey: ['admin', 'withdrawals', 'needs-review'],
     queryFn: async () => {
-      const data = await api.withdrawals.needsReview();
-      // Shape tolerance: backend may return {data:{...}}, {withdrawals}, {needsReview}, or an array.
-      return (
-        data?.data?.needsReview ||
-        data?.needsReview ||
-        data?.withdrawals ||
-        data?.data ||
-        (Array.isArray(data) ? data : [])
-      );
+      const data = await financialApi.withdrawals.needsReviewList();
+      const rows = data.withdrawals || [];
+      const pagination = data.pagination || null;
+      return {
+        rows,
+        count: typeof data.count === 'number' ? data.count : rows.length,
+        pagination,
+        total: pagination?.total,
+        truncated: Boolean(pagination?.hasMore),
+      };
     },
     refetchInterval: 30000,
+  });
+}
+
+// POST /api/admin/withdrawals/:id/resolve-review — deterministic, single-
+// winner resolution of a parked payout. There is deliberately NO optimistic
+// status patch here: the backend is the only authority on the outcome, and
+// a fabricated terminal state on an unknown result would lie to the
+// operator. After success OR conflict the affected queues are refetched so
+// the UI reconciles to server truth.
+export function useResolveManualReview() {
+  const qc = useQueryClient();
+  return useMutation({
+    /** @param {{ id: string | number, action: 'RESUME' | 'REJECT' | 'ESCALATE', reason: string }} input */
+    mutationFn: ({ id, action, reason }) => financialApi.withdrawals.resolveReview(id, action, reason),
+    onSuccess: () => {
+      // Covers the pending queue and the needs-review queue (prefix match)
+      // plus the dashboard stats derived from them.
+      qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'stats'] });
+    },
+    onError: () => {
+      // 409 (concurrent resolution or backend refusal), 400, 404 or worse:
+      // reconcile to server state instead of guessing what happened.
+      qc.invalidateQueries({ queryKey: ['admin', 'withdrawals'] });
+    },
   });
 }
 

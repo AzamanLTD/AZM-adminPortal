@@ -109,9 +109,12 @@ async function request(path, options = {}) {
       }
       throw new Error('Session expired. Please log in again.');
     }
-    /** @type {Error & { statusCode?: number, violations?: unknown, tier?: unknown, stakedBalance?: unknown }} */
+    /** @type {Error & { statusCode?: number, violations?: unknown, tier?: unknown, stakedBalance?: unknown, body?: unknown }} */
     const error = new Error(data.message || data.error || 'Request failed');
     error.statusCode = res.status;
+    // Full parsed body so callers can surface authoritative backend detail
+    // (e.g. the 409 resolve-review refusal's data.blockers).
+    error.body = data;
     if (res.status === 402) {
       error.violations = data.violations;
       error.tier = data.tier;
@@ -199,6 +202,10 @@ export const withdrawals = {
   approve: (id) => request(`/api/admin/withdrawals/${id}/approve`, { method: 'POST' }),
   reject: (id, reason) => request(`/api/admin/withdrawals/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }),
   needsReview: () => request('/api/admin/payouts/needs-review'),
+  // NEEDS_MANUAL_REVIEW resolution (backend PR #325). The backend is the
+  // sole authority on whether RESUME/REJECT is safe; it refuses fail-closed
+  // with 409 (+ data.blockers on eligibility refusals).
+  resolveReview: (id, body) => request(`/api/admin/withdrawals/${encodeURIComponent(id)}/resolve-review`, { method: 'POST', body: JSON.stringify(body) }),
 };
 
 // ── Payout Settings ───────────────────────────────────────────────────────────

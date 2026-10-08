@@ -9,6 +9,9 @@ import {
   payoutSettingsResponseSchema,
   payoutSettingsUpdateSchema,
   reasonSchema,
+  needsReviewListResponseSchema,
+  resolveReviewRequestSchema,
+  resolveReviewResponseSchema,
   userIdSchema,
   withdrawalPendingResponseSchema,
 } from './financialContracts';
@@ -56,6 +59,19 @@ export const financialApi = {
     approve: (id) => withdrawals.approve(parse(userIdSchema, id)),
     reject: (id, reason) => { const input = parse(reasonSchema, { reason }); return withdrawals.reject(parse(userIdSchema, id), input.reason); },
     needsReview: () => withdrawals.needsReview(),
+    // Typed needs-review list (GET /api/admin/payouts/needs-review). The
+    // backend defaults to limit 50 with the cursor envelope; page 1 carries
+    // the authoritative `total`.
+    needsReviewList: async () => parse(needsReviewListResponseSchema, await withdrawals.needsReview()),
+    // POST /api/admin/withdrawals/:id/resolve-review — action + mandatory
+    // human reason. Eligibility is proven by the backend at resolve time.
+    resolveReview: async (id, action, reason) => {
+      const input = parse(resolveReviewRequestSchema, { action, reason });
+      const response = await withdrawals.resolveReview(parse(userIdSchema, id), { action: input.action, reason: input.reason });
+      // Parse the success body against the contract so backend drift fails
+      // loudly here instead of silently rendering a wrong state.
+      return parse(resolveReviewResponseSchema, response);
+    },
   },
 
   payouts: {
