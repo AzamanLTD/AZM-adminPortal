@@ -23,8 +23,12 @@ export async function fetchPendingWithdrawalQueue({
   /** @type {any[]} */
   let frozen = [];
   let counts = { pending: 0, frozen: 0 };
-  let pagination = null;
+  /** Pagination envelope from the (zod-validated upstream) backend response. */
+  let pagination = /** @type {any} */ (null);
   let cursor = null;
+  // Guards against cursor cycles (A -> B -> A): an already-visited cursor
+  // means the backend is re-serving pages, not advancing.
+  const seenCursors = new Set([null]);
 
   for (let fetched = 0; fetched < maxPages; fetched++) {
     const response = await fetchPage(cursor);
@@ -47,12 +51,18 @@ export async function fetchPendingWithdrawalQueue({
       frozen = Array.isArray(page.frozen) ? page.frozen : [];
       counts = page.counts || { pending: rows.length, frozen: frozen.length };
     }
-    pagination = page.pagination || pagination;
+    // The first page is requested without a cursor, so the backend serves it
+    // in offset mode and includes the authoritative pagination.total for the
+    // whole PENDING backlog. Cursor pages omit total — preserve the
+    // first-page value so the queue metadata never loses it.
+    if (page.pagination) {
+      pagination = page.pagination.total != null
+        ? page.pagination
+        : { ...page.pagination, total: pagination?.total };
+    }
 
-    const nextCursor = pagination?.nextCursor;
-    if (!pagination?.hasMore || nextCursor == null || nextCursor === cursor) {
-      // hasMore === false, or the backend stopped advancing the cursor
-      // (server defect guard) — either way the queue is fully drained.
+    if (pagination?.hasMore === false) {
+      // Backend says the queue is fully drained.
       return {
         rows,
         frozen,
@@ -61,6 +71,24 @@ export async function fetchPendingWithdrawalQueue({
         truncated: false,
       };
     }
+
+    const nextCursor = pagination?.nextCursor;
+    // hasMore is true (or unknown). Only an advancing, never-repeated cursor
+    // lets us keep draining. A repeated or cyclic cursor is a server-side
+    // pagination defect: completeness is NOT established. Stop safely (the
+    // row dedupe above already kept duplicates out), keep the last
+    // pagination metadata for diagnostics, and never present the queue as
+    // complete.
+    if (nextCursor == null || nextCursor === cursor || seenCursors.has(nextCursor)) {
+      return {
+        rows,
+        frozen,
+        counts: { ...counts, pending: rows.length },
+        pagination,
+        truncated: true,
+      };
+    }
+    seenCursors.add(cursor);
     cursor = nextCursor;
   }
 

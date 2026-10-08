@@ -314,9 +314,15 @@ export default function Dashboard() {
   const pendingKycCount = kyc?.pending?.length || kyc?.count || 0;
   const escrowCount = escrow?.disputes?.length || escrow?.count || 0;
   // useWithdrawals returns the drained pending queue as an array with
-  // metadata (counts.pending). The legacy .pending/.count reads never existed
-  // on this shape and silently reported 0.
-  const withdrawalCount = withdrawals?.length || withdrawals?.counts?.pending || 0;
+  // metadata. The backend serves the first page in offset mode with an
+  // authoritative pagination.total for the whole PENDING backlog — prefer it
+  // so the alert never under-reports just because the walker is bounded or
+  // cursor-paginated; fall back to the fetched-count when no total exists.
+  // (The legacy .pending/.count reads never existed on this shape.)
+  const backlogTotal = withdrawals?.pagination?.total;
+  const withdrawalCount = Number.isFinite(backlogTotal)
+    ? backlogTotal
+    : (withdrawals?.length || withdrawals?.counts?.pending || 0);
 
   // Keep these KPIs aligned with the live /api/admin/stats response contract.
   // The endpoint exposes totalAdminProfit and activeVendors, not the legacy
