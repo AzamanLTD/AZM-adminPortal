@@ -178,6 +178,67 @@ export const withdrawalPendingResponseSchema = z.object({
   }).passthrough(),
 }).passthrough();
 
+// ── NEEDS_MANUAL_REVIEW resolution (backend PR #325, 2026-10-08) ─────────────
+// POST /api/admin/withdrawals/:id/resolve-review
+// Body: { action: RESUME | REJECT | ESCALATE, reason: 3–500 chars }.
+// The backend is the sole authority on whether RESUME/REJECT is safe (it
+// proves pre-dispatch safety from durable evidence). The portal validates
+// only the documented wire shape — never the safety predicates.
+export const resolveReviewRequestSchema = z.object({
+  action: z.enum(['RESUME', 'REJECT', 'ESCALATE']),
+  reason: z.string().trim().min(3).max(500),
+}).strict();
+
+// Durable parking evidence attached per-row by the backend on
+// GET /api/admin/payouts/needs-review. Rows parked before the fail-closed
+// evidence fix carry reasons without a phase — partial evidence parses, and
+// the portal must never present it as proof of safety.
+const manualReviewEvidenceReasonSchema = z.object({
+  reason: z.string(),
+  phase: z.string().nullable().optional(),
+  reference: z.string().nullable().optional(),
+  firstSeenAt: z.string().nullable().optional(),
+  lastSeenAt: z.string().nullable().optional(),
+}).passthrough();
+
+export const manualReviewEvidenceSchema = z.object({
+  reasons: z.array(manualReviewEvidenceReasonSchema),
+  resolutionOptions: z.array(z.enum(['RESUME', 'REJECT', 'ESCALATE'])),
+}).passthrough();
+
+const needsReviewWithdrawalSchema = z.object({
+  ...withdrawalSchema.shape,
+  manualReview: manualReviewEvidenceSchema.nullable().optional(),
+}).passthrough();
+
+// GET /api/admin/payouts/needs-review → { success, withdrawals, count,
+// pagination } — same buildPageEnvelope cursor contract as the pending
+// endpoint (offset-mode page 1 when called without params carries total).
+export const needsReviewListResponseSchema = z.object({
+  success: z.literal(true),
+  withdrawals: z.array(needsReviewWithdrawalSchema),
+  count: z.number().int().nonnegative(),
+  pagination: withdrawalPaginationSchema,
+}).passthrough();
+
+// 200 responses from the resolve endpoint. status is the post-resolution
+// server status (PENDING after RESUME, PROCESSING after ESCALATE, REJECTED +
+// refundedAmount after REJECT). It is recorded, never optimistically
+// fabricated by the portal.
+export const resolveReviewResponseSchema = z.object({
+  success: z.literal(true),
+  message: z.string(),
+  data: z.object({
+    withdrawalId: idSchema,
+    status: z.string().optional(),
+    reason: z.string().optional(),
+    userId: idSchema.optional(),
+    amount: z.union([z.number().finite(), z.string().min(1)]).optional(),
+    canonicalReference: z.string().nullable().optional(),
+    refundedAmount: z.union([z.number().finite(), z.string().min(1)]).nullable().optional(),
+  }).passthrough().optional(),
+}).passthrough();
+
 const payoutSettingsSchema = z.object({
   autoPayoutEnabled: z.boolean(),
   autoPayoutThresholdUsdc: z.number().finite().nonnegative(),
@@ -213,6 +274,9 @@ export const payoutSettingsUpdateSchema = z.object({
  * @typedef {import('zod').infer<typeof escrowDisputeListResponseSchema>} EscrowDisputeListResponse
  * @typedef {import('zod').infer<typeof withdrawalPendingResponseSchema>} WithdrawalPendingResponse
  * @typedef {import('zod').infer<typeof payoutSettingsResponseSchema>} PayoutSettingsResponse
+ * @typedef {import('zod').infer<typeof needsReviewListResponseSchema>} NeedsReviewListResponse
+ * @typedef {import('zod').infer<typeof resolveReviewRequestSchema>} ResolveReviewRequest
+ * @typedef {import('zod').infer<typeof resolveReviewResponseSchema>} ResolveReviewResponse
  * @typedef {import('zod').infer<typeof payoutSettingsUpdateSchema>} PayoutSettingsUpdate
  */
 

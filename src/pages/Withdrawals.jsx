@@ -12,16 +12,23 @@
  * Reference: Stripe payout review, Coinbase withdrawal review, Wise compliance queue
  */
 import { useState, useMemo } from 'react';
-import { useWithdrawals, useStats } from '@/lib/useAdminData';
+import { useWithdrawals, useStats, useNeedsReviewWithdrawals, useResolveManualReview } from '@/lib/useAdminData';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { financialApi } from '@/lib/financialApi';
 import { patchWithdrawal, rollbackWithdrawal, captureWithdrawal } from '@/lib/optimisticWithdrawalCache';
+import {
+  RESOLUTION_ACTIONS,
+  classifyResolutionError,
+  inFlightRowId,
+  parkingEvidenceModel,
+  validateResolutionReason,
+} from '@/lib/manualReviewQueue';
 import { Button } from '@/components/forge';
 import { Tag } from '@/components/forge';
 import {
   CheckCircle, XCircle, RefreshCw, Wallet, AlertTriangle,
   ShieldCheck, ShieldAlert, ChevronRight, X, Snowflake,
-  TrendingUp, CheckSquare, Square
+  TrendingUp, CheckSquare, Square, PauseCircle, RotateCcw, ArrowUpRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ActionDialog from '@/components/ActionDialog';
@@ -238,6 +245,209 @@ function WithdrawalDetailDrawer({ withdrawal, risk, rate, onClose, onApprove, on
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── Manual review queue (NEEDS_MANUAL_REVIEW) ──────────────────────────── */
+/**
+ * Parked payouts flagged NEEDS_MANUAL_REVIEW by the payout worker. These are
+ * NOT normal PENDING withdrawals: approve/reject does not apply to them and
+ * they are deliberately kept visually distinct from the approval queue.
+ * Each parked row carries the durable parking evidence the backend recorded
+ * (reason / phase / reference) and three resolution actions — RESUME,
+ * REJECT (a real financial reversal) and ESCALATE — through the backend's
+ * authoritative POST /api/admin/withdrawals/:id/resolve-review endpoint.
+ * The portal never decides whether RESUME/REJECT is safe: the backend proves
+ * it or refuses fail-closed with 409.
+ */
+function ManualReviewQueue() {
+  const { data: reviewData, isLoading, refetch } = useNeedsReviewWithdrawals();
+  const resolve = useResolveManualReview();
+  const [resolveTarget, setResolveTarget] = useState(null); // { row, action }
+  const [conflict, setConflict] = useState(null); // { id, message, blockers }
+
+  const rows = reviewData?.rows || [];
+  const truncated = Boolean(reviewData?.truncated);
+  const total = reviewData?.pagination?.total;
+  const busyRowId = inFlightRowId(resolve);
+
+  if (!isLoading && rows.length === 0) return null;
+
+  const actionMeta = (action) => RESOLUTION_ACTIONS.find((a) => a.action === action);
+
+  const startResolve = (row, action) => {
+    setConflict(null);
+    setResolveTarget({ row, action });
+  };
+
+  const confirmResolve = (rawReason) => {
+    const check = validateResolutionReason(rawReason);
+    if (!check.ok) {
+      // Mirror the backend's documented reason rule (3–500 chars) so the
+      // operator fixes it before the request crosses the wire.
+      toast.error(check.message);
+      return; // keep the dialog open
+    }
+    const { row, action } = resolveTarget || {};
+    if (!row || !action) return;
+    resolve.mutate(
+      { id: row.id, action, reason: check.value },
+      {
+        onSuccess: (res) => {
+          setResolveTarget(null);
+          setConflict(null);
+          toast.success(res?.message || 'Resolution recorded.');
+        },
+        onError: (error) => {
+          setResolveTarget(null);
+          const classified = classifyResolutionError(error);
+          // Honest 409: concurrent resolution or backend safety refusal.
+          // Record the backend's authoritative message (and blockers) on
+          // the row and let the refetch reconcile the true server state —
+          // never fabricate a terminal status locally.
+          setConflict({ id: row.id, message: classified.message, blockers: classified.blockers });
+          if (classified.kind === 'REFUSED') {
+            toast.error(`Refused by the backend — ${classified.message}`);
+          } else {
+            toast.error(classified.message);
+          }
+        },
+      },
+    );
+  };
+
+  return (
+    <div className="bg-amber-500/5 border border-amber-500/40 rounded-xl p-4">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div className="flex items-start gap-3">
+          <div className="shrink-0 w-9 h-9 rounded-lg bg-[var(--f-warn-bg)] border border-[var(--f-warn)] flex items-center justify-center">
+            <PauseCircle className="w-4 h-4 text-[var(--f-warn)]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-sm font-bold text-[var(--f-text)]">
+                Needs manual review ({rows.length})
+              </h2>
+              <Tag className="border-0 text-xs bg-[var(--f-warn-bg)] text-[var(--f-warn)]">NEEDS_MANUAL_REVIEW</Tag>
+            </div>
+            <p className="text-xs text-ink-3 mt-1 max-w-2xl">
+              Payouts durably parked by the payout worker — not normal pending approvals. Every action below is
+              adjudicated by the backend: RESUME is only accepted when the backend proves the payout was never
+              dispatched, REJECT is a real financial reversal through the canonical reversal authority, and
+              ESCALATE hands the case to the reconciliation authority.
+            </p>
+          </div>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="border-line text-ink-2 hover:bg-[var(--f-surface-sunken)]">
+          <RefreshCw className="w-3.5 h-3.5 mr-2" /> Refresh
+        </Button>
+      </div>
+
+      {isLoading && <p className="text-ink-3 text-sm mt-3">Loading parked payouts…</p>}
+
+      {truncated && (
+        <p className="text-xs text-[var(--f-warn)] mt-3">
+          Showing the first {rows.length} parked rows{typeof total === 'number' ? ` of ${total}` : ''} — the park
+          queue is larger than the page budget. Do not treat this list as complete.
+        </p>
+      )}
+
+      <div className="mt-3 space-y-2">
+        {rows.map((row) => {
+          const evidence = parkingEvidenceModel(row);
+          const rowBusy = busyRowId === row.id;
+          const rowConflict = conflict?.id === row.id ? conflict : null;
+          return (
+            <div key={row.id} className="bg-[var(--f-surface-raised)] border border-amber-500/30 rounded-lg p-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-sm text-[var(--f-text)] font-medium truncate">
+                    #{row.id} · {row.user?.username || row.user?.email || `user #${row.user?.id ?? '—'}`}
+                  </p>
+                  <p className="text-xs text-ink-3">
+                    ${Number(row.amount ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} {row.currency || ''} · {row.payoutMethod || 'payout'} → {row.destination || '—'}
+                    {row.createdAt && <> · parked since {new Date(row.createdAt).toLocaleString()}</>}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {RESOLUTION_ACTIONS.map(({ action, label }) => (
+                    <Button
+                      key={action}
+                      size="sm"
+                      variant="outline"
+                      disabled={rowBusy || resolve.isPending}
+                      className={`h-8 text-xs ${
+                        action === 'REJECT'
+                          ? 'border-red-500/50 text-[var(--f-bad)] hover:bg-[var(--f-bad-bg)]'
+                          : action === 'ESCALATE'
+                            ? 'border-amber-500/50 text-[var(--f-warn)] hover:bg-[var(--f-warn-bg)]'
+                            : 'border-emerald-500/50 text-[var(--f-ok)] hover:bg-[var(--f-ok-bg)]'
+                      }`}
+                      onClick={() => startResolve(row, action)}
+                    >
+                      {action === 'RESUME' && <RotateCcw className="w-3.5 h-3.5 mr-1" />}
+                      {action === 'ESCALATE' && <ArrowUpRight className="w-3.5 h-3.5 mr-1" />}
+                      {label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Durable parking evidence — displayed, never used to infer safety */}
+              <div className="mt-2 text-xs text-ink-3">
+                {evidence.hasEvidence ? (
+                  <div className="space-y-1">
+                    <p className="uppercase tracking-wide text-ink-3">Parking evidence (backend-recorded)</p>
+                    {evidence.entries.map((e, i) => (
+                      <p key={i} className="flex flex-wrap gap-1.5 items-baseline">
+                        <span className="text-[var(--f-text)] font-medium">{e.reason}</span>
+                        <span>· phase: {e.provablePhase ? e.phase : <span className="text-[var(--f-warn)]">not recorded</span>}</span>
+                        {e.reference && <span>· ref: {e.reference}</span>}
+                        {e.lastSeenAt && <span>· seen: {new Date(e.lastSeenAt).toLocaleString()}</span>}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[var(--f-warn)]">
+                    No durable parking evidence was recorded for this row — the backend can only prove ESCALATE for
+                    it. Do not treat it as safe to refund.
+                  </p>
+                )}
+              </div>
+
+              {/* Honest backend refusal / concurrent-resolution message */}
+              {rowConflict && (
+                <div className="mt-2 bg-[var(--f-bad)]/5 border border-[var(--f-bad)]/30 rounded-lg p-2">
+                  <p className="text-xs text-[var(--f-bad)] font-medium">{rowConflict.message}</p>
+                  {rowConflict.blockers.length > 0 && (
+                    <ul className="mt-1 space-y-0.5 list-disc list-inside text-xs text-ink-2">
+                      {rowConflict.blockers.map((b, i) => <li key={i}>{b}</li>)}
+                    </ul>
+                  )}
+                  <p className="mt-1 text-[10px] text-ink-3">
+                    Server state was refetched — the row reflects what the backend now holds.
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Reason dialog — an explicit human reason is required for every action */}
+      <ActionDialog
+        open={Boolean(resolveTarget)}
+        title={`Resolution: ${actionMeta(resolveTarget?.action)?.label || ''} withdrawal #${resolveTarget?.row?.id ?? ''}`}
+        label={`${actionMeta(resolveTarget?.action)?.description || ''} — a reason between 3 and 500 characters is required and is recorded durably.`}
+        placeholder="Why is this resolution correct?"
+        confirmLabel={actionMeta(resolveTarget?.action)?.label || 'Confirm'}
+        variant={resolveTarget?.action === 'REJECT' ? 'destructive' : 'default'}
+        inputType="textarea"
+        isPending={resolve.isPending}
+        onConfirm={confirmResolve}
+        onCancel={() => setResolveTarget(null)}
+      />
     </div>
   );
 }
@@ -478,6 +688,10 @@ export default function Withdrawals() {
           </div>
         </div>
       )}
+
+      {/* Manual review queue (NEEDS_MANUAL_REVIEW) — parked payouts with the
+          backend-authoritative RESUME / REJECT / ESCALATE resolution surface. */}
+      <ManualReviewQueue />
 
       {/* Honest truncation: the queue exceeded the page budget */}
       {queueTruncated && (

@@ -257,7 +257,7 @@ export function useAdminNotifications() {
   const all = useMemo(() => {
     const merged = [
       ...mapWithdrawals(withdrawals.data),
-      ...mapNeedsReview(needsReview.data),
+      ...mapNeedsReview(needsReview.data?.rows),
       ...mapDisputes(disputes.data),
       ...mapDisputeResolutions(disputeResolutions.data),
       ...mapSusuAlerts(susuOpen.data),
