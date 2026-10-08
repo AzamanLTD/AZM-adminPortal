@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from './api';
 import { financialApi } from './financialApi';
+import { fetchPendingWithdrawalQueue } from './withdrawalQueue';
 
 export function useStats() {
   return useQuery({
@@ -128,16 +129,18 @@ export function useWithdrawals() {
   return useQuery({
     queryKey: ['admin', 'withdrawals'],
     queryFn: async () => {
-      const response = await financialApi.withdrawals.pending();
-      const { pending, frozen, counts, pagination } = response.data;
+      // The backend cursor-paginates this endpoint (default limit 100). Drain
+      // the queue so the operator sees the whole review backlog, not the first
+      // page wearing a "complete" costume.
+      const { rows, frozen, counts, pagination, truncated } = await fetchPendingWithdrawalQueue();
       return Object.assign(
-        pending.map((withdrawal) => ({
+        rows.map((withdrawal) => ({
           ...withdrawal,
           requestedAt: withdrawal.createdAt,
           method: withdrawal.payoutMethod,
           wallet: withdrawal.destination,
         })),
-        { frozen, counts, pagination },
+        { frozen, counts, pagination, truncated },
       );
     },
     refetchInterval: 30000,

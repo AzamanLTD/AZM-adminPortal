@@ -1,4 +1,4 @@
-const QUERY_META_KEYS = ['frozen', 'counts', 'pagination'];
+const QUERY_META_KEYS = ['frozen', 'counts', 'pagination', 'truncated'];
 
 function preserveMetadata(next, previous) {
   const metadata = {};

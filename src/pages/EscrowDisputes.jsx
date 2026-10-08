@@ -227,12 +227,19 @@ function EscrowDisputeCard({ dispute }) {
 }
 
 export default function EscrowDisputes() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['escrow-disputes'],
-    queryFn: () => financialApi.escrow.disputes(),
+  // The backend serves this queue in offset pages (default limit 20) and
+  // returns { page, limit, total, totalPages }. Without explicit paging the
+  // queue silently clamps to the first page.
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 100;
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['escrow-disputes', page],
+    queryFn: () => financialApi.escrow.disputes(undefined, page, PAGE_SIZE),
     refetchInterval: 30_000,
   });
   const disputes = data?.disputes || [];
+  const pageMeta = data?.pagination || null;
+  const totalPages = Math.max(pageMeta?.totalPages || 1, 1);
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const disputedCount = disputes.filter((d) => d.escrow?.status === 'DISPUTED').length;
@@ -250,7 +257,10 @@ export default function EscrowDisputes() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-[var(--f-text)]">Escrow Dispute Queue</h1>
-          <p className="text-xs text-[var(--f-text-3)]"><span className="text-[var(--f-bad)] font-semibold">{openDisputes.length}</span> open disputes</p>
+          <p className="text-xs text-[var(--f-text-3)]">
+            <span className="text-[var(--f-bad)] font-semibold">{openDisputes.length}</span> open disputes
+            {totalPages > 1 && ' on this page'}
+          </p>
         </div>
       </div>
 
@@ -269,13 +279,44 @@ export default function EscrowDisputes() {
         <h2 className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-widest">Disputes</h2>
         {isLoading && <div className="space-y-3">{[1, 2].map((i) => <div key={i} className="az-card h-20 az-shimmer" />)}</div>}
         {disputes.map((d) => <EscrowDisputeCard key={d.id} dispute={d} />)}
-        {!isLoading && disputes.length === 0 && (
+        {isError && (
+          <div className="text-center py-12 az-card">
+            <div className="w-10 h-10 bg-[var(--f-bad)22] rounded-xl flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-5 h-5 text-[var(--f-bad)]" />
+            </div>
+            <p className="text-sm font-medium text-[var(--f-text)]">Failed to load the dispute queue</p>
+            <p className="text-xs text-[var(--f-text-3)] mt-1">
+              The queue is unavailable — do not treat it as empty. This is not an "all clear".
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-4 border-line text-ink-2">
+              Retry
+            </Button>
+          </div>
+        )}
+        {!isLoading && !isError && disputes.length === 0 && (
           <div className="text-center py-12 az-card">
             <div className="w-10 h-10 bg-[var(--f-ok)22] rounded-xl flex items-center justify-center mx-auto mb-3">
               <CheckCircle className="w-5 h-5 text-[var(--f-ok)]" />
             </div>
             <p className="text-sm font-medium text-[var(--f-text-2)]">No escrow disputes</p>
             <p className="text-xs text-[var(--f-text-3)] mt-1">All escrows are healthy ✓</p>
+          </div>
+        )}
+
+        {/* Offset pagination per the backend contract */}
+        {pageMeta && totalPages > 1 && (
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs text-[var(--f-text-3)]">
+              Page {pageMeta.page} of {totalPages} · {pageMeta.total} disputes total
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1 || isLoading} onClick={() => setPage(p => p - 1)} className="border-line text-ink-2 h-8">
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" disabled={page >= totalPages || isLoading} onClick={() => setPage(p => p + 1)} className="border-line text-ink-2 h-8">
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </div>
