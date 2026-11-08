@@ -153,6 +153,16 @@ export const settings = {
   update: (data) => request('/api/admin/settings', { method: 'PUT', body: JSON.stringify(data) }),
 };
 
+// ── Money Settings (directive 1-E) ───────────────────────────────────────────
+export const moneySettings = {
+  get: () => request('/api/admin/money-settings'),
+  update: (key, body) => request(`/api/admin/money-settings/${encodeURIComponent(key)}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  }),
+  history: (key) => request(`/api/admin/money-settings/${encodeURIComponent(key)}/history`),
+};
+
 // ── Fee Profiles ──────────────────────────────────────────────────────────────
 export const feeProfiles = {
   list: () => request('/api/admin/fee-profiles'),

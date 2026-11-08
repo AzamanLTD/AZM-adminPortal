@@ -1,242 +1,341 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     MONEY_SETTING_BOUNDS,
-    MONEY_SETTING_META,
-    MONEY_SETTINGS_WRITE,
+    MONEY_SETTING_KEYS,
+    LEGACY_KEY_ALIASES,
     READ_ONLY_FLAGS,
+    HEADLINE_MODES,
     buildConfirmation,
     buildMoneySettingsModel,
     canWriteMoneySettings,
+    canonicalKey,
     compareGhs,
     describeBound,
-    ghsToPesewas,
+    displayValue,
+    editableState,
+    spreadPercent,
     validateSettingValue,
-} from '@/lib/moneySettingsContract';
+    moneySettingsResponseSchema,
+} from './moneySettingsContract';
 import {
-    MONEY_SETTINGS_INVALID,
-    MONEY_SETTINGS_UNAVAILABLE,
+    MONEY_SETTINGS_MODE,
+    MoneySettingsUnavailable,
     createLiveMoneySettingsGateway,
     createMockMoneySettingsGateway,
     resolveMoneySettingsGateway,
-} from '@/lib/moneySettingsGateway';
+} from './moneySettingsGateway';
 
-const ADMIN_WITH_WRITE = { role: 'ADMIN', permissions: [MONEY_SETTINGS_WRITE] };
-const ADMIN_WITHOUT = { role: 'ADMIN', permissions: ['users.read'] };
-const ADMIN_SHAPELESS = { role: 'ADMIN' };
+const WRITER = { role: 'ADMIN', permissions: ['money.settings.write'] };
+const READER = { role: 'ADMIN', permissions: [] };
 
-const SNAPSHOT = {
-    settings: {
-        'quoteTtl.payment_topup': 300,
-        'quoteTtl.bucket_convert': 120,
-        'fxSpread.payment_topup.GHS_USDC': 50,
-        'fxSpread.payment_topup.USDC_GHS': 50,
-        'fxSpread.bucket_convert.GHS_USDC': 25,
-        'fxSpread.bucket_convert.USDC_GHS': 25,
-        stepUpThresholdGhs: '500.00',
-        balanceHeadlineMode: 'GHS_LEDGER',
-    },
-    flags: {
-        nativeGhsSettlementEnabled: false,
-        nativeGhsWithdrawalEnabled: false,
-        fiatLiquidityAuthorityEnabled: false,
-        modelBSettlementEnabled: false,
-    },
-    revisions: {},
-};
+// ── 1. quote TTL bounds ──────────────────────────────────────────────────────
+describe('quote TTL bounds are [10, 900] whole seconds', () => {
+    it.each(['quoteTtl.payment_topup', 'quoteTtl.bucket_convert'])('%s accepts the inclusive edges', (key) => {
+        expect(validateSettingValue(key, 10).ok).toBe(true);
+        expect(validateSettingValue(key, 900).ok).toBe(true);
+        expect(validateSettingValue(key, '45').ok).toBe(true);
+    });
 
-describe('money settings — permission gating', () => {
-    it('requires money.settings.write, and treats a missing permission list as no access', () => {
-        expect(canWriteMoneySettings(ADMIN_WITH_WRITE)).toBe(true);
-        expect(canWriteMoneySettings(ADMIN_WITHOUT)).toBe(false);
-        expect(canWriteMoneySettings(ADMIN_SHAPELESS)).toBe(false);
+    it.each(['quoteTtl.payment_topup', 'quoteTtl.bucket_convert'])('%s rejects outside the range', (key) => {
+        expect(validateSettingValue(key, 9).ok).toBe(false);
+        expect(validateSettingValue(key, 901).ok).toBe(false);
+        expect(validateSettingValue(key, 0).ok).toBe(false);
+        expect(validateSettingValue(key, -1).ok).toBe(false);
+    });
+
+    it('rejects the old 60–3600 window as a bound source', () => {
+        expect(MONEY_SETTING_BOUNDS['quoteTtl.payment_topup'].min).toBe(10);
+        expect(MONEY_SETTING_BOUNDS['quoteTtl.payment_topup'].max).toBe(900);
+        expect(validateSettingValue('quoteTtl.payment_topup', 3600).ok).toBe(false);
+    });
+
+    it('documented defaults are 45 and 60 seconds', () => {
+        expect(validateSettingValue('quoteTtl.payment_topup', 45).value).toBe(45);
+        expect(validateSettingValue('quoteTtl.bucket_convert', 60).value).toBe(60);
+    });
+});
+
+// ── 2. FX spread bounds and naming ───────────────────────────────────────────
+describe('FX spreads are 0–10% inclusive, held as 0–1000 basis points', () => {
+    it.each([
+        'fxSpread.CONVERT_GHS_TO_USDC',
+        'fxSpread.CONVERT_USDC_TO_GHS',
+        'fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC',
+        'fxSpread.PAYMENT_TOPUP_USDC_FROM_GHS',
+    ])('%s accepts 0, 10% and rejects just outside', (key) => {
+        expect(validateSettingValue(key, 0).ok).toBe(true);
+        expect(validateSettingValue(key, 1000).ok).toBe(true);
+        expect(validateSettingValue(key, 1001).ok).toBe(false);
+        expect(validateSettingValue(key, -1).ok).toBe(false);
+    });
+
+    it('displays basis points as the equivalent percentage', () => {
+        expect(spreadPercent(0)).toBe('0.00%');
+        expect(spreadPercent(1000)).toBe('10.00%');
+        expect(spreadPercent(250)).toBe('2.50%');
+        expect(displayValue('fxSpread.CONVERT_USDC_TO_GHS', 1000)).toBe('10.00% (1000 bps)');
+    });
+
+    it('uses the four canonical Part 4 §8 keys and no nested scheme', () => {
+        const spreadKeys = MONEY_SETTING_KEYS.filter((k) => k.startsWith('fxSpread.'));
+        expect(spreadKeys).toEqual([
+            'fxSpread.CONVERT_GHS_TO_USDC',
+            'fxSpread.CONVERT_USDC_TO_GHS',
+            'fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC',
+            'fxSpread.PAYMENT_TOPUP_USDC_FROM_GHS',
+        ]);
+        expect(Object.keys(LEGACY_KEY_ALIASES)).toEqual([
+            'fxSpread.payment_topup.GHS_USDC',
+            'fxSpread.payment_topup.USDC_GHS',
+        ]);
+        expect(canonicalKey('fxSpread.payment_topup.GHS_USDC')).toBe('fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC');
+    });
+
+    it('the two payment-topup directions mean different things', () => {
+        const ghsFromUsdc = describeBound('fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC');
+        const usdcFromGhs = describeBound('fxSpread.PAYMENT_TOPUP_USDC_FROM_GHS');
+        expect(ghsFromUsdc).toBe(usdcFromGhs); // same bound, different meaning
+        expect(canonicalKey('fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC'))
+            .not.toBe(canonicalKey('fxSpread.PAYMENT_TOPUP_USDC_FROM_GHS'));
+    });
+});
+
+// ── 3. step-up threshold ────────────────────────────────────────────────────
+describe('stepUpThresholdGhs allows any non-negative amount at two decimals', () => {
+    it('accepts 0.00, positive amounts and no invented ceiling', () => {
+        expect(validateSettingValue('stepUpThresholdGhs', '0.00')).toEqual({ ok: true, value: '0.00', error: null });
+        expect(validateSettingValue('stepUpThresholdGhs', '2500.50').ok).toBe(true);
+        expect(validateSettingValue('stepUpThresholdGhs', '5000000.00').ok).toBe(true);
+        expect(MONEY_SETTING_BOUNDS.stepUpThresholdGhs.max).toBeNull();
+    });
+
+    it('normalises a whole number to two decimals', () => {
+        expect(validateSettingValue('stepUpThresholdGhs', '100').value).toBe('100.00');
+    });
+
+    it('rejects negatives, exponents and more than two decimals', () => {
+        expect(validateSettingValue('stepUpThresholdGhs', '-1.00').ok).toBe(false);
+        expect(validateSettingValue('stepUpThresholdGhs', '1e3').ok).toBe(false);
+        expect(validateSettingValue('stepUpThresholdGhs', '12.345').ok).toBe(false);
+        expect(validateSettingValue('stepUpThresholdGhs', '0.001').ok).toBe(false);
+        expect(validateSettingValue('stepUpThresholdGhs', 'abc').ok).toBe(false);
+        expect(validateSettingValue('stepUpThresholdGhs', '').ok).toBe(false);
+    });
+
+    it('compares GHS amounts exactly, never with floats', () => {
+        expect(compareGhs('0.10', '0.1')).toBe(0);
+        expect(compareGhs('9007199254740993.00', '9007199254740992.00')).toBe(1);
+        expect(compareGhs('0.00', '0.00')).toBe(0);
+    });
+});
+
+// ── 4. confirmation carries value, effective time and reason ────────────────
+describe('confirmation shows value, effective time and reason', () => {
+    it('builds a confirmation with an effective time', () => {
+        const c = buildConfirmation('fxSpread.CONVERT_GHS_TO_USDC', '250', '2026-11-09T09:00');
+        expect(c.valid).toBe(true);
+        expect(c.displayValue).toBe('2.50% (250 bps)');
+        expect(c.effectiveAt).toBe('2026-11-09T09:00');
+    });
+
+    it('carries validation errors rather than hiding them', () => {
+        const c = buildConfirmation('quoteTtl.payment_topup', '901', '2026-11-09T09:00');
+        expect(c.valid).toBe(false);
+        expect(c.error).toMatch(/Maximum is 900 seconds/);
+    });
+});
+
+// ── 5. API contract ─────────────────────────────────────────────────────────
+describe('API contract', () => {
+    const good = {
+        settings: [{ key: 'stepUpThresholdGhs', value: '0.00', effectiveFrom: '2026-11-01T00:00:00Z', source: 'default' }],
+        flags: { nativeGhsSettlementEnabled: false },
+        bounds: { stepUpThresholdGhs: { min: '0.00', max: null, unit: 'GHS' } },
+    };
+
+    it('accepts the documented GET shape', () => {
+        expect(moneySettingsResponseSchema.safeParse(good).success).toBe(true);
+    });
+
+    it('rejects a response without settings or flags', () => {
+        expect(moneySettingsResponseSchema.safeParse({ settings: [] }).success).toBe(false);
+        expect(moneySettingsResponseSchema.safeParse({ flags: {} }).success).toBe(false);
+    });
+
+    it('PUT sends value, effectiveFrom and note, never effectiveAt', async () => {
+        const seen = [];
+        const client = {
+            get: async () => good,
+            update: async (key, body) => { seen.push({ key, body }); return body; },
+            history: async () => [],
+        };
+        const gateway = createLiveMoneySettingsGateway(client);
+        await gateway.update('fxSpread.CONVERT_USDC_TO_GHS', {
+            value: 1000, effectiveFrom: '2026-11-09T09:00', note: 'owner raised the ceiling',
+        });
+        expect(seen[0].key).toBe('fxSpread.CONVERT_USDC_TO_GHS');
+        expect(seen[0].body).toEqual({ value: 1000, effectiveFrom: '2026-11-09T09:00', note: 'owner raised the ceiling' });
+        expect('effectiveAt' in seen[0].body).toBe(false);
+    });
+
+    it('refuses a save without a reason', async () => {
+        const client = { get: async () => good, update: async () => ({}), history: async () => [] };
+        const gateway = createLiveMoneySettingsGateway(client);
+        await expect(gateway.update('quoteTtl.payment_topup', { value: 45 })).rejects.toMatchObject({
+            code: 'MONEY_SETTINGS_REJECTED',
+        });
+    });
+
+    it('omits effectiveFrom when none was chosen', async () => {
+        const seen = [];
+        const client = { get: async () => good, update: async (k, b) => { seen.push(b); return b; }, history: async () => [] };
+        await createLiveMoneySettingsGateway(client).update('quoteTtl.payment_topup', { value: 45, note: 'tighter quote' });
+        expect(seen[0]).toEqual({ value: 45, note: 'tighter quote' });
+    });
+
+    it('rejects a response that does not match the shape', async () => {
+        const client = { get: async () => ({ nope: true }), update: async () => ({}), history: async () => [] };
+        await expect(createLiveMoneySettingsGateway(client).get()).rejects.toMatchObject({
+            code: 'MONEY_SETTINGS_REJECTED',
+        });
+    });
+
+    it('history is a separate operation', async () => {
+        const client = { get: async () => good, update: async () => ({}), history: async (k) => [{ key: k, value: '1.00' }] };
+        const rows = await createLiveMoneySettingsGateway(client).history('stepUpThresholdGhs');
+        expect(rows).toHaveLength(1);
+    });
+});
+
+// ── 6. permission gating ────────────────────────────────────────────────────
+describe('permission gating fails closed', () => {
+    it('requires the explicit permission', () => {
+        expect(canWriteMoneySettings(WRITER)).toBe(true);
+        expect(canWriteMoneySettings(READER)).toBe(false);
+        expect(canWriteMoneySettings({ role: 'ADMIN' })).toBe(false);
         expect(canWriteMoneySettings(null)).toBe(false);
     });
 
-    it('renders every row read-only when the permission is absent', () => {
-        const model = buildMoneySettingsModel({ admin: ADMIN_WITHOUT, snapshot: SNAPSHOT, gatewayMode: 'mock' });
+    it('a reader sees no editable rows', async () => {
+        const gateway = createMockMoneySettingsGateway();
+        const snapshot = await gateway.get();
+        const model = buildMoneySettingsModel({ admin: READER, snapshot, mode: 'live', error: null });
         expect(model.canWrite).toBe(false);
-        const rows = model.groups.flatMap((g) => g.rows);
-        expect(rows.length).toBeGreaterThan(0);
-        expect(rows.every((r) => r.editable === false)).toBe(true);
+        expect(model.settings.every((s) => s.editable === false)).toBe(true);
     });
 
-    it('makes bounded, non-pending rows editable when the permission is present', () => {
-        const model = buildMoneySettingsModel({ admin: ADMIN_WITH_WRITE, snapshot: SNAPSHOT, gatewayMode: 'mock' });
-        const rows = model.groups.flatMap((g) => g.rows);
-        const ttl = rows.find((r) => r.key === 'quoteTtl.payment_topup');
-        const headline = rows.find((r) => r.key === 'balanceHeadlineMode');
-        expect(ttl.editable).toBe(true);
+    it('a writer sees editable rows except the pending decision', async () => {
+        const gateway = createMockMoneySettingsGateway();
+        const snapshot = await gateway.get();
+        const model = buildMoneySettingsModel({ admin: WRITER, snapshot, mode: 'live', error: null });
+        const headline = model.settings.find((s) => s.key === 'balanceHeadlineMode');
         expect(headline.editable).toBe(false);
-        expect(headline.ownerPending).toBe(true);
+        expect(headline.pendingOwnerDecision).toBe(true);
+        expect(model.settings.filter((s) => s.key !== 'balanceHeadlineMode').every((s) => s.editable)).toBe(true);
     });
 });
 
-describe('money settings — rollout flags are read-only', () => {
-    it('exposes flags for display only and states that no write path exists', () => {
-        const model = buildMoneySettingsModel({ admin: ADMIN_WITH_WRITE, snapshot: SNAPSHOT, gatewayMode: 'mock' });
+// ── 7. read-only flags ──────────────────────────────────────────────────────
+describe('rollout flags are read-only', () => {
+    it('exposes the four flags and no writer', async () => {
+        const gateway = createMockMoneySettingsGateway();
+        const snapshot = await gateway.get();
+        const model = buildMoneySettingsModel({ admin: WRITER, snapshot, mode: 'live', error: null });
         expect(model.flagWritesAllowed).toBe(false);
         expect(model.flags.map((f) => f.key)).toEqual(READ_ONLY_FLAGS.map((f) => f.key));
-        expect(model.flags[0].value).toBe(false);
+        expect(typeof gateway.update).toBe('function');
     });
 
-    it('has no bound, no meta entry and therefore no valid edit for any flag key', () => {
+    it('flags are not money settings, so they cannot be validated for writing', () => {
         for (const flag of READ_ONLY_FLAGS) {
             expect(MONEY_SETTING_BOUNDS[flag.key]).toBeUndefined();
-            expect(MONEY_SETTING_META[flag.key]).toBeUndefined();
             expect(validateSettingValue(flag.key, 'true').ok).toBe(false);
+            expect(editableState(flag.key).editable).toBe(false);
         }
     });
 
-    it('gives the mock gateway no flag-specific operation and records no flag write', async () => {
-        const gateway = createMockMoneySettingsGateway(SNAPSHOT);
-        await gateway.get();
-        expect(gateway.calls.map((c) => c.op)).toEqual(['get']);
-        expect(gateway.calls.some((c) => READ_ONLY_FLAGS.some((f) => f.key === c.key))).toBe(false);
-    });
-
-    it('exposes exactly the three documented live operations', () => {
-        const http = { request: async () => ({ status: 200, data: { settings: {}, flags: {}, revisions: [] } }) };
-        const live = createLiveMoneySettingsGateway(http);
-        expect(Object.keys(live).sort()).toEqual(['get', 'history', 'mode', 'update']);
+    it('mock flags are default-off fixture values, not claims about production', async () => {
+        const snapshot = await createMockMoneySettingsGateway().get();
+        expect(Object.values(snapshot.flags).every((v) => v === false)).toBe(true);
     });
 });
 
-describe('money settings — numeric bounds', () => {
-    it('accepts the exact minimum and maximum and rejects just outside for every bounded key', () => {
-        for (const [key, bound] of Object.entries(MONEY_SETTING_BOUNDS)) {
-            if (bound.kind === 'ghs') {
-                expect(validateSettingValue(key, bound.min).ok).toBe(true);
-                expect(validateSettingValue(key, bound.max).ok).toBe(true);
-                expect(validateSettingValue(key, '0.99').ok).toBe(false);
-                expect(validateSettingValue(key, '100000.01').ok).toBe(false);
-            } else {
-                expect(validateSettingValue(key, bound.min).ok).toBe(true);
-                expect(validateSettingValue(key, bound.max).ok).toBe(true);
-                expect(validateSettingValue(key, bound.min - 1).ok).toBe(false);
-                expect(validateSettingValue(key, bound.max + 1).ok).toBe(false);
-            }
-            expect(describeBound(key)).toContain(String(bound.kind === 'ghs' ? bound.min : bound.min));
+// ── 8. pending D1 ──────────────────────────────────────────────────────────
+describe('balanceHeadlineMode stays pending and constrained', () => {
+    it('allows only the two agreed modes', () => {
+        expect(HEADLINE_MODES).toEqual(['COMBINED_ESTIMATE', 'NATIVE_ONLY']);
+        expect(HEADLINE_MODES).not.toContain('GHS_LEDGER');
+    });
+
+    it('is not editable and not a money setting with a bound', () => {
+        expect(editableState('balanceHeadlineMode').editable).toBe(false);
+        expect(editableState('balanceHeadlineMode').reason).toMatch(/D1/);
+        expect(MONEY_SETTING_BOUNDS.balanceHeadlineMode).toBeUndefined();
+    });
+
+    it('mock fixtures never present a third mode', async () => {
+        const snapshot = await createMockMoneySettingsGateway().get();
+        const entry = snapshot.settings.find((s) => s.key === 'balanceHeadlineMode');
+        expect(entry.value === null || HEADLINE_MODES.includes(entry.value)).toBe(true);
+    });
+});
+
+// ── 9. production mock refusal and unavailable live API ────────────────────
+describe('mock and live separation', () => {
+    it('refuses mock in a production build', () => {
+        expect(() => resolveMoneySettingsGateway({ mode: MONEY_SETTINGS_MODE.MOCK, isProduction: true }))
+            .toThrow(/production build/i);
+    });
+
+    it('allows mock in development', () => {
+        const gateway = resolveMoneySettingsGateway({ mode: MONEY_SETTINGS_MODE.MOCK, isProduction: false });
+        expect(gateway.mode).toBe(MONEY_SETTINGS_MODE.MOCK);
+    });
+
+    it('defaults to the live gateway, which is unavailable without a client', async () => {
+        const gateway = resolveMoneySettingsGateway({ isProduction: true });
+        expect(gateway.mode).toBe(MONEY_SETTINGS_MODE.LIVE);
+        await expect(gateway.get()).rejects.toBeInstanceOf(MoneySettingsUnavailable);
+    });
+
+    it('renders an honest unavailable model instead of invented values', async () => {
+        let error = null;
+        try {
+            await createLiveMoneySettingsGateway(null).get();
+        } catch (err) {
+            error = err.message;
         }
-    });
-
-    it('rejects non-integer and negative values for integer bounds', () => {
-        expect(validateSettingValue('quoteTtl.payment_topup', '60.5').ok).toBe(false);
-        expect(validateSettingValue('quoteTtl.payment_topup', '-60').ok).toBe(false);
-        expect(validateSettingValue('quoteTtl.payment_topup', 'sixty').ok).toBe(false);
-        expect(validateSettingValue('quoteTtl.payment_topup', '').ok).toBe(false);
-    });
-});
-
-describe('money settings — exact decimal validation', () => {
-    it('accepts only plain decimals with at most two places', () => {
-        expect(validateSettingValue('stepUpThresholdGhs', '500.00').ok).toBe(true);
-        expect(validateSettingValue('stepUpThresholdGhs', '500').ok).toBe(true);
-        expect(validateSettingValue('stepUpThresholdGhs', '500.5').ok).toBe(true);
-        expect(validateSettingValue('stepUpThresholdGhs', '500.555').ok).toBe(false);
-        expect(validateSettingValue('stepUpThresholdGhs', '1e3').ok).toBe(false);
-        expect(validateSettingValue('stepUpThresholdGhs', '0x10').ok).toBe(false);
-        expect(validateSettingValue('stepUpThresholdGhs', ' 500.00 ').ok).toBe(true);
-        expect(validateSettingValue('stepUpThresholdGhs', '0500.00').ok).toBe(false);
-        expect(validateSettingValue('stepUpThresholdGhs', '500,00').ok).toBe(false);
-    });
-
-    it('never uses floating point to compare authoritative GHS amounts', () => {
-        // 0.1 + 0.2 !== 0.3 in floats; as pesewas these are exact.
-        expect(ghsToPesewas('0.10')).toBe(10n);
-        expect(ghsToPesewas('0.20')).toBe(20n);
-        expect(compareGhs('999999999999.99', '100000.00')).toBe(1);
-        expect(compareGhs('1.00', '1.00')).toBe(0);
-        expect(compareGhs('1.00', '1.01')).toBe(-1);
-        expect(ghsToPesewas('1.5')).toBe(150n);
-        expect(ghsToPesewas('nope')).toBeNull();
-    });
-});
-
-describe('money settings — effective-date confirmation', () => {
-    it('carries the selected value and the effective time into the confirmation', () => {
-        const confirmation = buildConfirmation('stepUpThresholdGhs', '750.50', '2026-11-09T00:00');
-        expect(confirmation.valid).toBe(true);
-        expect(confirmation.displayValue).toBe('750.50 GHS');
-        expect(confirmation.effectiveAt).toBe('2026-11-09T00:00');
-    });
-
-    it('reports the validation error instead of a display value when the draft is invalid', () => {
-        const confirmation = buildConfirmation('stepUpThresholdGhs', '999999.00', '2026-11-09T00:00');
-        expect(confirmation.valid).toBe(false);
-        expect(confirmation.displayValue).toBe('999999.00');
-        expect(confirmation.error).toMatch(/Maximum/);
-    });
-
-    it('records the effective time on the write', async () => {
-        const gateway = createMockMoneySettingsGateway(SNAPSHOT);
-        await gateway.update('stepUpThresholdGhs', '750.50', '2026-11-09T00:00');
-        expect(gateway.calls.at(-1)).toMatchObject({
-            op: 'update',
-            key: 'stepUpThresholdGhs',
-            value: '750.50',
-            effectiveAt: '2026-11-09T00:00',
-        });
-    });
-});
-
-describe('money settings — history', () => {
-    it('returns the revisions the gateway recorded, with actor and effective time', async () => {
-        const gateway = createMockMoneySettingsGateway(SNAPSHOT);
-        await gateway.update('quoteTtl.payment_topup', 600, '2026-11-10T00:00');
-        const history = await gateway.history('quoteTtl.payment_topup');
-        expect(history).toHaveLength(1);
-        expect(history[0]).toMatchObject({ from: 300, to: 600, effectiveAt: '2026-11-10T00:00', revision: 1 });
-        expect(history[0].actor).toBeTruthy();
-    });
-
-    it('does not invent history when none exists', async () => {
-        const gateway = createMockMoneySettingsGateway(SNAPSHOT);
-        expect(await gateway.history('quoteTtl.bucket_convert')).toEqual([]);
-    });
-});
-
-describe('money settings — mock and unavailable rendering', () => {
-    it('renders the mock document, including the pending headline decision', () => {
-        const model = buildMoneySettingsModel({ admin: ADMIN_WITH_WRITE, snapshot: SNAPSHOT, gatewayMode: 'mock' });
-        const rows = model.groups.flatMap((g) => g.rows);
-        expect(rows.find((r) => r.key === 'stepUpThresholdGhs').value).toBe('500.00');
-        expect(rows.find((r) => r.key === 'balanceHeadlineMode').pendingNote).toMatch(/Pending owner confirmation/);
-        expect(model.gatewayMode).toBe('mock');
-    });
-
-    it('shows an honest unavailable state and no editable rows when the API cannot answer', async () => {
-        const gateway = createMockMoneySettingsGateway({ ...SNAPSHOT, unavailable: true });
-        await expect(gateway.get()).rejects.toMatchObject({ code: MONEY_SETTINGS_UNAVAILABLE });
-        const model = buildMoneySettingsModel({
-            admin: ADMIN_WITH_WRITE,
-            snapshot: null,
-            error: 'Money settings API is unreachable.',
-            gatewayMode: 'live',
-        });
+        const model = buildMoneySettingsModel({ admin: WRITER, snapshot: null, mode: 'live', error });
         expect(model.unavailable).toBe(true);
-        expect(model.unavailableReason).toMatch(/unreachable/);
-        expect(model.groups.flatMap((g) => g.rows).every((r) => r.editable === false)).toBe(true);
-        expect(model.flags.every((f) => f.value === null)).toBe(true);
-    });
-
-    it('refuses to hand back a mock gateway when none was explicitly configured', () => {
-        expect(() => resolveMoneySettingsGateway({ mode: 'unknown' })).toThrowError();
-        expect(() => resolveMoneySettingsGateway({ mode: 'live', http: null })).toThrowError();
-        expect(resolveMoneySettingsGateway({ mode: 'mock' }).mode).toBe('mock');
+        expect(model.settings).toEqual([]);
+        expect(model.errorText).toMatch(/not available/i);
     });
 });
 
-describe('money settings — save failures are surfaced, never swallowed', () => {
-    it('propagates the API rejection so the screen can say nothing changed', async () => {
-        const gateway = createMockMoneySettingsGateway({ ...SNAPSHOT, failWrites: 'API rejected this value.' });
-        await expect(gateway.update('quoteTtl.payment_topup', 600, '2026-11-10T00:00'))
-            .rejects.toMatchObject({ code: MONEY_SETTINGS_INVALID, message: 'API rejected this value.' });
+// ── 10. save errors and history rendering ──────────────────────────────────
+describe('save failures and history are reported truthfully', () => {
+    it('surfaces a rejected save', async () => {
+        const gateway = createMockMoneySettingsGateway({ failWrites: true });
+        await expect(gateway.update('quoteTtl.payment_topup', { value: 45, note: 'x' }))
+            .rejects.toMatchObject({ code: 'MONEY_SETTINGS_REJECTED' });
     });
 
-    it('maps a 403 from the live API to a permission error and a 500 to unavailable', async () => {
-        const forbidden = createLiveMoneySettingsGateway({ request: async () => ({ status: 403 }) });
-        await expect(forbidden.get()).rejects.toMatchObject({ code: 'MONEY_SETTINGS_FORBIDDEN' });
-        const broken = createLiveMoneySettingsGateway({ request: async () => ({ status: 500 }) });
-        await expect(broken.get()).rejects.toMatchObject({ code: MONEY_SETTINGS_UNAVAILABLE });
+    it('a mock write requires a reason and records a note in history', async () => {
+        const gateway = createMockMoneySettingsGateway();
+        await expect(gateway.update('quoteTtl.payment_topup', { value: 45 })).rejects.toBeInstanceOf(Error);
+        await gateway.update('quoteTtl.payment_topup', { value: 30, effectiveFrom: '2026-11-09T09:00', note: 'shorten to 30s' });
+        const rows = await gateway.history('quoteTtl.payment_topup');
+        expect(rows[0]).toMatchObject({ key: 'quoteTtl.payment_topup', note: 'shorten to 30s' });
+    });
+
+    it('mock history starts empty rather than inventing revisions', async () => {
+        const rows = await createMockMoneySettingsGateway().history('fxSpread.CONVERT_GHS_TO_USDC');
+        expect(rows).toEqual([]);
+    });
+
+    it('renders history rows with value, effective time and source', () => {
+        expect(displayValue('fxSpread.CONVERT_GHS_TO_USDC', 100)).toBe('1.00% (100 bps)');
+        expect(displayValue('quoteTtl.bucket_convert', 60)).toBe('60 seconds');
+        expect(displayValue('stepUpThresholdGhs', '0.00')).toBe('0.00 GHS');
     });
 });

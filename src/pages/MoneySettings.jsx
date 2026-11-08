@@ -1,63 +1,75 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Card, CardBody, CardHead, CardTitle, Button, Field, Input, Tag } from '@/components/forge';
 import { useAuth } from '@/lib/AuthContext';
-import { Button, Card, CardBody, CardHead, CardTitle, Field, Input, Tag } from '@/components/forge';
-import { toast } from 'sonner';
-import { History, Loader2, Lock, RefreshCw, ShieldAlert } from 'lucide-react';
+import { moneySettings as moneySettingsClient } from '@/lib/api';
 import {
+    MONEY_SETTING_META,
     buildConfirmation,
     buildMoneySettingsModel,
+    describeBound,
+    displayValue,
+    editableState,
     validateSettingValue,
 } from '@/lib/moneySettingsContract';
-import { resolveMoneySettingsGateway } from '@/lib/moneySettingsGateway';
+import {
+    MONEY_SETTINGS_MODE,
+    resolveMoneySettingsGateway,
+} from '@/lib/moneySettingsGateway';
 
 /**
  * Money Settings (directive 1-E).
  *
- * Read-only by default and explicitly gated: the screen renders editable
- * controls only when the session carries `money.settings.write`. Rollout flags
- * are display-only — this file contains no flag writer, and the contract module
- * exposes none (`flagWritesAllowed: false`).
- *
- * No value is ever invented: if the gateway cannot answer, the screen says so
- * and offers a retry instead of showing defaults.
+ * The live API is not implemented yet, so this screen is honest about that: it
+ * asks the gateway for data, and when there is no usable client it renders an
+ * unavailable state instead of inventing values. A mock gateway is only used
+ * when a development preview selects it explicitly.
  */
-export default function MoneySettings({ gateway: injectedGateway = null }) {
+
+function nowLocalInput() {
+    const d = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0, 16);
+}
+
+export default function MoneySettings() {
     const { user } = useAuth();
+    const previewMock = useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        const params = new URLSearchParams(window.location.search);
+        return params.get('preview') === 'money-settings-mock';
+    }, []);
+
     const gateway = useMemo(() => {
-        if (injectedGateway) return injectedGateway;
-        const mode = import.meta.env?.VITE_MONEY_SETTINGS_MODE === 'live' ? 'live' : 'mock';
         try {
             return resolveMoneySettingsGateway({
-                mode,
-                http: null,
-                mockOptions: { unavailable: mode === 'mock' },
+                mode: previewMock ? MONEY_SETTINGS_MODE.MOCK : MONEY_SETTINGS_MODE.LIVE,
+                client: moneySettingsClient,
+                isProduction: Boolean(import.meta.env?.PROD),
             });
-        } catch {
-            return null;
+        } catch (err) {
+            return resolveMoneySettingsGateway({ mode: MONEY_SETTINGS_MODE.LIVE, client: null });
         }
-    }, [injectedGateway]);
+    }, [previewMock]);
 
     const [snapshot, setSnapshot] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(null);
-    const [draftValue, setDraftValue] = useState('');
-    const [effectiveAt, setEffectiveAt] = useState('');
-    const [confirming, setConfirming] = useState(false);
+    const [confirmation, setConfirmation] = useState(null);
+    const [saveError, setSaveError] = useState(null);
     const [saving, setSaving] = useState(false);
     const [historyFor, setHistoryFor] = useState(null);
-    const [historyRows, setHistoryRows] = useState([]);
-    const [saveError, setSaveError] = useState(null);
+    const [historyRows, setHistoryRows] = useState(null);
+    const [historyError, setHistoryError] = useState(null);
 
     const load = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            if (!gateway) throw new Error('No gateway configured.');
-            setSnapshot(await gateway.get());
-        } catch (e) {
+            const data = await gateway.get();
+            setSnapshot(data);
+        } catch (err) {
             setSnapshot(null);
-            setError(e?.message || 'Money settings are unavailable.');
+            setError(err?.message || 'Money settings are unavailable.');
         } finally {
             setLoading(false);
         }
@@ -65,249 +77,239 @@ export default function MoneySettings({ gateway: injectedGateway = null }) {
 
     useEffect(() => { load(); }, [load]);
 
-    const model = buildMoneySettingsModel({
-        admin: user,
-        snapshot,
-        error,
-        gatewayMode: gateway?.mode || 'live',
-    });
+    const model = buildMoneySettingsModel({ admin: user, snapshot, mode: gateway.mode, error });
 
-    const openHistory = async (key) => {
-        setHistoryFor(key);
-        setHistoryRows([]);
-        try {
-            setHistoryRows(await gateway.history(key));
-        } catch (e) {
-            setHistoryRows([]);
-            toast.error(e?.message || 'Could not load history');
-        }
-    };
-
-    const beginEdit = (row) => {
-        setEditing(row.key);
-        setDraftValue(row.value == null ? '' : String(row.value));
-        setEffectiveAt('');
-        setConfirming(false);
+    const beginEdit = (setting) => {
+        setEditing(setting);
         setSaveError(null);
+        setConfirmation(buildConfirmation(setting.key, setting.rawValue ?? '', nowLocalInput()));
     };
 
-    const confirmation = editing ? buildConfirmation(editing, draftValue, effectiveAt) : null;
+    const onValueChange = (raw) => {
+        setConfirmation((prev) => (prev ? buildConfirmation(prev.key, raw, prev.effectiveFrom) : prev));
+    };
 
-    const save = async () => {
-        if (!confirmation?.valid || !effectiveAt) return;
+    const onEffectiveChange = (effectiveFrom) => {
+        setConfirmation((prev) => (prev ? { ...prev, effectiveFrom } : prev));
+    };
+
+    const onNoteChange = (note) => {
+        setConfirmation((prev) => (prev ? { ...prev, note } : prev));
+    };
+
+    const confirm = async () => {
+        if (!confirmation || !model.canWrite) return;
+        const validated = validateSettingValue(confirmation.key, confirmation.rawValue);
+        if (!validated.ok) return;
+        if (!confirmation.note || !confirmation.note.trim()) {
+            setSaveError('A reason is required before saving a money setting.');
+            return;
+        }
         setSaving(true);
         setSaveError(null);
         try {
-            const validatedDraft = validateSettingValue(editing, draftValue);
-            if (!validatedDraft.ok) {
-                setSaveError(validatedDraft.error);
-                return;
-            }
-            await gateway.update(editing, validatedDraft.value, effectiveAt);
-            toast.success(`${confirmation.label} saved`);
+            await gateway.update(confirmation.key, {
+                value: validated.value,
+                effectiveFrom: confirmation.effectiveFrom || undefined,
+                note: confirmation.note.trim(),
+            });
             setEditing(null);
-            setConfirming(false);
+            setConfirmation(null);
             await load();
-        } catch (e) {
-            setSaveError(e?.message || 'The save failed. Nothing was changed.');
+        } catch (err) {
+            setSaveError(err?.message || 'The change was not saved.');
         } finally {
             setSaving(false);
         }
     };
 
+    const openHistory = async (key) => {
+        setHistoryFor(key);
+        setHistoryRows(null);
+        setHistoryError(null);
+        try {
+            const rows = await gateway.history(key);
+            setHistoryRows(Array.isArray(rows) ? rows : []);
+        } catch (err) {
+            setHistoryError(err?.message || 'History is unavailable.');
+        }
+    };
+
     return (
-        <div className="p-6 space-y-6">
-            <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-4 p-4">
+            <header className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h1 className="text-xl font-semibold text-content">Money settings</h1>
-                    <p className="text-sm text-content-muted">
-                        Quote lifetimes, FX spreads and the step-up threshold. GHS values are exact decimals;
-                        the portal never validates authoritative money with floating-point maths.
+                    <h1 className="text-lg font-semibold">Money Settings</h1>
+                    <p className="text-sm text-muted-foreground">
+                        Quote lifetimes, FX spreads and the step-up threshold. Rollout flags below are read-only.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Tag>{model.gatewayMode === 'mock' ? 'mock gateway' : 'live gateway'}</Tag>
-                    {!model.canWrite && (
-                        <Tag tone="warn" data-testid="money-settings-readonly">
-                            <Lock className="h-3 w-3" /> read-only
-                        </Tag>
-                    )}
-                    <Button variant="ghost" onClick={load} disabled={loading}>
-                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-                    </Button>
+                    {model.mode === MONEY_SETTINGS_MODE.MOCK && <Tag tone="warn">Mock data — not a live integration</Tag>}
+                    {!model.canWrite && <Tag tone="neutral">Read only — money.settings.write not granted</Tag>}
+                    <Button variant="ghost" onClick={load} disabled={loading}>Refresh</Button>
                 </div>
             </header>
 
             {model.unavailable && (
                 <Card>
                     <CardBody>
-                        <div className="flex items-start gap-3" data-testid="money-settings-unavailable">
-                            <ShieldAlert className="mt-0.5 h-4 w-4 text-warn" />
-                            <div>
-                                <p className="text-sm font-medium text-content">Money settings are unavailable</p>
-                                <p className="text-sm text-content-muted">{model.unavailableReason}</p>
-                                <p className="mt-1 text-xs text-content-muted">
-                                    No defaults are shown, because a made-up value here would be a made-up money rule.
-                                </p>
-                            </div>
-                        </div>
-                    </CardBody>
-                </Card>
-            )}
-
-            {!model.unavailable && !model.canWrite && (
-                <Card>
-                    <CardBody>
-                        <p className="text-sm text-content-muted">
-                            Your session carries no <code>money.settings.write</code> permission, so every value is
-                            read-only. Ask for the permission rather than editing through another route.
+                        <p className="font-medium">Money settings are unavailable.</p>
+                        <p className="text-sm text-muted-foreground">
+                            {model.errorText || 'No money-settings API is connected in this environment.'}
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            Nothing is shown rather than invented values, dates or actors.
                         </p>
                     </CardBody>
                 </Card>
             )}
 
             {!model.unavailable && model.groups.map((group) => (
-                <Card key={group.group}>
-                    <CardHead><CardTitle>{group.group}</CardTitle></CardHead>
+                <Card key={group}>
+                    <CardHead><CardTitle>{group}</CardTitle></CardHead>
                     <CardBody>
-                        <div className="divide-y divide-border">
-                            {group.rows.map((row) => (
-                                <div key={row.key} className="flex flex-wrap items-start justify-between gap-3 py-3">
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-medium text-content">{row.label}</p>
-                                        <p className="text-xs text-content-muted">{row.description}</p>
-                                        {row.bound && <p className="mt-1 text-xs text-content-muted">Bounds: {row.bound}</p>}
-                                        {row.pendingNote && (
-                                            <p className="mt-1 text-xs text-warn" data-testid={`pending-${row.key}`}>
-                                                {row.pendingNote}
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-sm text-content">
-                                            {row.value == null ? '—' : String(row.value)}
-                                        </span>
-                                        <Button variant="ghost" onClick={() => openHistory(row.key)} title="History">
-                                            <History className="h-4 w-4" />
-                                        </Button>
-                                        {row.editable && (
-                                            <Button onClick={() => beginEdit(row)}>Edit</Button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="text-left text-muted-foreground">
+                                    <th className="py-2">Setting</th>
+                                    <th className="py-2">Current</th>
+                                    <th className="py-2">Effective from</th>
+                                    <th className="py-2">Source</th>
+                                    <th className="py-2" />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {model.settings.filter((s) => s.group === group).map((setting) => (
+                                    <tr key={setting.key} className="border-t border-border align-top">
+                                        <td className="py-2 pr-3">
+                                            <div className="font-medium">{setting.label}</div>
+                                            <div className="text-xs text-muted-foreground">{setting.key}</div>
+                                            <div className="text-xs text-muted-foreground">{setting.description}</div>
+                                            <div className="text-xs text-muted-foreground">{setting.boundHint}</div>
+                                        </td>
+                                        <td className="py-2 pr-3">
+                                            {setting.pendingOwnerDecision ? (
+                                                <span className="text-muted-foreground">Pending owner decision D1</span>
+                                            ) : setting.display}
+                                        </td>
+                                        <td className="py-2 pr-3">{setting.effectiveFrom || '—'}</td>
+                                        <td className="py-2 pr-3">{setting.source || '—'}</td>
+                                        <td className="py-2 text-right">
+                                            {setting.editable && (
+                                                <Button variant="secondary" onClick={() => beginEdit({ ...setting, rawValue: '' })}>
+                                                    Change
+                                                </Button>
+                                            )}
+                                            {!setting.editable && setting.reason && (
+                                                <span className="text-xs text-muted-foreground">{setting.reason}</span>
+                                            )}
+                                            <Button variant="ghost" onClick={() => openHistory(setting.key)}>History</Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </CardBody>
                 </Card>
             ))}
 
             <Card>
-                <CardHead>
-                    <CardTitle>Rollout flags</CardTitle>
-                </CardHead>
+                <CardHead><CardTitle>Rollout flags (read-only)</CardTitle></CardHead>
                 <CardBody>
-                    <p className="text-xs text-content-muted">
-                        Informational only. These flags change accounting and rollout behaviour and are not
-                        editable from the admin portal.
+                    <p className="mb-3 text-sm text-muted-foreground">
+                        Informational. This portal has no control that can change these; they are changed by the backend release process.
                     </p>
-                    <div className="mt-3 divide-y divide-border">
+                    <ul className="space-y-2 text-sm">
                         {model.flags.map((flag) => (
-                            <div key={flag.key} className="py-3" data-testid={`flag-${flag.key}`}>
+                            <li key={flag.key} className="border-t border-border pt-2">
                                 <div className="flex items-center justify-between gap-3">
-                                    <p className="text-sm font-medium text-content">{flag.label}</p>
-                                    <Tag tone={flag.value ? 'success' : 'neutral'}>
-                                        {flag.value == null ? 'unknown' : flag.value ? 'on' : 'off'}
+                                    <span className="font-medium">{flag.label}</span>
+                                    <Tag tone={flag.value === true ? 'warn' : 'neutral'}>
+                                        {flag.value === null ? 'unknown' : String(flag.value)}
                                     </Tag>
                                 </div>
-                                <p className="text-xs text-content-muted">{flag.explanation}</p>
-                            </div>
+                                <div className="text-xs text-muted-foreground">{flag.explanation}</div>
+                                <div className="text-xs text-muted-foreground">{flag.key}</div>
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 </CardBody>
             </Card>
 
-            {historyFor && (
+            {editing && confirmation && (
                 <Card>
-                    <CardHead>
-                        <CardTitle>History — {historyFor}</CardTitle>
-                        <Button variant="ghost" onClick={() => setHistoryFor(null)}>Close</Button>
-                    </CardHead>
+                    <CardHead><CardTitle>Confirm change — {editing.label}</CardTitle></CardHead>
                     <CardBody>
-                        {historyRows.length === 0 ? (
-                            <p className="text-sm text-content-muted">No revisions recorded for this setting.</p>
-                        ) : (
-                            <ul className="space-y-2">
-                                {historyRows.map((rev, index) => (
-                                    <li key={`${rev.revision ?? index}`} className="text-sm text-content">
-                                        <span className="font-mono">{String(rev.from ?? '—')} → {String(rev.to ?? '—')}</span>
-                                        {' · '}
-                                        <span className="text-content-muted">
-                                            effective {rev.effectiveAt || 'unspecified'} · {rev.actor || 'unknown actor'}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
+                        <Field label="New value" error={confirmation.error || undefined}>
+                            <Input
+                                value={confirmation.rawValue}
+                                onChange={(e) => onValueChange(e.target.value)}
+                                aria-label="New value"
+                            />
+                        </Field>
+                        <Field label="Effective from">
+                            <Input
+                                type="datetime-local"
+                                value={confirmation.effectiveFrom}
+                                onChange={(e) => onEffectiveChange(e.target.value)}
+                                aria-label="Effective from"
+                            />
+                        </Field>
+                        <Field label="Reason (required)">
+                            <Input
+                                value={confirmation.note}
+                                onChange={(e) => onNoteChange(e.target.value)}
+                                aria-label="Reason"
+                                placeholder="Why this change is being made"
+                            />
+                        </Field>
+                        <div className="mt-3 rounded border border-border p-3 text-sm">
+                            <div><span className="text-muted-foreground">Selected value: </span>{confirmation.displayValue}</div>
+                            <div><span className="text-muted-foreground">Effective from: </span>{confirmation.effectiveFrom || 'immediately'}</div>
+                            <div><span className="text-muted-foreground">Reason: </span>{confirmation.note || '—'}</div>
+                        </div>
+                        {saveError && <p className="mt-2 text-sm text-destructive">{saveError}</p>}
+                        <div className="mt-3 flex gap-2">
+                            <Button variant="primary" onClick={confirm} disabled={!model.canWrite || !confirmation.valid || saving}>
+                                {saving ? 'Saving…' : 'Save change'}
+                            </Button>
+                            <Button variant="ghost" onClick={() => { setEditing(null); setConfirmation(null); setSaveError(null); }}>
+                                Cancel
+                            </Button>
+                        </div>
                     </CardBody>
                 </Card>
             )}
 
-            {editing && confirmation && (
+            {historyFor && (
                 <Card>
-                    <CardHead><CardTitle>Change {confirmation.label}</CardTitle></CardHead>
+                    <CardHead><CardTitle>History — {historyFor}</CardTitle></CardHead>
                     <CardBody>
-                        <div className="space-y-3">
-                            <Field label="New value" error={confirmation.error || undefined}>
-                                <Input
-                                    value={draftValue}
-                                    onChange={(e) => { setDraftValue(e.target.value); setConfirming(false); }}
-                                />
-                            </Field>
-                            <Field label="Effective at">
-                                <Input
-                                    type="datetime-local"
-                                    value={effectiveAt}
-                                    onChange={(e) => { setEffectiveAt(e.target.value); setConfirming(false); }}
-                                />
-                            </Field>
-
-                            {confirming ? (
-                                <div className="rounded-md border border-border p-3" data-testid="money-settings-confirmation">
-                                    <p className="text-sm text-content">
-                                        Apply <strong>{confirmation.displayValue}</strong> effective{' '}
-                                        <strong>{effectiveAt || 'unspecified'}</strong>?
-                                    </p>
-                                    {saveError && <p className="mt-1 text-xs text-danger">{saveError}</p>}
-                                    <div className="mt-2 flex gap-2">
-                                        <Button onClick={save} disabled={saving || !effectiveAt || !confirmation.valid}>
-                                            {saving && <Loader2 className="h-4 w-4 animate-spin" />} Confirm and save
-                                        </Button>
-                                        <Button variant="ghost" onClick={() => setConfirming(false)}>Back</Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <Button
-                                        onClick={() => setConfirming(true)}
-                                        disabled={!confirmation.valid || !effectiveAt}
-                                    >
-                                        Review change
-                                    </Button>
-                                    <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
-                                    {!confirmation.valid && confirmation.error && (
-                                        <span className="text-xs text-danger" data-testid="money-settings-invalid">
-                                            {confirmation.error}
-                                        </span>
-                                    )}
-                                    {confirmation.valid && !effectiveAt && (
-                                        <span className="text-xs text-content-muted">Choose when this takes effect.</span>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                        {historyError && <p className="text-sm text-destructive">{historyError}</p>}
+                        {historyRows === null && !historyError && <p className="text-sm text-muted-foreground">Loading history…</p>}
+                        {historyRows && historyRows.length === 0 && (
+                            <p className="text-sm text-muted-foreground">No previous revisions were returned for this setting.</p>
+                        )}
+                        {historyRows && historyRows.length > 0 && (
+                            <ul className="space-y-2 text-sm">
+                                {historyRows.map((row, i) => (
+                                    <li key={`${row.key}-${i}`} className="border-t border-border pt-2">
+                                        <div>{displayValue(row.key, row.value)}</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            effective {row.effectiveFrom || 'not stated'} · source {row.source || 'not stated'}
+                                        </div>
+                                        {row.note && <div className="text-xs text-muted-foreground">note: {row.note}</div>}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <Button variant="ghost" onClick={() => setHistoryFor(null)}>Close history</Button>
                     </CardBody>
                 </Card>
             )}
         </div>
     );
 }
+
+export { MONEY_SETTING_META, describeBound, editableState };

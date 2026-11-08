@@ -1,153 +1,157 @@
+import {
+    moneySettingsResponseSchema,
+    canonicalKey,
+    MONEY_SETTING_KEYS,
+    QUOTE_TTL_DEFAULTS,
+} from './moneySettingsContract';
+
 /**
- * Money Settings gateway (directive 1-E).
+ * Money settings gateway.
  *
- * Three shapes only, exactly as proposed:
- *   GET  /api/admin/money-settings
- *   PUT  /api/admin/money-settings/:key
- *   GET  /api/admin/money-settings/:key/history
- *
- * The backend endpoint is NOT confirmed as implemented, so this module ships a
- * typed mock and a live client behind ONE interface. Production never falls
- * back to the mock: `resolveMoneySettingsGateway` refuses to hand back a mock
- * in a production build, and an unreachable live API surfaces as an explicit
- * unavailable error rather than invented settings.
+ * The backend 1-E API is NOT implemented yet, so this module is deliberately
+ * split: a live gateway that speaks the agreed contract and reports an honest
+ * unavailable state when no client is supplied, and a mock gateway that is only
+ * reachable when a caller explicitly asks for it outside a production build.
  */
 
-export const MONEY_SETTINGS_UNAVAILABLE = 'MONEY_SETTINGS_UNAVAILABLE';
-export const MONEY_SETTINGS_FORBIDDEN = 'MONEY_SETTINGS_FORBIDDEN';
-export const MONEY_SETTINGS_INVALID = 'MONEY_SETTINGS_INVALID';
+export const MONEY_SETTINGS_MODE = { LIVE: 'live', MOCK: 'mock' };
 
-export class MoneySettingsError extends Error {
-    constructor(code, message, cause) {
+export class MoneySettingsUnavailable extends Error {
+    constructor(message = 'Money settings API is not available.') {
         super(message);
-        this.name = 'MoneySettingsError';
-        this.code = code;
-        this.cause = cause;
+        this.name = 'MoneySettingsUnavailable';
+        this.code = 'MONEY_SETTINGS_UNAVAILABLE';
     }
 }
 
-const BASE = '/api/admin/money-settings';
-
-/** Live client. Any transport/shape failure becomes an honest unavailable error. */
-export function createLiveMoneySettingsGateway(http) {
-    async function call(method, path, body) {
-        let response;
-        try {
-            response = await http.request({ method, path: `${BASE}${path}`, body });
-        } catch (cause) {
-            throw new MoneySettingsError(
-                MONEY_SETTINGS_UNAVAILABLE,
-                'Money settings API is unreachable. No values are shown because none were returned.',
-                cause,
-            );
-        }
-        if (response?.status === 403) {
-            throw new MoneySettingsError(MONEY_SETTINGS_FORBIDDEN, 'You do not have permission to view money settings.');
-        }
-        if (response?.status === 422 || response?.status === 400) {
-            throw new MoneySettingsError(MONEY_SETTINGS_INVALID, response?.data?.message || 'The API rejected this value.');
-        }
-        if (!response || response.status >= 500 || !response.data) {
-            throw new MoneySettingsError(
-                MONEY_SETTINGS_UNAVAILABLE,
-                'Money settings API did not return a usable document.',
-            );
-        }
-        return response.data;
+export class MoneySettingsRejected extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'MoneySettingsRejected';
+        this.code = 'MONEY_SETTINGS_REJECTED';
     }
+}
 
+/** A default-off flag row, used only to shape mock data. */
+function mockSnapshot() {
     return {
-        mode: 'live',
-        async get() {
-            const data = await call('GET', '');
-            return { settings: data.settings ?? null, flags: data.flags ?? null, revisions: data.revisions ?? [] };
+        settings: MONEY_SETTING_KEYS.map((key) => ({
+            key,
+            value: QUOTE_TTL_DEFAULTS[key] ?? (key === 'stepUpThresholdGhs' ? '0.00' : null),
+            effectiveFrom: null,
+            source: 'mock',
+        })),
+        flags: {
+            nativeGhsSettlementEnabled: false,
+            nativeGhsWithdrawalEnabled: false,
+            fiatLiquidityAuthorityEnabled: false,
+            modelBSettlementEnabled: false,
         },
-        async update(key, value, effectiveAt) {
-            const data = await call('PUT', `/${encodeURIComponent(key)}`, { value, effectiveAt });
-            return data.setting ?? data;
+        bounds: {},
+    };
+}
+
+/**
+ * Live gateway over the existing AdminPortal API client (api.moneySettings).
+ * No second HTTP or auth layer: the client owns base URL, token and refresh.
+ */
+export function createLiveMoneySettingsGateway(client) {
+    if (!client || typeof client.get !== 'function') {
+        return {
+            mode: MONEY_SETTINGS_MODE.LIVE,
+            async get() { throw new MoneySettingsUnavailable(); },
+            async update() { throw new MoneySettingsUnavailable(); },
+            async history() { throw new MoneySettingsUnavailable(); },
+        };
+    }
+    return {
+        mode: MONEY_SETTINGS_MODE.LIVE,
+        async get() {
+            const raw = await client.get();
+            const parsed = moneySettingsResponseSchema.safeParse(raw);
+            if (!parsed.success) {
+                throw new MoneySettingsRejected('Money settings response did not match the agreed shape.');
+            }
+            return parsed.data;
+        },
+        async update(key, { value, effectiveFrom, note }) {
+            if (!note || !String(note).trim()) {
+                throw new MoneySettingsRejected('A reason is required for every money-settings change.');
+            }
+            const body = { value, note: String(note).trim() };
+            if (effectiveFrom) body.effectiveFrom = effectiveFrom;
+            return client.update(canonicalKey(key), body);
         },
         async history(key) {
-            const data = await call('GET', `/${encodeURIComponent(key)}/history`);
-            return Array.isArray(data.revisions) ? data.revisions : [];
+            return client.history(canonicalKey(key));
         },
     };
 }
 
 /**
- * Typed mock. Records every call so tests can prove what the screen did (and
- * that a flag was never written). `unavailable` and `failWrites` exist so the
- * error states are exercised with real failure paths, not by asserting on copy.
+ * Mock gateway for tests and an explicitly selected development preview.
+ * It never pretends a write succeeded unless the caller asked it to accept.
  */
-export function createMockMoneySettingsGateway({
-    settings = {},
-    flags = {},
-    revisions = {},
-    unavailable = false,
-    failWrites = null,
-} = {}) {
+export function createMockMoneySettingsGateway(options = {}) {
+    const seed = options.seed || mockSnapshot();
+    const state = {
+        settings: seed.settings.map((s) => ({ ...s })),
+        flags: { ...seed.flags },
+        bounds: seed.bounds || {},
+    };
+    const revisions = options.history || [];
     const calls = [];
-    const state = { ...settings };
-    const history = Object.fromEntries(Object.entries(revisions).map(([k, v]) => [k, [...v]]));
+    const failWrites = options.failWrites === true;
+    const unavailable = options.unavailable === true;
 
     return {
-        mode: 'mock',
+        mode: MONEY_SETTINGS_MODE.MOCK,
         calls,
         async get() {
-            calls.push({ op: 'get' });
-            if (unavailable) {
-                throw new MoneySettingsError(MONEY_SETTINGS_UNAVAILABLE, 'Mock gateway is configured as unavailable.');
-            }
-            return { settings: { ...state }, flags: { ...flags }, revisions: history };
+            if (unavailable) throw new MoneySettingsUnavailable('Mock gateway is configured as unavailable.');
+            return JSON.parse(JSON.stringify(state));
         },
-        async update(key, value, effectiveAt) {
-            calls.push({ op: 'update', key, value, effectiveAt });
-            if (unavailable) {
-                throw new MoneySettingsError(MONEY_SETTINGS_UNAVAILABLE, 'Mock gateway is configured as unavailable.');
+        async update(key, payload) {
+            calls.push({ op: 'update', key, payload });
+            if (unavailable) throw new MoneySettingsUnavailable('Mock gateway is configured as unavailable.');
+            if (failWrites) throw new MoneySettingsRejected('The server rejected this change.');
+            if (!payload || !payload.note || !String(payload.note).trim()) {
+                throw new MoneySettingsRejected('A reason is required for every money-settings change.');
             }
-            if (failWrites) {
-                throw new MoneySettingsError(MONEY_SETTINGS_INVALID, failWrites);
-            }
-            const previous = state[key];
-            state[key] = value;
-            history[key] = [
-                ...(history[key] || []),
-                { key, from: previous ?? null, to: value, effectiveAt, actor: 'mock.admin', revision: (history[key]?.length || 0) + 1 },
-            ];
-            return { key, value, effectiveAt };
+            const entry = state.settings.find((s) => s.key === key);
+            if (!entry) throw new MoneySettingsRejected('Unknown money setting.');
+            revisions.unshift({
+                key,
+                value: entry.value,
+                effectiveFrom: entry.effectiveFrom,
+                source: entry.source,
+                note: payload.note,
+            });
+            entry.value = payload.value;
+            entry.effectiveFrom = payload.effectiveFrom || entry.effectiveFrom;
+            entry.source = 'mock-gateway';
+            return { key, value: entry.value, effectiveFrom: entry.effectiveFrom };
         },
         async history(key) {
-            calls.push({ op: 'history', key });
-            if (unavailable) {
-                throw new MoneySettingsError(MONEY_SETTINGS_UNAVAILABLE, 'Mock gateway is configured as unavailable.');
-            }
-            return [...(history[key] || [])];
+            if (unavailable) throw new MoneySettingsUnavailable('Mock gateway is configured as unavailable.');
+            return revisions.filter((r) => r.key === key);
         },
     };
 }
 
 /**
- * Explicit gateway selection.
- * - 'live' is always allowed.
- * - 'mock' is allowed only when explicitly requested AND the build is not a
- *   production build. There is no implicit fallback anywhere.
+ * Choose a gateway explicitly. Production never falls back to mock data: an
+ * unset mode in a production build yields the unavailable live gateway.
  */
 /**
- * @param {{mode?: 'live'|'mock', http?: any, mockOptions?: object}} [options]
+ * @param {{mode?: string, client?: object|null, mockOptions?: object, isProduction?: boolean}} [options]
  */
-export function resolveMoneySettingsGateway({ mode, http = null, mockOptions = {} } = {}) {
-    const isProductionBuild = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
-    if (mode === 'live') {
-        if (!http) throw new MoneySettingsError(MONEY_SETTINGS_UNAVAILABLE, 'Live gateway requires an HTTP client.');
-        return createLiveMoneySettingsGateway(http);
-    }
-    if (mode === 'mock') {
-        if (isProductionBuild) {
-            throw new MoneySettingsError(
-                MONEY_SETTINGS_UNAVAILABLE,
-                'Mock money settings are refused in a production build.',
-            );
+export function resolveMoneySettingsGateway({ mode, client, mockOptions, isProduction } = {}) {
+    if (mode === MONEY_SETTINGS_MODE.MOCK) {
+        if (isProduction) {
+            throw new MoneySettingsRejected('Mock money settings are not available in a production build.');
         }
-        return createMockMoneySettingsGateway(mockOptions);
+        return createMockMoneySettingsGateway(mockOptions || {});
     }
-    throw new MoneySettingsError(MONEY_SETTINGS_UNAVAILABLE, 'No money settings gateway was configured.');
+    return createLiveMoneySettingsGateway(client || null);
 }
