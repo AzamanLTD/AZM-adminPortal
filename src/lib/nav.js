@@ -15,7 +15,7 @@ export const DOMAINS = [
     { to:'/business-kyb', label:'Business KYB', icon:FileCheck, count:'biz_kyb' }, { to:'/users', label:'Users & KYC', icon:Users, count:'kyc' }, { to:'/residency-queue', label:'Residency Queue', icon:Home }, { to:'/notifications', label:'Notifications', icon:Bell },
   ]}] },
   { id:'finance', label:'Finance', icon:Wallet, verticals:null, groups:[{ label:'Finance', items:[
-    { to:'/profits', label:'Revenue', icon:TrendingUp }, { to:'/withdrawals', label:'Withdrawals', icon:Wallet, count:'withdrawals' }, { to:'/pools', label:'Pool Monitor', icon:Database }, { to:'/fee-engine', label:'Fee Engine', icon:Sliders }, { to:'/fee-profiles', label:'Fee Profiles', icon:Zap }, { to:'/smart-escrow', label:'Smart Escrow', icon:ShieldCheck },
+    { to:'/profits', label:'Revenue', icon:TrendingUp }, { to:'/withdrawals', label:'Withdrawals', icon:Wallet, count:'withdrawals' }, { to:'/pools', label:'Pool Monitor', icon:Database }, { to:'/fee-engine', label:'Fee Engine', icon:Sliders }, { to:'/fee-profiles', label:'Fee Profiles', icon:Zap }, { to:'/money-settings', label:'Money Settings', icon:PiggyBank }, { to:'/smart-escrow', label:'Smart Escrow', icon:ShieldCheck },
   ]}] },
   { id:'susu', label:'Susu', icon:PiggyBank, verticals:null, groups:[{ label:'Susu', items:[
     { to:'/susu', label:'Susu Groups', icon:PiggyBank }, { to:'/susu-incidents', label:'Susu Incidents', icon:Siren },
