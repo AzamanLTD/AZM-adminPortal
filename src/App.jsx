@@ -17,6 +17,7 @@ const Profits = lazy(() => import('@/pages/Profits'));
 const Pools = lazy(() => import('@/pages/Pools'));
 const FeeEngine = lazy(() => import('@/pages/FeeEngine'));
 const FeeProfiles = lazy(() => import('@/pages/FeeProfiles'));
+const MoneySettings = lazy(() => import('@/pages/MoneySettings'));
 const SmartEscrowPolicy = lazy(() => import('@/pages/SmartEscrowPolicy'));
 const WarRoom = lazy(() => import('@/pages/WarRoom'));
 const Users = lazy(() => import('@/pages/Users'));
@@ -53,7 +54,8 @@ const AuthenticatedApp = () => {
     <Route path="/control-plane/executive" element={<Page><ExecutiveControlPlane /></Page>} />
     <Route path="/control-plane/workforce" element={<Page><Workforce /></Page>} />
     <Route path="/profits" element={<Page><Profits /></Page>} /><Route path="/pools" element={<Page><Pools /></Page>} />
-    <Route path="/fee-engine" element={<Page><FeeEngine /></Page>} /><Route path="/fee-profiles" element={<Page><FeeProfiles /></Page>} />
+    <Route path="/fee-engine" element={<Page><FeeEngine /></Page>} /><Route path="/money-settings" element={<Page><MoneySettings /></Page>} />
+          <Route path="/fee-profiles" element={<Page><FeeProfiles /></Page>} />
     <Route path="/smart-escrow" element={<Page><SmartEscrowPolicy /></Page>} /><Route path="/war-room" element={<Page><WarRoom /></Page>} />
     <Route path="/escrow-disputes" element={<Page><EscrowDisputes /></Page>} /><Route path="/susu" element={<Page><SusuGroups /></Page>} />
     <Route path="/susu-incidents" element={<Page><SusuIncidents /></Page>} /><Route path="/residency-queue" element={<Page><ResidencyQueue /></Page>} />
