@@ -260,8 +260,8 @@ describe('rollout flags are read-only', () => {
     });
 });
 
-// ── 8. pending D1 ──────────────────────────────────────────────────────────
-describe('balanceHeadlineMode stays pending and constrained', () => {
+// ── 8. D1 resolved by the owner (COMBINED_ESTIMATE) ───────────────────────
+describe('balanceHeadlineMode records the resolved owner decision', () => {
     it('allows only the two agreed modes', () => {
         expect(HEADLINE_MODES).toEqual(['COMBINED_ESTIMATE', 'NATIVE_ONLY']);
         expect(HEADLINE_MODES).not.toContain('GHS_LEDGER');
@@ -269,7 +269,7 @@ describe('balanceHeadlineMode stays pending and constrained', () => {
 
     it('is not editable and not a money setting with a bound', () => {
         expect(editableState('balanceHeadlineMode').editable).toBe(false);
-        expect(editableState('balanceHeadlineMode').reason).toMatch(/D1/);
+        expect(editableState('balanceHeadlineMode').reason).toMatch(/COMBINED_ESTIMATE/);
         expect(MONEY_SETTING_BOUNDS.balanceHeadlineMode).toBeUndefined();
     });
 
@@ -337,5 +337,18 @@ describe('save failures and history are reported truthfully', () => {
         expect(displayValue('fxSpread.CONVERT_GHS_TO_USDC', 100)).toBe('1.00% (100 bps)');
         expect(displayValue('quoteTtl.bucket_convert', 60)).toBe('60 seconds');
         expect(displayValue('stepUpThresholdGhs', '0.00')).toBe('0.00 GHS');
+    });
+});
+
+// ── 12. owner decision D1 resolved ────────────────────────────────────────
+describe('owner resolved D1 to COMBINED_ESTIMATE', () => {
+    it('mock fixture presents the owner-selected mode', async () => {
+        const doc = await createMockMoneySettingsGateway().get();
+        const row = doc.settings.find((s) => s.key === 'balanceHeadlineMode');
+        expect(row.value).toBe('COMBINED_ESTIMATE');
+    });
+
+    it('still exposes NATIVE_ONLY as the supported alternative', () => {
+        expect(HEADLINE_MODES).toEqual(['COMBINED_ESTIMATE', 'NATIVE_ONLY']);
     });
 });

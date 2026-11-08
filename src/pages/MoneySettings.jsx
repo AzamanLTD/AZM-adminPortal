@@ -190,7 +190,7 @@ export default function MoneySettings() {
                                         </td>
                                         <td className="py-2 pr-3">
                                             {setting.pendingOwnerDecision ? (
-                                                <span className="text-muted-foreground">Pending owner decision D1</span>
+                                                <span className="text-muted-foreground">Owner decision: COMBINED_ESTIMATE</span>
                                             ) : setting.display}
                                         </td>
                                         <td className="py-2 pr-3">{setting.effectiveFrom || '—'}</td>

@@ -59,7 +59,7 @@ export const MONEY_SETTING_BOUNDS = {
 };
 
 export const HEADLINE_MODES = ['COMBINED_ESTIMATE', 'NATIVE_ONLY'];
-export const PENDING_OWNER_DECISION_KEY = 'balanceHeadlineMode';
+export const OWNER_RESOLVED_KEY = 'balanceHeadlineMode';
 
 export const MONEY_SETTING_META = {
     'quoteTtl.payment_topup': {
@@ -100,7 +100,7 @@ export const MONEY_SETTING_META = {
     'balanceHeadlineMode': {
         group: 'Headline',
         label: 'Balance headline mode',
-        description: 'Pending owner decision D1. NOT editable and NOT writable until decided.',
+        description: 'Owner decision D1 resolved: COMBINED_ESTIMATE is selected; NATIVE_ONLY remains a supported alternative. GHS stays the canonical displayed balance in both modes, and the USDC figure is an indicative equivalent, never spendable GHS.',
         pendingOwnerDecision: true,
     },
 };
@@ -244,7 +244,7 @@ export function describeBound(key) {
 export function displayValue(key, value) {
     const bound = MONEY_SETTING_BOUNDS[canonicalKey(key)];
     if (value === null || value === undefined || value === '') return '—';
-    if (key === PENDING_OWNER_DECISION_KEY) return String(value);
+    if (key === OWNER_RESOLVED_KEY) return String(value);
     if (!bound) return String(value);
     if (bound.kind === 'bps') {
         const pct = spreadPercent(value);
@@ -256,8 +256,8 @@ export function displayValue(key, value) {
 
 /** Whether a key may be edited at all, and why not when it may not. */
 export function editableState(key) {
-    if (key === PENDING_OWNER_DECISION_KEY) {
-        return { editable: false, reason: 'Pending owner decision D1. Not editable or writable yet.' };
+    if (key === OWNER_RESOLVED_KEY) {
+        return { editable: false, reason: 'Owned by the Money Settings API: the owner resolved D1 to COMBINED_ESTIMATE, but writes stay disabled until the backend and money.settings.write exist.' };
     }
     if (!MONEY_SETTING_BOUNDS[key]) {
         return { editable: false, reason: 'Not an editable money setting.' };

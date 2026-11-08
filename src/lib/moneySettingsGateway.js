@@ -37,7 +37,9 @@ function mockSnapshot() {
     return {
         settings: MONEY_SETTING_KEYS.map((key) => ({
             key,
-            value: QUOTE_TTL_DEFAULTS[key] ?? (key === 'stepUpThresholdGhs' ? '0.00' : null),
+            value: key === 'balanceHeadlineMode'
+                ? 'COMBINED_ESTIMATE'
+                : (QUOTE_TTL_DEFAULTS[key] ?? (key === 'stepUpThresholdGhs' ? '0.00' : null)),
             effectiveFrom: null,
             source: 'mock',
         })),
