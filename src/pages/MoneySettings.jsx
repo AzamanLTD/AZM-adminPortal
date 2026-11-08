@@ -98,8 +98,12 @@ export default function MoneySettings({ gateway: injectedGateway = null }) {
         setSaving(true);
         setSaveError(null);
         try {
-            const validated = validateSettingValue(editing, draftValue);
-            await gateway.update(editing, validated.value, effectiveAt);
+            const validatedDraft = validateSettingValue(editing, draftValue);
+            if (!validatedDraft.ok) {
+                setSaveError(validatedDraft.error);
+                return;
+            }
+            await gateway.update(editing, validatedDraft.value, effectiveAt);
             toast.success(`${confirmation.label} saved`);
             setEditing(null);
             setConfirming(false);

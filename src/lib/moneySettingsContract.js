@@ -131,30 +131,33 @@ export function compareGhs(a, b) {
 
 /**
  * Validate one setting value against its declared bound.
- * @returns {{ok: true, value: string|number} | {ok: false, error: string}}
+ * @returns {{ok: boolean, value: (string|number|null), error: (string|null)}}
  */
 export function validateSettingValue(key, raw) {
     const bound = MONEY_SETTING_BOUNDS[key];
-    if (!bound) return { ok: false, error: 'This setting has no agreed technical shape yet.' };
+    // One shape, always: value is null on failure, error is null on success.
+    // Keeping both keys present means callers never depend on type narrowing.
+    if (!bound) return { ok: false, value: null, error: 'This setting has no agreed technical shape yet.' };
+
     const text = typeof raw === 'string' ? raw.trim() : raw;
 
     if (bound.kind === 'ghs') {
         if (typeof text !== 'string' || !GHS_DECIMAL_PATTERN.test(text)) {
-            return { ok: false, error: 'Enter a GHS amount as digits with at most two decimals.' };
+            return { ok: false, value: null, error: 'Enter a GHS amount as digits with at most two decimals.' };
         }
-        if (compareGhs(text, bound.min) < 0) return { ok: false, error: `Minimum is ${bound.min} GHS.` };
-        if (compareGhs(text, bound.max) > 0) return { ok: false, error: `Maximum is ${bound.max} GHS.` };
-        return { ok: true, value: text };
+        if (compareGhs(text, bound.min) < 0) return { ok: false, value: null, error: `Minimum is ${bound.min} GHS.` };
+        if (compareGhs(text, bound.max) > 0) return { ok: false, value: null, error: `Maximum is ${bound.max} GHS.` };
+        return { ok: true, value: text, error: null };
     }
 
     if (typeof text === 'string' && text !== '' && !/^\d+$/.test(text)) {
-        return { ok: false, error: 'Whole numbers only.' };
+        return { ok: false, value: null, error: 'Whole numbers only.' };
     }
     const numeric = typeof text === 'number' ? text : Number(text);
-    if (!Number.isInteger(numeric)) return { ok: false, error: 'Whole numbers only.' };
-    if (numeric < bound.min) return { ok: false, error: `Minimum is ${bound.min} ${bound.unit}.` };
-    if (numeric > bound.max) return { ok: false, error: `Maximum is ${bound.max} ${bound.unit}.` };
-    return { ok: true, value: numeric };
+    if (!Number.isInteger(numeric)) return { ok: false, value: null, error: 'Whole numbers only.' };
+    if (numeric < bound.min) return { ok: false, value: null, error: `Minimum is ${bound.min} ${bound.unit}.` };
+    if (numeric > bound.max) return { ok: false, value: null, error: `Maximum is ${bound.max} ${bound.unit}.` };
+    return { ok: true, value: numeric, error: null };
 }
 
 /** Human description of a bound, used for hints and error copy. */
@@ -234,15 +237,17 @@ export function buildConfirmation(key, rawValue, effectiveAt) {
     const meta = MONEY_SETTING_META[key];
     const bound = MONEY_SETTING_BOUNDS[key];
     const validated = validateSettingValue(key, rawValue);
+    const displayValue = validated.ok
+        ? (bound && bound.kind === 'ghs' ? `${validated.value} GHS` : `${validated.value} ${bound ? bound.unit : ''}`.trim())
+        : String(rawValue ?? '');
+    const errorText = validated.ok ? null : validated.error;
     return {
         key,
         label: meta?.label || key,
         rawValue: String(rawValue ?? ''),
         valid: validated.ok,
-        error: validated.ok ? null : validated.error,
-        displayValue: validated.ok
-            ? (bound.kind === 'ghs' ? `${validated.value} GHS` : `${validated.value} ${bound.unit}`)
-            : String(rawValue ?? ''),
+        error: errorText,
+        displayValue,
         effectiveAt,
     };
 }

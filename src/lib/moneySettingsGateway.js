@@ -131,6 +131,9 @@ export function createMockMoneySettingsGateway({
  * - 'mock' is allowed only when explicitly requested AND the build is not a
  *   production build. There is no implicit fallback anywhere.
  */
+/**
+ * @param {{mode?: 'live'|'mock', http?: any, mockOptions?: object}} [options]
+ */
 export function resolveMoneySettingsGateway({ mode, http = null, mockOptions = {} } = {}) {
     const isProductionBuild = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
     if (mode === 'live') {
