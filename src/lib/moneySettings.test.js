@@ -224,14 +224,14 @@ describe('permission gating fails closed', () => {
         expect(model.settings.every((s) => s.editable === false)).toBe(true);
     });
 
-    it('a writer sees editable rows except the pending decision', async () => {
+    it('a writer sees every bounded row editable, headline mode included', async () => {
         const gateway = createMockMoneySettingsGateway();
         const snapshot = await gateway.get();
         const model = buildMoneySettingsModel({ admin: WRITER, snapshot, mode: 'live', error: null });
         const headline = model.settings.find((s) => s.key === 'balanceHeadlineMode');
-        expect(headline.editable).toBe(false);
-        expect(headline.pendingOwnerDecision).toBe(true);
-        expect(model.settings.filter((s) => s.key !== 'balanceHeadlineMode').every((s) => s.editable)).toBe(true);
+        expect(headline.editable).toBe(true);
+        expect(headline.ownerDecision).toBe('COMBINED_ESTIMATE');
+        expect(model.settings.every((s) => s.editable)).toBe(true);
     });
 });
 
@@ -267,10 +267,20 @@ describe('balanceHeadlineMode records the resolved owner decision', () => {
         expect(HEADLINE_MODES).not.toContain('GHS_LEDGER');
     });
 
-    it('is not editable and not a money setting with a bound', () => {
-        expect(editableState('balanceHeadlineMode').editable).toBe(false);
-        expect(editableState('balanceHeadlineMode').reason).toMatch(/COMBINED_ESTIMATE/);
-        expect(MONEY_SETTING_BOUNDS.balanceHeadlineMode).toBeUndefined();
+    it('carries an enum bound and is editable once permission allows', () => {
+        const bound = MONEY_SETTING_BOUNDS.balanceHeadlineMode;
+        expect(bound.kind).toBe('enum');
+        expect(bound.values).toEqual(['COMBINED_ESTIMATE', 'NATIVE_ONLY']);
+        expect(bound.default).toBe('COMBINED_ESTIMATE');
+        expect(editableState('balanceHeadlineMode').editable).toBe(true);
+    });
+
+    it('accepts both agreed modes and refuses anything else', () => {
+        expect(validateSettingValue('balanceHeadlineMode', 'COMBINED_ESTIMATE').ok).toBe(true);
+        expect(validateSettingValue('balanceHeadlineMode', 'NATIVE_ONLY').ok).toBe(true);
+        ['GHS_LEDGER', 'combined_estimate', '', null, 'COMBINED_ESTIMATE '].forEach((bad) => {
+            expect(validateSettingValue('balanceHeadlineMode', bad).ok).toBe(false);
+        });
     });
 
     it('mock fixtures never present a third mode', async () => {
@@ -350,5 +360,22 @@ describe('owner resolved D1 to COMBINED_ESTIMATE', () => {
 
     it('still exposes NATIVE_ONLY as the supported alternative', () => {
         expect(HEADLINE_MODES).toEqual(['COMBINED_ESTIMATE', 'NATIVE_ONLY']);
+    });
+});
+
+// ── 13. headline mode under real permission and availability gates ────────
+describe('headline mode respects permission and availability', () => {
+    it('is not editable without money.settings.write', async () => {
+        const snapshot = await createMockMoneySettingsGateway().get();
+        const model = buildMoneySettingsModel({ admin: { permissions: [] }, snapshot, mode: 'live', error: null });
+        const row = model.settings.find((s) => s.key === 'balanceHeadlineMode');
+        expect(row.editable).toBe(false);
+        expect(row.reason).toMatch(/money\.settings\.write/);
+    });
+
+    it('is not editable when the live API is unavailable', () => {
+        const model = buildMoneySettingsModel({ admin: WRITER, snapshot: null, mode: 'live', error: new Error('upstream 503') });
+        expect(model.unavailable).toBe(true);
+        expect(model.settings.every((s) => s.editable === false)).toBe(true);
     });
 });

@@ -189,8 +189,8 @@ export default function MoneySettings() {
                                             <div className="text-xs text-muted-foreground">{setting.boundHint}</div>
                                         </td>
                                         <td className="py-2 pr-3">
-                                            {setting.pendingOwnerDecision ? (
-                                                <span className="text-muted-foreground">Owner decision: COMBINED_ESTIMATE</span>
+                                            {setting.ownerDecision && !setting.editable ? (
+                                                <span className="text-muted-foreground">{setting.ownerDecision} (owner decision)</span>
                                             ) : setting.display}
                                         </td>
                                         <td className="py-2 pr-3">{setting.effectiveFrom || '—'}</td>

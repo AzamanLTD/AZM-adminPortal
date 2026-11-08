@@ -48,6 +48,8 @@ export const FX_SPREAD = { min: 0, max: 1000, unit: 'basis points' };
 /** GHS threshold: 0.00 is meaningful (always step up), so the floor is zero. */
 export const STEP_UP_THRESHOLD = { min: '0.00', max: null, unit: 'GHS' };
 
+export const HEADLINE_MODES = ['COMBINED_ESTIMATE', 'NATIVE_ONLY'];
+
 export const MONEY_SETTING_BOUNDS = {
     'quoteTtl.payment_topup': { kind: 'int', ...QUOTE_TTL },
     'quoteTtl.bucket_convert': { kind: 'int', ...QUOTE_TTL },
@@ -55,10 +57,10 @@ export const MONEY_SETTING_BOUNDS = {
     'fxSpread.CONVERT_USDC_TO_GHS': { kind: 'bps', ...FX_SPREAD },
     'fxSpread.PAYMENT_TOPUP_GHS_FROM_USDC': { kind: 'bps', ...FX_SPREAD },
     'fxSpread.PAYMENT_TOPUP_USDC_FROM_GHS': { kind: 'bps', ...FX_SPREAD },
+    balanceHeadlineMode: { kind: 'enum', values: HEADLINE_MODES, default: 'COMBINED_ESTIMATE', unit: '' },
     stepUpThresholdGhs: { kind: 'ghs', ...STEP_UP_THRESHOLD },
 };
 
-export const HEADLINE_MODES = ['COMBINED_ESTIMATE', 'NATIVE_ONLY'];
 export const OWNER_RESOLVED_KEY = 'balanceHeadlineMode';
 
 export const MONEY_SETTING_META = {
@@ -101,7 +103,7 @@ export const MONEY_SETTING_META = {
         group: 'Headline',
         label: 'Balance headline mode',
         description: 'Owner decision D1 resolved: COMBINED_ESTIMATE is selected; NATIVE_ONLY remains a supported alternative. GHS stays the canonical displayed balance in both modes, and the USDC figure is an indicative equivalent, never spendable GHS.',
-        pendingOwnerDecision: true,
+        ownerDecision: 'COMBINED_ESTIMATE',
     },
 };
 
@@ -189,6 +191,12 @@ export function validateSettingValue(rawKey, rawValue) {
     if (!bound) {
         return { ok: false, value: null, error: 'This key is not an editable money setting.' };
     }
+    if (bound.kind === 'enum') {
+        const chosen = String(rawValue ?? '');
+        return bound.values.includes(chosen)
+            ? { ok: true, value: chosen, error: null }
+            : { ok: false, value: null, error: `One of ${bound.values.join(' or ')}.` };
+    }
     const text = typeof rawValue === 'number' ? String(rawValue) : String(rawValue ?? '').trim();
 
     if (bound.kind === 'ghs') {
@@ -237,6 +245,9 @@ export function describeBound(key) {
     if (bound.kind === 'bps') {
         return `${spreadPercent(bound.min)} to ${spreadPercent(bound.max)} (${bound.min}–${bound.max} bps).`;
     }
+    if (bound.kind === 'enum') {
+        return `One of ${bound.values.join(' or ')}.`;
+    }
     return `Whole ${bound.unit} from ${bound.min} to ${bound.max}.`;
 }
 
@@ -256,9 +267,6 @@ export function displayValue(key, value) {
 
 /** Whether a key may be edited at all, and why not when it may not. */
 export function editableState(key) {
-    if (key === OWNER_RESOLVED_KEY) {
-        return { editable: false, reason: 'Owned by the Money Settings API: the owner resolved D1 to COMBINED_ESTIMATE, but writes stay disabled until the backend and money.settings.write exist.' };
-    }
     if (!MONEY_SETTING_BOUNDS[key]) {
         return { editable: false, reason: 'Not an editable money setting.' };
     }
@@ -309,7 +317,7 @@ export function buildMoneySettingsModel({ admin, snapshot, mode, error }) {
             source: entry.source ?? null,
             editable: editable && canWrite,
             reason: reason || (canWrite ? null : 'Requires the money.settings.write permission.'),
-            pendingOwnerDecision: Boolean(meta.pendingOwnerDecision),
+            ownerDecision: meta.ownerDecision ?? null,
             boundHint: describeBound(entry.key),
         };
     });
@@ -325,6 +333,6 @@ export function buildMoneySettingsModel({ admin, snapshot, mode, error }) {
             value: snapshot?.flags ? snapshot.flags[flag.key] ?? null : null,
         })),
         flagWritesAllowed: false,
-        headlineModePending: true,
+        headlineModeDecision: 'COMBINED_ESTIMATE',
     };
 }
